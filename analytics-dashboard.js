@@ -14,6 +14,7 @@
   const state = { 
     startISO: null, 
     endISO: null,
+    configLoaded: false,
     data: { t1: [], sms: [], social: [], t2ps: [], t2os: [] },
     filters: { t1: [], sms: [], social: [], t2ps: [], t2os: [] },
     smsAttributes: [],
@@ -31,6 +32,7 @@
       config.restUrl = json.supabase.rest_url;
       config.apiKey = json.supabase.client_api_key;
       config.serviceKey = json.supabase.service_key || null;
+      state.configLoaded = true;
       console.log('Config loaded');
       
       // Fetch Attributes metadata
@@ -152,15 +154,31 @@
     }
   }
 
+  function isJwtLike(value) {
+    return typeof value === 'string' && value.split('.').length === 3;
+  }
+
   function authHeaders(opts = {}) {
-    // Analytics likely needs read access to all rows, which might require service key if RLS is strict for agents
-    // Assuming this page is for admins/coaches/managers who have access, or RLS allows reading.
-    // For now, using serviceKey for robust read access as this is an analytics dashboard.
-    // In production, ensure RLS policies allow the logged-in user to see these tables.
-    const useServiceKey = true; 
+    const useServiceKey = opts.useServiceKey === true;
+    const loginToken = localStorage.getItem('login_token');
+    const bearer =
+      (isJwtLike(loginToken) && loginToken) ||
+      (useServiceKey && isJwtLike(config.serviceKey) && config.serviceKey) ||
+      (isJwtLike(config.apiKey) && config.apiKey) ||
+      (isJwtLike(config.serviceKey) && config.serviceKey) ||
+      null;
+
+    const apikey =
+      (isJwtLike(config.apiKey) && config.apiKey) ||
+      (isJwtLike(config.serviceKey) && config.serviceKey) ||
+      null;
+
+    if (!bearer || !apikey) {
+      throw new Error('Missing/invalid Supabase credentials. Check database_config.json and your login session.');
+    }
     return {
-      apikey: config.apiKey,
-      Authorization: `Bearer ${useServiceKey ? config.serviceKey : config.apiKey}`,
+      apikey,
+      Authorization: `Bearer ${bearer}`,
       'Prefer': 'count=exact'
     };
   }
@@ -269,6 +287,10 @@
   };
 
   async function fetchAnalytics() {
+    if (!state.configLoaded) {
+      showToast('Loading database configuration, please try again in a moment.', 'warning');
+      return;
+    }
     if (!state.startISO || !state.endISO) {
       showToast('Please select a date range first.', 'warning');
       return;

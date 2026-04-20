@@ -406,40 +406,31 @@
       window.MXT1Scorecard.loadAgents = async function loadAgents(){
         try {
           const cfg = await getDbConfig();
-          const base = `${cfg.restUrl}/users?select=id,Name,email,user_role`;
-          // Include space and hyphen variants, plus combined role value as previously used
-        const urlRole = `${base}&user_role=in.(MX-T1%20User,MX-T2%20OS%20User,Administrator,MX-T2%20OS%20User%20%2B%20Administrator,MX-T1%20User)&order=Name.asc`;
-
-          console.log('🌐 Fetching agents from:', urlRole);
-
-          let res = await fetch(urlRole, { headers: makeAuthHeaders(cfg) });
-          let rows = [];
-          if (res.ok) {
-            rows = await res.json();
-            console.log('✅ Agents loaded successfully:', rows.length, 'items');
-          } else {
-            console.warn('❌ Agent fetch with client headers failed, status:', res.status);
-            res = await fetch(urlRole, { headers: makeAuthHeaders(cfg, { useServiceKey: true }) });
-            if (res.ok) {
-              rows = await res.json();
-              console.log('✅ Agents loaded with service key:', rows.length, 'items');
-            } else {
-              console.warn('❌ Agent fetch with service key failed, status:', res.status);
-            }
-          }
-
-          // Final client-side filter to ensure only the requested roles are present
-          const roleMatches = (r) => {
-            const rl = (r.user_role || '').toLowerCase();
-            return rl === 'administrator'
-              || rl === 'mx-t2 os user'
-              || rl === 'mx t2 os user'
-              || rl === 'mx-t2 os user + administrator'
-              || rl === 'mx t2 os user + administrator'
-              || rl === 'mx-t1 user'
-              || rl === 'mx t1 user';
+          const normalizeRoles = (value) => {
+            if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+            if (typeof value !== 'string') return [];
+            const s = value.trim();
+            if (!s) return [];
+            try {
+              const parsed = JSON.parse(s);
+              if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+            } catch (_) {}
+            return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
           };
-          rows = Array.isArray(rows) ? rows.filter(roleMatches) : [];
+          const hasAnyRole = (value, required) => {
+            const roles = normalizeRoles(value).map(r => r.toLowerCase());
+            return required.some(r => roles.includes(String(r).toLowerCase()));
+          };
+
+          const urlAll = `${cfg.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
+          console.log('🌐 Fetching agents from:', urlAll);
+
+          let res = await fetch(urlAll, { headers: makeAuthHeaders(cfg) });
+          if (!res.ok) res = await fetch(urlAll, { headers: makeAuthHeaders(cfg, { useServiceKey: true }) });
+          let rows = res.ok ? await res.json() : [];
+
+          const requiredRoles = ['Administrator', 'MX-T2 OS User', 'MX T2 OS User', 'MX-T1 User', 'MX T1 User'];
+          rows = Array.isArray(rows) ? rows.filter(u => hasAnyRole(u.user_role, requiredRoles)) : [];
 
           const sel = document.getElementById('agentNameSelect');
           const ddInput = document.getElementById('agentDropdownInput');

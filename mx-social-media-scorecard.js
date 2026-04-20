@@ -296,20 +296,33 @@
     async function loadAgents() {
         try {
             const cfg = await getDbConfig();
-            // Using same filter as SMS/T1 for consistency
-            const urlRole = `${cfg.restUrl}/users?select=id,Name,email,user_role&user_role=in.(Administrator,QA%20Coach,MX-SM%20User)&order=Name.asc`;
+            const normalizeRoles = (value) => {
+                if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+                if (typeof value !== 'string') return [];
+                const s = value.trim();
+                if (!s) return [];
+                try {
+                    const parsed = JSON.parse(s);
+                    if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+                } catch (_) {}
+                return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
+            };
+            const hasAnyRole = (value, required) => {
+                const roles = normalizeRoles(value).map(r => r.toLowerCase());
+                return required.some(r => roles.includes(String(r).toLowerCase()));
+            };
+
+            const urlAll = `${cfg.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
             
-            let res = await fetch(urlRole, { headers: makeAuthHeaders(cfg) });
+            let res = await fetch(urlAll, { headers: makeAuthHeaders(cfg) });
             if (!res.ok) {
-                // Fallback to service key if client key fails
-                res = await fetch(urlRole, { headers: makeAuthHeaders(cfg, { useServiceKey: true }) });
+                res = await fetch(urlAll, { headers: makeAuthHeaders(cfg, { useServiceKey: true }) });
             }
             
             if (res.ok) {
                 const rows = await res.json();
-                // Filter client-side to be safe
-                const validRoles = ['administrator', 'qa coach', 'mx-sm user'];
-                agentList = rows.filter(r => validRoles.includes((r.user_role||'').toLowerCase()));
+                const requiredRoles = ['Administrator', 'QA Coach', 'MX-SM User'];
+                agentList = rows.filter(r => hasAnyRole(r.user_role, requiredRoles));
                 renderAgentSelect();
             }
         } catch (e) {

@@ -947,45 +947,29 @@ const MXT1Scorecard = (function() {
 
   async function loadAgents() {
     try {
-      // Primary attempt: include MX-T1 User and Administrator roles
-      const base = `${config.restUrl}/users?select=id,Name,email,user_role`;
-      const urlRole = `${base}&user_role=in.(MX-T1%20User,Administrator)&order=Name.asc`;
-      let res = await fetch(urlRole, { headers: authHeaders() });
-      let rows = [];
-      if (res.ok) {
-        rows = await res.json();
-      } else {
-        console.warn('Agent fetch with client headers failed, status:', res.status);
-      }
-
-      // Fallback 1: if empty or failed, try with service key headers (in case RLS blocks anon)
-      if (!Array.isArray(rows) || rows.length === 0) {
+      const normalizeRoles = (value) => {
+        if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+        if (typeof value !== 'string') return [];
+        const s = value.trim();
+        if (!s) return [];
         try {
-          res = await fetch(urlRole, { headers: authHeaders({ useServiceKey: true }) });
-          if (res.ok) {
-            rows = await res.json();
-          } else {
-            console.warn('Agent fetch with service key failed, status:', res.status);
-          }
-        } catch (e) {
-          console.warn('Service key agent fetch error:', e);
-        }
-      }
+          const parsed = JSON.parse(s);
+          if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+        } catch (_) {}
+        return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
+      };
+      const hasAnyRole = (value, required) => {
+        const roles = normalizeRoles(value).map(r => r.toLowerCase());
+        return required.some(r => roles.includes(String(r).toLowerCase()));
+      };
 
-      // Fallback 2: fetch all users if role-filtered list is still empty
-      if (!Array.isArray(rows) || rows.length === 0) {
-        try {
-          const urlAll = `${base}&order=Name.asc`;
-          res = await fetch(urlAll, { headers: authHeaders() });
-          if (res.ok) {
-            rows = await res.json();
-          } else {
-            console.warn('Fallback all-users fetch failed, status:', res.status);
-          }
-        } catch (e) {
-          console.warn('All-users agent fetch error:', e);
-        }
-      }
+      const urlAll = `${config.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
+      let res = await fetch(urlAll, { headers: authHeaders() });
+      if (!res.ok) res = await fetch(urlAll, { headers: authHeaders({ useServiceKey: true }) });
+      let rows = res.ok ? await res.json() : [];
+
+      const requiredRoles = ['MX-T1 User', 'Administrator'];
+      rows = Array.isArray(rows) ? rows.filter(u => hasAnyRole(u.user_role, requiredRoles)) : [];
 
       const sel = document.getElementById('agentNameSelect');
       const ddInput = document.getElementById('agentDropdownInput');

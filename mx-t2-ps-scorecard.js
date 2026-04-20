@@ -694,41 +694,29 @@ function reset() {
 
 async function loadAgents() {
   try {
-    // Fetch users with role: MX T2 PS User + Administrator
-    const base = `${config.restUrl}/users?select=id,Name,email,user_role`;
-    // Use explicit OR matching for robustness (avoids any quirks with in. on strings)
-    const urlRole = `${base}&or=(user_role.eq.Administrator,user_role.eq.MX%20T2%20PS%20User,user_role.eq.MX-T2%20PS%20User,user_role.eq.MX%20T2%20PS%20User%20%2B%20Administrator,user_role.eq.MX-T2%20PS%20User%20%2B%20Administrator)&order=Name.asc`;
-    console.log('🌐 Fetching PS agents (MX T2 PS User + Admin) from:', urlRole);
-    
-    let res = await fetch(urlRole, { headers: authHeaders() });
-    let rows = [];
-    
-    if (res.ok) {
-      rows = await res.json();
-      console.log('✅ Agents loaded successfully:', rows.length, 'items');
-    } else {
-      console.warn('❌ Agent fetch with client headers failed, status:', res.status);
-      // Fallback: try with service key
-      console.log('🔄 Retrying agents with service key...');
-      res = await fetch(urlRole, { headers: authHeaders({ useServiceKey: true }) });
-      if (res.ok) {
-        rows = await res.json();
-        console.log('✅ Agents loaded with service key:', rows.length, 'items');
-      } else {
-        console.warn('❌ Agent fetch with service key failed, status:', res.status);
-      }
-    }
-
-    // Final client-side filter to ensure only PS roles are present
-    const roleMatches = (r) => {
-      const rl = (r.user_role || '').toLowerCase();
-      return rl === 'administrator'
-        || rl === 'mx t2 ps user'
-        || rl === 'mx-t2 ps user'
-        || rl === 'mx t2 ps user + administrator'
-        || rl === 'mx-t2 ps user + administrator';
+    const normalizeRoles = (value) => {
+      if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+      if (typeof value !== 'string') return [];
+      const s = value.trim();
+      if (!s) return [];
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+      } catch (_) {}
+      return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
     };
-    rows = Array.isArray(rows) ? rows.filter(roleMatches) : [];
+    const hasAnyRole = (value, required) => {
+      const roles = normalizeRoles(value).map(r => r.toLowerCase());
+      return required.some(r => roles.includes(String(r).toLowerCase()));
+    };
+
+    const urlAll = `${config.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
+    let res = await fetch(urlAll, { headers: authHeaders() });
+    if (!res.ok) res = await fetch(urlAll, { headers: authHeaders({ useServiceKey: true }) });
+    let rows = res.ok ? await res.json() : [];
+
+    const requiredRoles = ['MX T2 PS User', 'MX-T2 PS User', 'Administrator'];
+    rows = Array.isArray(rows) ? rows.filter(u => hasAnyRole(u.user_role, requiredRoles)) : [];
 
     // Populate agent dropdown (native select and custom panel)
     const sel = document.getElementById('agentNameSelect');
