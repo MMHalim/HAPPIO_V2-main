@@ -1,0 +1,66 @@
+{
+  "animateLoading": true,
+  "backgroundColor": "transparent",
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "borderWidth": "5",
+  "bottomRow": 498,
+  "displayName": "Text",
+  "dynamicBindingPathList": [
+    {
+      "key": "truncateButtonColor"
+    },
+    {
+      "key": "fontFamily"
+    },
+    {
+      "key": "borderRadius"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicTriggerPathList": [],
+  "fontFamily": "{{appsmith.theme.fontFamily.appFont}}",
+  "fontSize": "1rem",
+  "fontStyle": "BOLD,ITALIC",
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a47d6d5dbbb718c4dc4b2eb4f218c1b7.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "hz1pr8io0t",
+  "leftColumn": 0,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 11,
+  "mobileLeftColumn": 1,
+  "mobileRightColumn": 17,
+  "mobileTopRow": 7,
+  "originalBottomRow": 567,
+  "originalTopRow": 534,
+  "overflow": "SCROLL",
+  "parentColumnSpace": 7.80078125,
+  "parentId": "ow4eh0wieh",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 61,
+  "searchTags": [
+    "typography",
+    "paragraph",
+    "label"
+  ],
+  "shouldTruncate": false,
+  "tags": [
+    "Suggested",
+    "Content"
+  ],
+  "text": "\n1. Collecting all the required information and applying all the possible troubleshooting steps during the call.\n\n2. Follow up with the customer and take full ownership of the situation.\n\n3. Assign the ticket correctly or keep it assigned until we get a response/update for the customer. Then, choose the correct ticket status.\n\n4. Set the member expectations significantly If we're raising the issue with a different team.\n\n5. Stay on the video call until we ensure that the Studio panel is correctly installed.",
+  "textAlign": "CENTER",
+  "textColor": "#231F20",
+  "topRow": 465,
+  "truncateButtonColor": "{{appsmith.theme.colors.primaryColor}}",
+  "type": "TEXT_WIDGET",
+  "version": 1,
+  "widgetId": "4l0axseopo",
+  "widgetName": "Text114CopyCopy1CopyCopyCopyCopyCopyCopyCopyCopyCopy"
+}

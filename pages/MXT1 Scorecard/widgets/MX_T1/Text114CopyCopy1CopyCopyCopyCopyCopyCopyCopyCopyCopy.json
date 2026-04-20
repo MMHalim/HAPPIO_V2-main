@@ -1,0 +1,66 @@
+{
+  "animateLoading": true,
+  "backgroundColor": "transparent",
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "borderWidth": "5",
+  "bottomRow": 463,
+  "displayName": "Text",
+  "dynamicBindingPathList": [
+    {
+      "key": "truncateButtonColor"
+    },
+    {
+      "key": "fontFamily"
+    },
+    {
+      "key": "borderRadius"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicTriggerPathList": [],
+  "fontFamily": "{{appsmith.theme.fontFamily.appFont}}",
+  "fontSize": "1rem",
+  "fontStyle": "BOLD,ITALIC",
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a47d6d5dbbb718c4dc4b2eb4f218c1b7.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "hz1pr8io0t",
+  "leftColumn": 0,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 11,
+  "mobileLeftColumn": 1,
+  "mobileRightColumn": 17,
+  "mobileTopRow": 7,
+  "originalBottomRow": 464,
+  "originalTopRow": 435,
+  "overflow": "SCROLL",
+  "parentColumnSpace": 7.80078125,
+  "parentId": "ow4eh0wieh",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 61,
+  "searchTags": [
+    "typography",
+    "paragraph",
+    "label"
+  ],
+  "shouldTruncate": false,
+  "tags": [
+    "Suggested",
+    "Content"
+  ],
+  "text": "\n1. Follow up through to the end and take full ownership of the situation.\n(Including assigning the ticket correctly and keeping the ticket assigned until we get a response/update from the customer)\n\n2. Attempt to resolve the issue or answer the inquiry/request within the \"Live\" interaction, not postponing it to a follow-up email.\n\n3. Attempting to de-escalate the situation and proactively identifying the necessary actions to resolve the issue.\n\n4. Choosing the correct status.",
+  "textAlign": "CENTER",
+  "textColor": "#231F20",
+  "topRow": 434,
+  "truncateButtonColor": "{{appsmith.theme.colors.primaryColor}}",
+  "type": "TEXT_WIDGET",
+  "version": 1,
+  "widgetId": "4l0axseopo",
+  "widgetName": "Text114CopyCopy1CopyCopyCopyCopyCopyCopyCopyCopyCopy"
+}

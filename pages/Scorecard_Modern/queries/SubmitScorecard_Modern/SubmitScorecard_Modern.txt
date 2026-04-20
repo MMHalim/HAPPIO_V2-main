@@ -1,0 +1,21 @@
+{
+	"Conversation_ID":"{{ConversationID.text}}",
+	"Agent_Name":"{{AgentName.selectedOptionValue}}",
+	"Taker_Name":"{{TakerName.text}}",
+	"URL":"{{ConversationURL.text}}",
+	"Final_Score":"{{ModernScorecard.calculateTotalScore()}}",
+	"Communication_Score":"{{CommunicationRadio.selectedOptionValue}}",
+	"Communication_Comments":"{{CommunicationComment.text}}",
+	"Professionalism_Score":"{{ProfessionalismRadio.selectedOptionValue}}",
+	"Professionalism_Comments":"{{ProfessionalismComment.text}}",
+	"Knowledge_Score":"{{KnowledgeRadio.selectedOptionValue}}",
+	"Knowledge_Comments":"{{KnowledgeComment.text}}",
+	"Resolution_Score":"{{ResolutionRadio.selectedOptionValue}}",
+	"Resolution_Comments":"{{ResolutionComment.text}}",
+	"agent_email":"{{AgentEmail.text}}",
+	"Monitoring_Type":"{{MonitoringType.selectedOptionValue}}",
+	"Certification":"{{CertificationRadio.selectedOptionValue}}",
+	"submitted_by":"{{appsmith.store.loggedInUserEmail}}",
+	"submission_date":"{{new Date().toISOString()}}",
+	"user_role":"{{appsmith.store.user_role}}"
+}

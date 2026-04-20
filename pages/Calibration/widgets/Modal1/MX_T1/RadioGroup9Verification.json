@@ -1,0 +1,73 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "bottomRow": 361,
+  "boxShadow": "none",
+  "defaultOptionValue": "{{Table1.selectedRow.Ownership}}",
+  "displayName": "Radio Group",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    },
+    {
+      "key": "defaultOptionValue"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "onSelectionChange"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onSelectionChange"
+    }
+  ],
+  "hideCard": false,
+  "iconSVG": "/static/media/icon.ba2b2ee006e51a5c681d7964d7777481.svg",
+  "isDeprecated": false,
+  "isDisabled": true,
+  "isInline": true,
+  "isLoading": false,
+  "isRequired": true,
+  "isVisible": true,
+  "key": "4h5pg3m6ae",
+  "label": "Ownership",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "BOLD,ITALIC",
+  "labelTextColor": "#18181b",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 1,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "mobileWidthInPercentage": 0.246484375,
+  "onSelectionChange": "{{Channel.pass_fail()}}",
+  "options": [
+    {
+      "label": "Yes",
+      "value": "Yes"
+    },
+    {
+      "label": "No",
+      "value": "No"
+    }
+  ],
+  "originalBottomRow": 361,
+  "originalTopRow": 355,
+  "parentColumnSpace": 12.44580078125,
+  "parentId": "3jicavuabd",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "rightColumn": 26,
+  "searchTags": [
+    "choice"
+  ],
+  "topRow": 355,
+  "type": "RADIO_GROUP_WIDGET",
+  "version": 1,
+  "widgetId": "t30hrmopor",
+  "widgetName": "RadioGroup9Verification"
+}

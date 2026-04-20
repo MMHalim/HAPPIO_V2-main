@@ -1,0 +1,58 @@
+{
+  "animateLoading": true,
+  "borderRadius": "1.5rem",
+  "bottomRow": 7,
+  "boxShadow": "none",
+  "buttonColor": "{{appsmith.theme.colors.primaryColor}}",
+  "buttonVariant": "PRIMARY",
+  "disabledWhenInvalid": false,
+  "displayName": "Button",
+  "dynamicBindingPathList": [
+    {
+      "key": "buttonColor"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onClick"
+    }
+  ],
+  "hideCard": false,
+  "iconAlign": "left",
+  "iconName": "search",
+  "iconSVG": "/static/media/icon.7beb9123fb53027d9d6b778cdfe4caed.svg",
+  "isDefaultClickDisabled": true,
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "36xeos4h8x",
+  "leftColumn": 57,
+  "minWidth": 120,
+  "mobileBottomRow": 36,
+  "mobileLeftColumn": 5,
+  "mobileRightColumn": 21,
+  "mobileTopRow": 32,
+  "onClick": "{{Kustomer_Message.run().then(() => {\n  Channel.assigneduserIndex();\n}).catch(() => {\n  Channel.assigneduserIndex();\n  Channel.assigneduserIndex();\n});\nUser_details.run().then(() => {\n  Channel.assigneduserIndex();\n  Channel.assigneduserIndex();\n}).catch(() => {\n  Channel.assigneduserIndex();\n});\nChannel.assigneduserIndex();\nKustomer_Message.run();\nUser_details.run();\nUJET.run()}}",
+  "originalBottomRow": 33.20000000000073,
+  "originalTopRow": 28.199999999985433,
+  "parentColumnSpace": 1.546875,
+  "parentId": "w2k0njihih",
+  "parentRowSpace": 10,
+  "placement": "CENTER",
+  "recaptchaType": "V3",
+  "renderMode": "CANVAS",
+  "resetFormOnClick": false,
+  "responsiveBehavior": "hug",
+  "rightColumn": 63,
+  "searchTags": [
+    "click",
+    "submit"
+  ],
+  "text": "",
+  "topRow": 2,
+  "type": "BUTTON_WIDGET",
+  "version": 1,
+  "widgetId": "p896niuv6u",
+  "widgetName": "Button2"
+}

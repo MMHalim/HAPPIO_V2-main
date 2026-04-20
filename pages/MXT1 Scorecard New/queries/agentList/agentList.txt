@@ -1,0 +1,11 @@
+{
+    "status": "resolved",
+    "channel_id": "31b8715d-f6e3-4f08-99a1-8feb7fab6d79",
+    "assigned_org_agent_id": "606018293716203326",
+    "assigned_agent_id": "e10e1a40-7b4e-4d44-9507-10bf03cbaf7f",
+    "assigned_group_id": "f2691b37-6cf5-4bfd-95fc-713b06efc008",
+    "properties": {
+        "cf_request_type_level_1": "Miscellaneous<->Follow-Up",
+        "priority": "Low"
+    }
+}

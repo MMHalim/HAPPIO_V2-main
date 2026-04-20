@@ -1,0 +1,43 @@
+{
+  "animateLoading": true,
+  "autoPlay": false,
+  "bottomRow": 82,
+  "displayName": "Audio",
+  "dynamicBindingPathList": [],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.90965be2578a5c1c8e2996b65e5b6988.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "8kf0qbk6hq",
+  "leftColumn": 1,
+  "minWidth": 450,
+  "mobileBottomRow": 162,
+  "mobileLeftColumn": 0,
+  "mobileRightColumn": 25,
+  "mobileTopRow": 158,
+  "originalBottomRow": 82,
+  "originalTopRow": 76,
+  "parentColumnSpace": 20.078125,
+  "parentId": "0",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 21,
+  "searchTags": [
+    "mp3",
+    "sound",
+    "wave",
+    "player"
+  ],
+  "tags": [
+    "Media"
+  ],
+  "topRow": 76,
+  "type": "AUDIO_WIDGET",
+  "url": "https://freshcaller-attachments.s3.amazonaws.com/production/attachments/937129/138700238/RE50c7b0e0bde7701dd2513e222fe8cb30.wav?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQ4CNKN5U3ALU3ATD%2F20231129%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231129T163919Z&X-Amz-Expires=600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEHsaCXVzLWVhc3QtMSJIMEYCIQDIWEXVHcvdQJZLm3GanXNOA2KcV0NkpLnIXMLeL0DpkwIhAM0HRNKRcGtsXR8oKVQm762PGCLMkitgl7X4YO4HjnSdKroFCNT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQBBoMMDYwMjkxNzA2NzI5Igx4V47m8E8ESH9qxX4qjgWuGBdhJHWqfannPcLVGEG29jH5t%2FPH8l8wxWtsk%2BC2q%2FXh3TcBklh8mgDv3HpyaH8MNLXFz34eASGhwPNSxAvIewkMHgYBeUznGZ%2B3jfrMFNnmV2bRQtorylFGr2fTQ1c7dnyiC%2BET1TY2VnnhwZCj8O3cCWeVT4j9gFz%2BNhgZIEt1pZYmNojKcDiBECvJQlOxoEWmh1bNgV0nNBA40b%2Br9qwEY3tlez2%2FD0MZPmi%2Fca8pejmi7DvJ1UDP2vroiMSSjj1%2FSUrw%2FAdZO7VM%2F5W7hu11YSWqi27SU7%2FsGb3de%2F3gJyV7C34PC1UrjVlos1o5IBmAdDmQ0r6kM7t5dmBC1WMylODgVAzWS6wXJUQdngU9S%2BjTIWfESN3ZCcKorUM8dwdCtrJNmZY3xVbT1rsZBWdf%2BvCD1DTyGYDGmh9iSNNeyGIgu54v6PAZxFsaVdGVCfblHMpjnFtmHpnldDt25OcKvNNP5A90EXQl8%2Bpta5QAYCnUiABhmOxq2VPqDpWcBblBkAmI9jC94vId6HkWLfXXd9tImpm16ORD%2FXlvghB%2B%2Fntrn7pFm8V6WQ0TkBKljwkhOiCMyn48o1VAj9x8wuov%2BKTXYThzfAAv%2FW5cpFPHoYPjD847ha0726qwsmvQAGpZPgdLSTY2on1ZD%2FWA2ZsXk1lXHob1S6dXvtyAlb8Pb3y0CFXUnS2Sx25Xmj%2FWwcDymVGXDsrhE%2F%2BtD5rNTKvwvOKE4gzsCs34OS%2FWjcwAMZQQ6kiwrIiPCSIhRZdWgGgpNn1C4xXev6W5qW3jMRPYuewAqaziMsBYiRghr9PczsOC6jh9exTZjlSj8EBoWLq4ATa0EWtJvWM5odPBjW7zCsqjF%2BC9hmuh1nUwp6mcqwY6sAEcEvJkDeio1bPGjNJoLJq8XJG9hmBTdUXH53anFkf6NW72lU3ez9sKYXFbLBre1QlxPhMMv4zkCDyqjYhvkLNcsGNI50wAhaAfkbetBurN32HYF9x%2Bvi4PzOWjEl2tTh7lE9OC9Hzj8Vzmz6Ud%2B4X8jzMMPk3SDdd8NCVOM5THzQTbwphP5jE2cFuwNi%2FD%2Fu4tZ%2BLf%2FMQdZt2qYa%2FBOQeKmD1rJWBUU3XQrmXylDHzdw%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=d603b1e02ed41c1402fc0faf02bd54aa9e9faa839e99cc52d93a884640806e3d",
+  "version": 1,
+  "widgetId": "0o3jzlc7cp",
+  "widgetName": "Audio1"
+}

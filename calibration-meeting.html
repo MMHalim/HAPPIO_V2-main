@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Calibration Meeting Results (T2 OS)</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="global-theme.css">
+  <style>
+    .page-content { padding: 84px 24px 24px 24px; max-width: 100%; margin: 0 auto; }
+    .header-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    
+    #resultsContainer {
+      max-height: calc(100vh - 160px); /* Adjust for header height + padding */
+      overflow: auto;
+      /* Border and shadow removed as per user request */
+    }
+
+    /* Table Styling */
+    .calib-table { 
+      border-collapse: separate;
+      border-spacing: 0;
+      width: auto;
+      font-size: 14px; 
+    }
+    .calib-table th, .calib-table td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      text-align: center;
+      vertical-align: middle;
+      height: 40px;
+      background-clip: padding-box;
+    }
+    
+    /* Sticky Header (Top Row) */
+    .calib-table thead th {
+      position: sticky;
+      top: 0;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+      z-index: 10;
+      box-shadow: 0 1px 0 #cbd5e1;
+      white-space: nowrap;
+    }
+
+    /* Sticky First Column (Attributes) */
+    .calib-table th:first-child,
+    .calib-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      border-right: 2px solid #cbd5e1;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 260px;
+      max-width: 260px;
+    }
+
+    /* Intersection Cell (Top Left) */
+    .calib-table thead th:first-child {
+      z-index: 20;
+      background: #fef3c7; /* Match Attribute Column Color */
+      color: #78350f;
+    }
+
+    /* Attribute Column Styling (Body) */
+    .calib-table tbody td:first-child {
+      background: #fef3c7; /* Readable Light Yellow */
+      color: #78350f;      /* Dark Amber Text */
+    }
+    
+    /* Comment Rows */
+    .comment-row td {
+      background: #ffffff;
+      text-align: center;
+      font-size: 12px;
+      color: #334155; /* Slate 700 */
+      vertical-align: middle;
+      white-space: nowrap; /* Force single line by default */
+      position: relative; /* Anchor for popup */
+      padding: 0; /* Remove padding to let wrapper fill */
+      overflow: visible !important; /* Allow popup to expand beyond cell */
+    }
+    .calib-table tbody .comment-row td:first-child {
+      background: #ffffff; /* White background for Comments label */
+      text-align: right;
+      font-weight: normal;
+      color: #92400e; /* Slightly lighter amber */
+      padding: 8px 12px; /* Restore padding for label */
+    }
+
+    /* Comment Cell Wrapper (Expand on Focus) */
+    .comment-cell-wrapper {
+      height: 100%;
+      line-height: 40px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: normal;
+      word-break: break-word;
+      cursor: zoom-in;
+      outline: none;
+      width: 100%;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      padding: 0 12px;
+    }
+    
+    .comment-cell-wrapper:focus {
+      position: absolute;
+      top: 0; 
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px; /* Fixed width for readability */
+      height: auto; /* Fit full content height */
+      line-height: 1.5; /* Reset line-height for readability */
+      display: block; /* Override line-clamp layout */
+      -webkit-line-clamp: unset;
+      -webkit-box-orient: initial;
+      background: #ffffff;
+      z-index: 100;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      cursor: zoom-out;
+    }
+
+    /* Result Cells */
+    .cell-yes { background-color: #dcfce7; color: #14532d; font-weight: bold; } /* Green-100 / Green-900 */
+    .cell-no { background-color: #fee2e2; color: #7f1d1d; font-weight: bold; } /* Red-100 / Red-900 */
+    .cell-na { background-color: #f3f4f6; color: #4b5563; } /* Grey */
+
+    /* Header Cells */
+    .taker-header {
+      font-size: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      color: #0f172a;
+      border-bottom: 2px solid #cbd5e1;
+    }
+    
+    /* Alignment Row */
+    .alignment-row td {
+      font-weight: bold;
+      background: #e0f2fe; /* Light blue */
+      color: #075985;
+    }
+
+    .search-box {
+      display: flex; gap: 8px;
+    }
+
+    /* Disabled state for Complete Calibration button */
+    #completeBtn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      background: #4b5563;
+      color: #9ca3af;
+      border-color: #4b5563;
+    }
+    [data-theme="light"] #completeBtn:disabled {
+      background: #e5e7eb;
+      color: #9ca3af;
+      border-color: #d1d5db;
+    }
+
+    #calibSummaryModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100010;
+      background: var(--bg-page, #0b1220);
+    }
+    [data-theme="light"] #calibSummaryModal { background: var(--bg-page, #f3f4f6); }
+    #calibSummaryCard {
+      width: min(1040px, 96vw);
+      max-height: 92vh;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card, #ffffff);
+      color: var(--text-primary, #0f172a);
+      box-shadow: 0 18px 48px rgba(0,0,0,0.45);
+      display: flex;
+      flex-direction: column;
+    }
+    #calibSummaryHeader {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.16), rgba(139,92,246,0.12));
+    }
+    #calibSummaryTitle { font-size: 16px; font-weight: 800; }
+    #calibSummarySub { margin-top: 2px; font-size: 13px; color: var(--text-secondary); }
+    #calibSummaryBody {
+      padding: 14px 16px 16px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 860px) { #calibSummaryBody { grid-template-columns: 1fr; } }
+    .calib-panel {
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(2, 6, 23, 0.03);
+    }
+    [data-theme="light"] .calib-panel { background: rgba(15, 23, 42, 0.03); }
+    .calib-panel-title { font-weight: 800; margin-bottom: 10px; display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+    .calib-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-nav-item, #f3f4f6);
+      color: var(--text-primary, #0f172a);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .calib-list { display:flex; flex-direction:column; gap: 8px; }
+    .calib-item {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 10px;
+      background: var(--bg-card, #ffffff);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .calib-item-name { font-weight: 800; }
+    .calib-item-meta { margin-top: 4px; color: var(--text-secondary); font-size: 12px; }
+    .calib-badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+      background: rgba(59, 130, 246, 0.10);
+      color: #1d4ed8;
+    }
+    .calib-badge.yes { background: rgba(34, 197, 94, 0.12); color: #166534; border-color: rgba(34,197,94,0.25); }
+    .calib-badge.no { background: rgba(239, 68, 68, 0.12); color: #991b1b; border-color: rgba(239,68,68,0.25); }
+    .calib-badge.pending { background: rgba(148, 163, 184, 0.18); color: #475569; border-color: rgba(148,163,184,0.35); }
+    #calibSummaryFooter {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #calibCcInput {
+      width: min(620px, 100%);
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card, #ffffff);
+      color: var(--text-primary, #0f172a);
+      outline: none;
+    }
+    .calib-recipient-row {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      width:100%;
+    }
+    .calib-recipient-label {
+      font-weight: 900;
+      min-width: 34px;
+    }
+    .calib-chipbox {
+      flex: 1 1 auto;
+      min-width: 260px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card, #ffffff);
+      border-radius: 12px;
+      padding: 6px;
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap: 6px;
+    }
+    .calib-chip {
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: rgba(99,102,241,0.08);
+      color: var(--text-primary, #0f172a);
+      font-weight: 800;
+      font-size: 12px;
+      max-width: 100%;
+    }
+    .calib-chip-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 62vw;
+    }
+    .calib-chip-x {
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 900;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .calib-chip-input {
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text-primary, #0f172a);
+      padding: 6px 8px;
+      min-width: 180px;
+      flex: 1 1 auto;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    #calibCommentInput {
+      width: 100%;
+      min-height: 98px;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card, #ffffff);
+      color: var(--text-primary, #0f172a);
+      outline: none;
+      font-family: inherit;
+    }
+
+    #emailPreviewModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100020;
+      background: var(--bg-page, #0b1220);
+    }
+    [data-theme="light"] #emailPreviewModal { background: var(--bg-page, #f3f4f6); }
+    #emailPreviewCard {
+      width: min(1100px, 96vw);
+      max-height: 92vh;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card, #ffffff);
+      color: var(--text-primary, #0f172a);
+      box-shadow: 0 18px 48px rgba(0,0,0,0.45);
+      display: flex;
+      flex-direction: column;
+    }
+    #emailPreviewHeader {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.16), rgba(139,92,246,0.12));
+    }
+    #emailPreviewTitle { font-size: 14px; font-weight: 900; }
+    #emailPreviewFrame {
+      width: 100%;
+      height: 100%;
+      min-height: 60vh;
+      border: 0;
+      background: #ffffff;
+    }
+  </style>
+  <script src="global-navigation.js?v=2" defer></script>
+  <script src="calibration-meeting.js?v=11" defer></script>
+</head>
+<body>
+  <div class="page-content">
+    <div class="header-bar">
+      <h1>Calibration Meeting Results</h1>
+      <div class="search-box">
+        <select id="queueSelect" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+          <option value="" disabled selected>Select Queue</option>
+          <option value="Order Support">Order Support</option>
+          <option value="Sales">Sales</option>
+          <option value="SMS">SMS</option>
+          <option value="MX-T1">MX-T1</option>
+        </select>
+        <!-- Replaced Input with Select for Conversation ID -->
+        <select id="convIdSelect" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; min-width: 200px;">
+          <option value="" disabled selected>Select Conversation ID</option>
+        </select>
+        <!-- Hidden input to maintain compatibility if JS expects it, or we update JS to use select -->
+        <input type="hidden" id="convIdInput"> 
+        
+        <button id="loadBtn" class="global-btn">Load Results</button>
+        <button id="clearBtn" class="global-btn btn-secondary">Clear</button>
+        <button id="exportBtn" class="global-btn btn-secondary">Export CSV</button>
+        <button id="completeBtn" class="global-btn btn-secondary">Complete Calibration</button>
+        <div id="alignmentScoreWidget" style="display: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; margin-left: 8px; align-items: center;">
+          Alignment Score: <span id="alignmentScoreValue"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultsContainer">
+      <div style="color: var(--text-secondary);">Enter a Conversation ID to load calibration results.</div>
+    </div>
+  </div>
+
+  <div id="calibSummaryModal" role="dialog" aria-modal="true" aria-labelledby="calibSummaryTitle">
+    <div id="calibSummaryCard">
+      <div id="calibSummaryHeader">
+        <div>
+          <div id="calibSummaryTitle">Calibration Summary</div>
+          <div id="calibSummarySub"></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button id="calibSummaryCloseBtn" type="button" class="global-btn btn-secondary">Close</button>
+        </div>
+      </div>
+      <div id="calibSummaryBody"></div>
+      <div style="padding: 0 16px 14px;">
+        <div class="calib-panel">
+          <div class="calib-panel-title">Comment</div>
+          <textarea id="calibCommentInput" placeholder="Add a note for the calibration attendees..."></textarea>
+        </div>
+      </div>
+      <div id="calibSummaryFooter">
+        <div style="display:flex; flex-direction:column; gap:10px; flex: 1 1 auto; width: 100%;">
+          <div class="calib-recipient-row">
+            <div class="calib-recipient-label">To</div>
+            <div id="calibToChips" class="calib-chipbox"></div>
+          </div>
+          <div class="calib-recipient-row">
+            <div class="calib-recipient-label">CC</div>
+            <div id="calibCcChips" class="calib-chipbox"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="calibSummaryPreviewBtn" type="button" class="global-btn btn-secondary">Preview Email</button>
+          <button id="calibSummarySendBtn" type="button" class="global-btn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="emailPreviewModal" role="dialog" aria-modal="true" aria-labelledby="emailPreviewTitle">
+    <div id="emailPreviewCard">
+      <div id="emailPreviewHeader">
+        <div id="emailPreviewTitle">Email Preview</div>
+        <button id="emailPreviewCloseBtn" type="button" class="global-btn btn-secondary">Close</button>
+      </div>
+      <iframe id="emailPreviewFrame" title="Email Preview"></iframe>
+    </div>
+  </div>
+</body>
+</html>

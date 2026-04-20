@@ -1,0 +1,15 @@
+UPDATE "T1_SC_Att" SET "Criteria" = '{{interaction_protocols.text}}' WHERE "ID" = 1;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{understanding.text}}' WHERE "ID" = 2;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{responsiveness.text}}' WHERE "ID" = 5;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{effectiveness.text}}' WHERE "ID" = 6;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{softSkills.text}}' WHERE "ID" = 3;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{language.text}}' WHERE "ID" = 4;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{fcr.text}}' WHERE "ID" = 7;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{ownership.text}}' WHERE "ID" = 13;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{product_awareness.text}}' WHERE "ID" = 14;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{tempo_values.text}}' WHERE "ID" = 11;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{process_awareness.text}}' WHERE "ID" = 15;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{verification.text}}' WHERE "ID" = 12;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{documentation.text}}' WHERE "ID" = 10;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{crm_updates.text}}' WHERE "ID" = 8;
+UPDATE "T1_SC_Att" SET "Criteria" = '{{workflow.text}}' WHERE "ID" = 9;

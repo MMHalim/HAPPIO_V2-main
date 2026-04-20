@@ -1,0 +1,38 @@
+{
+  "gitSyncId": "modern_scorecard_grid_001",
+  "unpublishedWidget": {
+    "backgroundColor": "transparent",
+    "borderColor": "transparent",
+    "borderRadius": "0px",
+    "borderWidth": "0px",
+    "bottomRow": 600,
+    "canExtend": true,
+    "containerStyle": "none",
+    "detachFromLayout": false,
+    "dynamicBindingPathList": [],
+    "dynamicHeight": "FIXED",
+    "dynamicTriggers": [],
+    "flexLayers": [],
+    "isCanvas": true,
+    "leftColumn": 4,
+    "minHeight": 500,
+    "mobileBottomRow": 600,
+    "mobileLeftColumn": 4,
+    "mobileRightColumn": 60,
+    "mobileTopRow": 100,
+    "mobileWidthInPercentage": 90,
+    "parentColumnSpace": 1,
+    "parentRowSpace": 1,
+    "responsiveBehavior": "fill",
+    "rightColumn": 60,
+    "snapColumns": 56,
+    "snapRows": 25,
+    "topRow": 100,
+    "type": "CONTAINER_WIDGET",
+    "useAutoLayout": false,
+    "version": 1,
+    "widgetId": "scorecard_grid_001",
+    "widgetName": "ScorecardGrid"
+  }
+}
+

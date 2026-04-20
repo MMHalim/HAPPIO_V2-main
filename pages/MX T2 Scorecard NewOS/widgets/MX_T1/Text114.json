@@ -1,0 +1,64 @@
+{
+  "animateLoading": true,
+  "backgroundColor": "transparent",
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "borderWidth": "5",
+  "bottomRow": 86,
+  "displayName": "Text",
+  "dynamicBindingPathList": [
+    {
+      "key": "truncateButtonColor"
+    },
+    {
+      "key": "fontFamily"
+    },
+    {
+      "key": "borderRadius"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicTriggerPathList": [],
+  "fontFamily": "{{appsmith.theme.fontFamily.appFont}}",
+  "fontSize": "1rem",
+  "fontStyle": "BOLD,ITALIC",
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a47d6d5dbbb718c4dc4b2eb4f218c1b7.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "hz1pr8io0t",
+  "leftColumn": 0,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 11,
+  "mobileLeftColumn": 1,
+  "mobileRightColumn": 17,
+  "mobileTopRow": 7,
+  "overflow": "SCROLL",
+  "parentColumnSpace": 7.80078125,
+  "parentId": "ow4eh0wieh",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 63,
+  "searchTags": [
+    "typography",
+    "paragraph",
+    "label"
+  ],
+  "shouldTruncate": false,
+  "tags": [
+    "Suggested",
+    "Content"
+  ],
+  "text": "Introduction:\n\nProfessional company representation:\n\n1. Readiness to receive the interaction.\n\n2. Clarity and energetic tone.\n\n3. Matching the situation: \n\n(First interaction - Follow up).\n\n4. Branding, make sure that the brand name is clear. \n\n5. Following the correct introduction process for outboud calls. \n\nClosure:\n\n1. Ask if further clarification/assistance is required.\n\n2. Provide a summary of the actions/next steps.\n\n3. Clear and energetic tone. (Adding the default signature in Emails)\n\n4. Branding, make sure that the brand name is clear.\n\n5. Correctly address in the email if we are waiting for the customer's response.\n\nHold:\n\n4. Provide the customer with the reason to hold, duration, and get their agreement.\n",
+  "textAlign": "CENTER",
+  "textColor": "#231F20",
+  "topRow": 16,
+  "truncateButtonColor": "{{appsmith.theme.colors.primaryColor}}",
+  "type": "TEXT_WIDGET",
+  "version": 1,
+  "widgetId": "dm4vl9foe6",
+  "widgetName": "Text114"
+}

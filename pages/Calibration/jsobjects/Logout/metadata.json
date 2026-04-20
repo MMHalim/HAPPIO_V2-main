@@ -1,0 +1,11 @@
+{
+  "gitSyncId": "659f60f052fbee42141b9cfe_552bc760-fccc-4967-a525-11f87f6b00f8",
+  "id": "Calibration_Logout",
+  "unpublishedCollection": {
+    "name": "Logout",
+    "pageId": "Calibration",
+    "pluginId": "js-plugin",
+    "pluginType": "JS",
+    "variables": []
+  }
+}

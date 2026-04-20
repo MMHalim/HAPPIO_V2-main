@@ -1,0 +1,70 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "bottomRow": 210,
+  "boxShadow": "none",
+  "defaultOptionValue": "",
+  "displayName": "Radio Group",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "onSelectionChange"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onSelectionChange"
+    }
+  ],
+  "hideCard": false,
+  "iconSVG": "/static/media/icon.ba2b2ee006e51a5c681d7964d7777481.svg",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isInline": true,
+  "isLoading": false,
+  "isRequired": true,
+  "isVisible": true,
+  "key": "4h5pg3m6ae",
+  "label": "Closure",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "ITALIC,BOLD",
+  "labelTextColor": "#18181b",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 0,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "mobileWidthInPercentage": 0.277294921875,
+  "onSelectionChange": "{{Channel.pass_fail()}}",
+  "options": [
+    {
+      "label": "Yes",
+      "value": "Yes"
+    },
+    {
+      "label": "No",
+      "value": "No"
+    }
+  ],
+  "originalBottomRow": 210,
+  "originalTopRow": 203,
+  "parentColumnSpace": 12.44580078125,
+  "parentId": "ow4eh0wieh",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "rightColumn": 27,
+  "searchTags": [
+    "choice"
+  ],
+  "topRow": 203,
+  "type": "RADIO_GROUP_WIDGET",
+  "version": 1,
+  "widgetId": "84n48vxc0e",
+  "widgetName": "RadioGroup3"
+}

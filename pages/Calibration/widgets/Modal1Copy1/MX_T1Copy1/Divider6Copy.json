@@ -1,0 +1,41 @@
+{
+  "animateLoading": true,
+  "bottomRow": 165,
+  "capSide": 0,
+  "capType": "nc",
+  "displayName": "Divider",
+  "dividerColor": "#858282",
+  "dynamicBindingPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.3b7d47d7bd70da418a827287042cbb7f.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "yy1864twvs",
+  "leftColumn": 0,
+  "minWidth": 450,
+  "mobileBottomRow": 160,
+  "mobileLeftColumn": 0,
+  "mobileRightColumn": 16,
+  "mobileTopRow": 156,
+  "orientation": "horizontal",
+  "parentColumnSpace": 8.3759765625,
+  "parentId": "uhmec4kn1m",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 64,
+  "searchTags": [
+    "line"
+  ],
+  "strokeStyle": "solid",
+  "tags": [
+    "Layout"
+  ],
+  "thickness": 2,
+  "topRow": 161,
+  "type": "DIVIDER_WIDGET",
+  "version": 1,
+  "widgetId": "9yipybpf94",
+  "widgetName": "Divider6Copy"
+}

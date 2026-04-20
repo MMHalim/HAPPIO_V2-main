@@ -1,0 +1,16 @@
+{
+    "avatar": {
+        "url": "https://web.freshchat.com/img/johndoe.png"
+    },
+    "email": "milton.doe@mail.com",
+    "first_name": "Milton",
+    "last_name": "Doe",
+    "phone": "235689714",
+    "properties": [
+        {
+            "name": "orderId",
+            "value": "#1242"
+        }
+    ],
+    "reference_id": "milton@doe"
+}

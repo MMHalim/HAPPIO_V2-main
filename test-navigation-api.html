@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #dc3545;
+            color: white;
+        }
+        .success {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Navigation API</h1>
+    
+    <div class="test-section">
+        <h2>Test Supabase API Connection</h2>
+        <button onclick="testAPI()">Test API Connection</button>
+        <button onclick="testTableAccess()">Test Table Access</button>
+        <button onclick="testWithAuth()">Test with Auth Token</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://kupaxfvjfobfdgtbfnnt.supabase.co';
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw';
+
+        function log(message, isError = false) {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            result.innerHTML += `[${timestamp}] ${message}\n`;
+            result.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        async function testAPI() {
+            log('Testing basic API connection...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                    headers: {
+                        'apikey': ANON_KEY
+                    }
+                });
+                log(`API Response: ${response.status} ${response.statusText}`);
+                if (response.ok) {
+                    log('✅ API connection successful!');
+                } else {
+                    log('❌ API connection failed!', true);
+                }
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, true);
+            }
+        }
+
+        async function testTableAccess() {
+            log('Testing navigation_items table access...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/navigation_items`, {
+                    headers: {
+                        'apikey': ANON_KEY
+                    }
+                });
+                log(`Table Response: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Table access successful! Found ${data.length} items:`);
+                    data.forEach((item, index) => {
+                        log(`  ${index + 1}. ${item.title} -> ${item.route}`);
+                    });
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Table access failed: ${errorText}`, true);
+                }
+            } catch (error) {
+                log(`❌ Table Error: ${error.message}`, true);
+            }
+        }
+
+        async function testWithAuth() {
+            log('Testing with authentication token...');
+            const token = localStorage.getItem('login_token');
+            if (!token) {
+                log('❌ No authentication token found in localStorage', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/navigation_items?is_active=eq.true&order=order_index.asc`, {
+                    headers: {
+                        'apikey': ANON_KEY,
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                log(`Auth Response: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Authenticated access successful! Found ${data.length} items:`);
+                    data.forEach((item, index) => {
+                        log(`  ${index + 1}. ${item.title} -> ${item.route}`);
+                    });
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Authenticated access failed: ${errorText}`, true);
+                }
+            } catch (error) {
+                log(`❌ Auth Error: ${error.message}`, true);
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            log('Page loaded. Click buttons to test API connections.');
+        });
+    </script>
+</body>
+</html>

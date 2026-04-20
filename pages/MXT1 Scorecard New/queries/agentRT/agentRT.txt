@@ -1,0 +1,10 @@
+SELECT DISTINCT first_responded_by
+FROM "Freshworks" 
+WHERE request_type = '{{rt_data.selectedOptionValue}}'
+	AND "Channel" = '{{Select2.selectedOptionLabel}}'
+	AND ("assigned_qa" = '' OR "assigned_qa" IS NULL) 
+  AND ("HAPPIO_Status" = '' OR "HAPPIO_Status" IS NULL)
+	AND "Year" >= '{{txtyyyy.text}}' AND "Year" <='{{txtyyyyTo.text}}'
+	AND "Month" >= '{{txtmm.text}}' AND "Month" <='{{txtmmTo.text}}'
+	AND "Day" >= '{{txtdd.text}}' AND "Day"<= '{{txtddTo.text}}'
+ 

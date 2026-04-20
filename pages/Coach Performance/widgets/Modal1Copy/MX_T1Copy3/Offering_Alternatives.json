@@ -1,0 +1,76 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "bottomRow": 296,
+  "boxShadow": "none",
+  "defaultOptionValue": "{{Table8.selectedRow.offering_Alternatives}}",
+  "displayName": "Radio Group",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    },
+    {
+      "key": "label"
+    },
+    {
+      "key": "defaultOptionValue"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "onSelectionChange"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onSelectionChange"
+    }
+  ],
+  "hideCard": false,
+  "iconSVG": "/static/media/icon.ba2b2ee006e51a5c681d7964d7777481.svg",
+  "isDeprecated": false,
+  "isDisabled": true,
+  "isInline": true,
+  "isLoading": false,
+  "isRequired": true,
+  "isVisible": true,
+  "key": "4h5pg3m6ae",
+  "label": "{{ OS_SC_Attributes.data.find(row => row.ID === 6)?.Subcategory || \"N/A\" }}\n\n",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "ITALIC,BOLD",
+  "labelTextColor": "#18181b",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 0,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "mobileWidthInPercentage": 0.277294921875,
+  "onSelectionChange": "{{Channel.pass_fail()}}",
+  "options": [
+    {
+      "label": "Yes",
+      "value": "Yes"
+    },
+    {
+      "label": "No",
+      "value": "No"
+    }
+  ],
+  "originalBottomRow": 296,
+  "originalTopRow": 289,
+  "parentColumnSpace": 12.44580078125,
+  "parentId": "8cpmqi1cr7",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "rightColumn": 27,
+  "searchTags": [
+    "choice"
+  ],
+  "topRow": 289,
+  "type": "RADIO_GROUP_WIDGET",
+  "version": 1,
+  "widgetId": "fas2wuakjm",
+  "widgetName": "Offering_Alternatives"
+}

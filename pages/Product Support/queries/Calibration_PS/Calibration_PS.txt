@@ -1,0 +1,11 @@
+{ 
+	"Conversation_ID":"{{Con_ID.text}}",
+	"Agent_Name":"{{Input2.selectedOptionValue}}",
+	"Taker_Name":"{{Input3.text}}",
+	"URL":"{{Input4.text}}",
+	"Monitoring_Type":"{{MultiSelect4.selectedOptionValue}}",
+	"Interaction_Related_To":"{{MultiSelect5.selectedOptionValue}}",
+	"Final_Score":"{{Text4.text}}",
+	"agent_email":"{{agent_email.text}}",
+	"Certification":"{{RadioGroup15.selectedOptionValue}}"
+}

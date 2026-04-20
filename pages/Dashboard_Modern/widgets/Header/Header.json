@@ -1,0 +1,38 @@
+{
+  "gitSyncId": "modern_dashboard_header_001",
+  "unpublishedWidget": {
+    "backgroundColor": "#FFFFFF",
+    "borderColor": "#E2E8F0",
+    "borderRadius": "0px",
+    "borderWidth": "0px 0px 1px 0px",
+    "bottomRow": 80,
+    "canExtend": true,
+    "containerStyle": "card",
+    "detachFromLayout": false,
+    "dynamicBindingPathList": [],
+    "dynamicHeight": "FIXED",
+    "dynamicTriggers": [],
+    "flexLayers": [],
+    "isCanvas": true,
+    "leftColumn": 0,
+    "minHeight": 80,
+    "mobileBottomRow": 80,
+    "mobileLeftColumn": 0,
+    "mobileRightColumn": 64,
+    "mobileTopRow": 0,
+    "mobileWidthInPercentage": 100,
+    "parentColumnSpace": 1,
+    "parentRowSpace": 1,
+    "responsiveBehavior": "fill",
+    "rightColumn": 64,
+    "snapColumns": 64,
+    "snapRows": 5,
+    "topRow": 0,
+    "type": "CONTAINER_WIDGET",
+    "useAutoLayout": false,
+    "version": 1,
+    "widgetId": "header_001",
+    "widgetName": "Header"
+  }
+}
+

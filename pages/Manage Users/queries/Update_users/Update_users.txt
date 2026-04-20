@@ -1,0 +1,6 @@
+{
+	"Name": "{{Table1.selectedRow.Name}}",
+	"user_role": "{{Table1.selectedRow.user_role}}",
+	"qa_coach": "{{Table1.selectedRow.qa_coach}}",
+	"team_leader": "{{Table1.selectedRow.team_leader}}",
+}

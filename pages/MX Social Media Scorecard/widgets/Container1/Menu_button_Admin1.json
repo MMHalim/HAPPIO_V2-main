@@ -1,0 +1,369 @@
+{
+  "animateLoading": true,
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "bottomRow": 14,
+  "boxShadow": "none",
+  "configureMenuItems": {
+    "config": {
+      "id": "config",
+      "isDisabled": false,
+      "isVisible": true,
+      "label": "Menu Item"
+    },
+    "id": "config",
+    "label": "Configure menu items"
+  },
+  "displayName": "Menu Button",
+  "dynamicBindingPathList": [
+    {
+      "key": "borderRadius"
+    },
+    {
+      "key": "menuItems.menuItemcb3gmlt44o.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem24vrz2vci9.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemzetbfx7keg.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemf7fkt63qzj.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemkhtxnethe8.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemfnr0aar461.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemadm27cjdkh.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemnu2wejq0q7.isVisible"
+    },
+    {
+      "key": "menuItems.menuItems4un03nz3d.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemu9l50ez28d.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemh0dezytlvs.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem1kvoggpfju.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem0ch4k86bzk.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem9snori2hrn.isVisible"
+    }
+  ],
+  "dynamicPropertyPathList": [
+    {
+      "key": "menuItems.menuItemcb3gmlt44o.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemadm27cjdkh.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem2.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemo7cueh9h1f.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem24vrz2vci9.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemzetbfx7keg.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemf7fkt63qzj.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemkhtxnethe8.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemfnr0aar461.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemnu2wejq0q7.isVisible"
+    },
+    {
+      "key": "menuItems.menuItems4un03nz3d.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemu9l50ez28d.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemh0dezytlvs.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem1kvoggpfju.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem0ch4k86bzk.isVisible"
+    },
+    {
+      "key": "menuItems.menuItemrvj1lryekw.isVisible"
+    },
+    {
+      "key": "menuItems.menuItem9snori2hrn.isVisible"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "menuItems.menuItem1.onClick"
+    },
+    {
+      "key": "menuItems.menuItemho7ui3vpff.onClick"
+    },
+    {
+      "key": "menuItems.menuItemyxq71z8u1o.onClick"
+    },
+    {
+      "key": "menuItems.menuItemcb3gmlt44o.onClick"
+    },
+    {
+      "key": "menuItems.menuItem24vrz2vci9.onClick"
+    },
+    {
+      "key": "menuItems.menuItemadm27cjdkh.onClick"
+    },
+    {
+      "key": "menuItems.menuItemzetbfx7keg.onClick"
+    },
+    {
+      "key": "menuItems.menuItemkhtxnethe8.onClick"
+    },
+    {
+      "key": "menuItems.menuItemfnr0aar461.onClick"
+    },
+    {
+      "key": "menuItems.menuItemf7fkt63qzj.onClick"
+    },
+    {
+      "key": "menuItems.menuItemnu2wejq0q7.onClick"
+    },
+    {
+      "key": "menuItems.menuItems4un03nz3d.onClick"
+    },
+    {
+      "key": "menuItems.menuItemu9l50ez28d.onClick"
+    },
+    {
+      "key": "menuItems.menuItemh0dezytlvs.onClick"
+    },
+    {
+      "key": "menuItems.menuItem1kvoggpfju.onClick"
+    },
+    {
+      "key": "menuItems.menuItem0ch4k86bzk.onClick"
+    },
+    {
+      "key": "menuItems.menuItem9snori2hrn.onClick"
+    }
+  ],
+  "hideCard": false,
+  "iconAlign": "left",
+  "iconName": "menu",
+  "iconSVG": "/static/media/icon.0341d17d67020c8bfc560cc5928af2a7.svg",
+  "isCompact": true,
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "8de2s6u1o4",
+  "label": "",
+  "leftColumn": 59,
+  "menuColor": "#000D3D",
+  "menuItems": {
+    "menuItem0ch4k86bzk": {
+      "iconName": "doughnut-chart",
+      "id": "menuItem0ch4k86bzk",
+      "index": 4,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"MX-SM User\"|| appsmith.store.role[0]?.user_role === \"Administrator\"}}",
+      "label": "My Performance [SM]",
+      "onClick": "{{navigateTo('My Performance T1 Copy', {}, 'SAME_WINDOW');}}",
+      "widgetId": "sec1rove7k"
+    },
+    "menuItem1": {
+      "iconName": "dashboard",
+      "id": "menuItem1",
+      "index": 0,
+      "isDisabled": false,
+      "isVisible": true,
+      "label": "Dashboard",
+      "onClick": "{{navigateTo('Dashboard', {})}}",
+      "widgetId": ""
+    },
+    "menuItem1kvoggpfju": {
+      "iconName": "th-disconnect",
+      "id": "menuItem1kvoggpfju",
+      "index": 8,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role !== \"MX-T1 User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 OS User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 PS User\" &&\nappsmith.store.role[0].user_role !== \"\"}}",
+      "label": "MX- [SM] Scorecard",
+      "onClick": "{{navigateTo('MX Social Media Scorecard', {}, 'SAME_WINDOW');}}",
+      "widgetId": "bdfzov0zw5"
+    },
+    "menuItem24vrz2vci9": {
+      "iconName": "th-disconnect",
+      "id": "menuItem24vrz2vci9",
+      "index": 7,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role !== \"MX-T1 User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 OS User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 PS User\" &&\nappsmith.store.role[0].user_role !== \"\"}}",
+      "label": "MX-T2 [PS] Scorecard",
+      "onClick": "{{navigateTo('Product Support', {}, 'SAME_WINDOW');}}",
+      "widgetId": "vj588ayce0"
+    },
+    "menuItem9snori2hrn": {
+      "iconName": "edit",
+      "id": "menuItem9snori2hrn",
+      "index": 12,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"Administrator\"}}",
+      "label": "Edit Scorecard",
+      "onClick": "{{navigateTo('Page1', {}, 'SAME_WINDOW');}}",
+      "widgetId": "qh3d2m31vo"
+    },
+    "menuItemadm27cjdkh": {
+      "iconName": "doughnut-chart",
+      "id": "menuItemadm27cjdkh",
+      "index": 1,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"MX-T1 User\"|| appsmith.store.role[0]?.user_role === \"Administrator\"}}",
+      "label": "My Performance [T1]",
+      "onClick": "{{navigateTo('My Performance T1', {}, 'SAME_WINDOW');}}",
+      "widgetId": "qjouii2udm"
+    },
+    "menuItemcb3gmlt44o": {
+      "iconName": "user",
+      "id": "menuItemcb3gmlt44o",
+      "index": 13,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"Administrator\"}}",
+      "label": "Manage Users",
+      "onClick": "{{navigateTo('Manage Users', {}, 'SAME_WINDOW');}}",
+      "widgetId": "fkkemxvj9k"
+    },
+    "menuItemf7fkt63qzj": {
+      "iconName": "doughnut-chart",
+      "id": "menuItemf7fkt63qzj",
+      "index": 3,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"MX-T2 PS User\"|| appsmith.store.role[0].user_role === \"Administrator\"}}",
+      "label": "My Performance [PS]",
+      "onClick": "{{navigateTo('My Performance T2 PS', {}, 'SAME_WINDOW');}}",
+      "widgetId": "sm847esh0s"
+    },
+    "menuItemfnr0aar461": {
+      "iconName": "doughnut-chart",
+      "id": "menuItemfnr0aar461",
+      "index": 10,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role !== \"MX-T1 User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 OS User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 PS User\" &&\nappsmith.store.role[0].user_role !== \"\"}}",
+      "label": "My Performance",
+      "onClick": "{{navigateTo('Coach Performance', {}, 'SAME_WINDOW');}}",
+      "widgetId": "rjeexypvdh"
+    },
+    "menuItemh0dezytlvs": {
+      "iconName": "manual",
+      "id": "menuItemh0dezytlvs",
+      "index": 11,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"Administrator\"}}",
+      "label": "Calibration",
+      "onClick": "{{navigateTo('Calibration', {}, 'SAME_WINDOW');}}",
+      "widgetId": "zwes86ccd4"
+    },
+    "menuItemho7ui3vpff": {
+      "iconName": "log-out",
+      "id": "menuItemho7ui3vpff",
+      "index": 16,
+      "isDisabled": false,
+      "isVisible": true,
+      "label": "Logout",
+      "onClick": "{{Logout.logOut();}}",
+      "widgetId": "1pi79caphv"
+    },
+    "menuItemkhtxnethe8": {
+      "iconName": "alignment-bottom",
+      "id": "menuItemkhtxnethe8",
+      "index": 9,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role !== \"MX-T1 User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 OS User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 PS User\" &&\nappsmith.store.role[0].user_role !== \"\"}}",
+      "label": "Reporting & Analytics",
+      "onClick": "{{navigateTo('Reporting', {}, 'SAME_WINDOW');}}",
+      "widgetId": "dafazkzjhe"
+    },
+    "menuItemnu2wejq0q7": {
+      "iconName": "stopwatch",
+      "id": "menuItemnu2wejq0q7",
+      "index": 14,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"Administrator\"}}",
+      "label": "Auditors Target",
+      "onClick": "{{navigateTo('Managing Auditors', {}, 'SAME_WINDOW');}}",
+      "widgetId": "ina790vjqv"
+    },
+    "menuItems4un03nz3d": {
+      "iconName": "th-disconnect",
+      "id": "menuItems4un03nz3d",
+      "index": 5,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role !== \"MX-T1 User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 OS User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 PS User\" &&\nappsmith.store.role[0].user_role !== \"\"}}",
+      "label": "MX [T1] Scorecard",
+      "onClick": "{{navigateTo('MXT1 Scorecard New', {}, 'SAME_WINDOW');}}",
+      "widgetId": "uj1xhvlx6c"
+    },
+    "menuItemu9l50ez28d": {
+      "iconName": "th-disconnect",
+      "id": "menuItemu9l50ez28d",
+      "index": 6,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role !== \"MX-T1 User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 OS User\" &&\nappsmith.store.role[0].user_role !== \"MX-T2 PS User\" &&\nappsmith.store.role[0].user_role !== \"\"}}",
+      "label": "MX T2 [OS] Scorecard",
+      "onClick": "{{navigateTo('MX T2 Scorecard NewOS 2025', {}, 'SAME_WINDOW');}}",
+      "widgetId": "m6gtktlsaq"
+    },
+    "menuItemyxq71z8u1o": {
+      "iconName": "info-sign",
+      "id": "menuItemyxq71z8u1o",
+      "index": 15,
+      "isDisabled": false,
+      "isVisible": true,
+      "label": "Account Info",
+      "onClick": "{{showModal('Modal1');}}",
+      "widgetId": "wdzcat4v6f"
+    },
+    "menuItemzetbfx7keg": {
+      "iconName": "doughnut-chart",
+      "id": "menuItemzetbfx7keg",
+      "index": 2,
+      "isDisabled": false,
+      "isVisible": "{{appsmith.store.role[0].user_role === \"MX-T2 OS User\"|| appsmith.store.role[0].user_role === \"Administrator\"}}",
+      "label": "My Performance [OS]",
+      "onClick": "{{navigateTo('My Performance T2 OS', {}, 'SAME_WINDOW');}}",
+      "widgetId": "i9xmffjk3q"
+    }
+  },
+  "menuItemsSource": "STATIC",
+  "menuVariant": "PRIMARY",
+  "parentColumnSpace": 13.9814453125,
+  "parentId": "gr94nxvy54",
+  "parentRowSpace": 10,
+  "placement": "CENTER",
+  "renderMode": "CANVAS",
+  "rightColumn": 62,
+  "sourceData": [],
+  "topRow": 9,
+  "type": "MENU_BUTTON_WIDGET",
+  "version": 1,
+  "widgetId": "1k8ce21e90",
+  "widgetName": "Menu_button_Admin1"
+}

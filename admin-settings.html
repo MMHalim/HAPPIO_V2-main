@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Settings</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
+  <link rel="stylesheet" href="global-theme.css" />
+  <script src="global-navigation.js?v=2" defer></script>
+  <script src="admin-settings-v2.js?v=20260309-04" defer></script>
+  <style>
+    .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .page-header { 
+      font-size: 28px; 
+      font-weight: 800; 
+      margin-bottom: 8px; 
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      background-clip: text; 
+      color: transparent; 
+    }
+    .page-subtitle { color: var(--text-secondary); margin-bottom: 24px; }
+
+    /* Admin Layout */
+    .admin-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .admin-content-area {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Tabs (Vertical Sidebar) */
+    .tabs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 240px;
+      flex-shrink: 0;
+      padding-right: 12px;
+      border-right: 1px solid var(--border-color);
+      border-bottom: none;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.2s;
+      text-align: left;
+      width: 100%;
+    }
+    .tab-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .tab-btn.active {
+      background: var(--bg-nav-item-active);
+      color: var(--primary-color);
+      box-shadow: inset 3px 0 0 var(--primary-color); /* Left indicator */
+    }
+
+    /* Tab Content */
+    .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Editor Container */
+    .editor-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .editor-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Table Styles */
+    .settings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .settings-table th {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .settings-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+    .settings-table textarea {
+      vertical-align: top;
+      resize: vertical;
+      transition: min-height 0.3s ease, box-shadow 0.3s ease;
+      min-height: 60px;
+    }
+    .settings-table textarea:focus {
+      min-height: 200px;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .settings-table input, .settings-table textarea {
+      /* width: 100%; removed to allow auto-sizing */
+      max-width: 100%;
+      background: var(--bg-nav-item);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px;
+      border-radius: 6px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .settings-table input:focus, .settings-table textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .global-btn[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .global-btn[disabled]:hover {
+      transform: none;
+    }
+
+    .etl-logs-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .etl-logs-left, .etl-logs-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .etl-logs-meta {
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .etl-logs-page-size {
+      background: var(--bg-nav-item);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .etl-logs-table-wrap {
+      max-height: 65vh;
+      overflow: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-card);
+    }
+    .etl-logs-table-wrap .settings-table {
+      margin-bottom: 0;
+    }
+    .etl-logs-table-wrap .settings-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--bg-card);
+    }
+
+    /* Toggles */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-nav-item);
+      transition: .4s;
+      border-radius: 34px;
+      border: 1px solid var(--border-color);
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 3px;
+      background-color: var(--text-secondary);
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary-color); }
+    input:checked + .slider:before { transform: translateX(26px); background-color: white; }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 10005;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-left: 4px solid var(--primary-color);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      color: #f3f4f6;
+      min-width: 300px;
+      max-width: 400px;
+      pointer-events: auto;
+      animation: slideIn 0.3s ease-out forwards;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .toast-icon { font-size: 20px; }
+    .toast-content { flex: 1; }
+    .toast-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #fff; }
+    .toast-message { font-size: 14px; color: #d1d5db; line-height: 1.4; }
+    .toast-close { cursor: pointer; color: #9ca3af; padding: 2px; }
+    .toast-close:hover { color: #fff; }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10010;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
+    .modal-content {
+      background: var(--bg-card);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 { margin-top: 0; color: var(--text-primary); margin-bottom: 12px; }
+    .modal-content p { color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; margin-top: 0; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+
+    .etl-run-modal-content {
+      width: min(980px, 92vw);
+      max-width: 92vw;
+      max-height: 84vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .etl-run-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .etl-run-modal-subtitle {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin: 0;
+    }
+    .etl-run-console {
+      background: #0b1220;
+      border: 1px solid #22314a;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: #dbeafe;
+      height: 56vh;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Navigation injec<>zxzxz?ted by global-navigation.js -->
+  <!-- Navigation injec<>zxzxz?ted by global-navigation.js -->
+  <!-- Navigation injec<>zxzxz?ted by global-navigation.js -->
+
+  <div class="page-content">
+    <div class="page-header">Admin Settings</div>
+    <div class="page-subtitle">Manage scorecard attributes and system configurations</div>
+
+    <div class="admin-layout">
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="t1">T1 Attributes</button>
+        <button class="tab-btn" data-tab="t2os">T2 OS Attributes</button>
+        <button class="tab-btn" data-tab="t2ps">T2 PS Attributes</button>
+        <button class="tab-btn" data-tab="sms">SMS Attributes</button>
+        <button class="tab-btn" data-tab="social">Social Attributes</button>
+        <button class="tab-btn" data-tab="intRel">Interaction Related To</button>
+        <button class="tab-btn" data-tab="calibration">Calibration</button>
+        <button class="tab-btn" data-tab="etlLogs">Data Sync Logs</button>
+      </div>
+  <!-- Navigation injec<>zxzxz?ted by global-navigation.js -->
+
+      <div class="admin-content-area">
+        <!-- T1 Attributes -->
+        <div id="t1" class="tab-content active">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>T1 Scorecard Attributes</h3>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardChanges('t1')">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveChanges('t1')">Save Changes</button>
+          </div>
+        </div>
+        <div id="t1TableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- T2 OS Attributes -->
+    <div id="t2os" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>T2 OS Scorecard Attributes</h3>
+          <div class="editor-actions">  <!-- Navigation injec<>zxzxz?ted by global-navigation.js -->
+
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardChanges('t2os')">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveChanges('t2os')">Save Changes</button>
+          </div>
+        </div>
+        <div id="t2osTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- T2 PS Attributes -->
+    <div id="t2ps" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>T2 PS Scorecard Attributes</h3>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardChanges('t2ps')">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveChanges('t2ps')">Save Changes</button>
+          </div>
+        </div>
+        <div id="t2psTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- SMS Attributes -->
+    <div id="sms" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>SMS Scorecard Attributes</h3>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardChanges('sms')">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveChanges('sms')">Save Changes</button>
+          </div>
+        </div>
+        <div id="smsTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Social Attributes -->
+    <div id="social" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>Social Attributes</h3>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardChanges('social')">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveChanges('social')">Save Changes</button>
+          </div>
+        </div>
+        <div id="socialTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Interaction Related To -->
+    <div id="intRel" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>Interaction Related To</h3>
+          <div class="editor-actions">
+            <input type="file" id="csvUpload" accept=".csv" style="display:none" onchange="AdminSettings.handleCsvUpload(this)">
+            <button class="global-btn btn-secondary" onclick="document.getElementById('csvUpload').click()">Import CSV</button>
+            <button class="global-btn btn-secondary" onclick="AdminSettings.exportCsv('intRel')">Export CSV</button>
+            <button class="global-btn" onclick="AdminSettings.toggleNewIntRelForm()">+ Add New</button>
+          </div>
+        </div>
+
+        <!-- Add New Item Form (Hidden by default) -->
+        <div id="newIntRelForm" style="display: none; background: var(--bg-nav-item); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+          <h4 style="margin-top: 0; margin-bottom: 12px; color: var(--text-primary);">Add New Item</h4>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <input type="text" id="newIntRelInput" placeholder="Enter description..." style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardNewIntRel()">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveNewIntRel()">Save</button>
+          </div>
+        </div>
+
+        <div id="intRelTableContainer">Loading...</div>
+      </div>
+    </div>
+
+
+
+    <!-- Calibration -->
+    <div id="calibration" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>Calibration Assignments</h3>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:16px;">
+          <div style="display:flex; flex-wrap:wrap; gap:12px;">
+            <div style="flex:1; min-width:220px;">
+              <label for="calibrationConversationId" style="display:block; margin-bottom:4px;">Conversation ID</label>
+              <input id="calibrationConversationId" type="text" placeholder="e.g. 1002127180533023" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color);" />
+            </div>
+            <div style="flex:1; min-width:180px;">
+              <label for="calibrationDay" style="display:block; margin-bottom:4px;">Day</label>
+              <input id="calibrationDay" type="date" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color);" />
+            </div>
+            <div style="flex:1; min-width:220px;">
+              <label for="calibrationScorecard" style="display:block; margin-bottom:4px;">Scorecard</label>
+              <select id="calibrationScorecard" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color);">
+                <option value="">Select scorecard</option>
+                <option value="MX-T1_Scorecard">MX-T1_Scorecard</option>
+                <option value="MX-T2_OS Scorecard">MX-T2_OS Scorecard</option>
+                <option value="SMS_Scorecard">SMS_Scorecard</option>
+              </select>
+            </div>
+            <div id="calibrationTypeContainer" style="flex:1; min-width:220px; display:none;">
+              <label for="calibrationType" style="display:block; margin-bottom:4px;">Type</label>
+              <select id="calibrationType" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color);">
+                <option value="">Select type</option>
+                <option value="Order Support">Order Support</option>
+                <option value="Sales">Sales</option>
+              </select>
+            </div>
+            <div style="align-self:flex-end;">
+              <button id="calibrationSubmitBtn" class="global-btn">Assign Calibration</button>
+            </div>
+          </div>
+        </div>
+        <div id="calibrationTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ETL Logs -->
+    <div id="etlLogs" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <h3>ETL Execution Logs</h3>
+            <div id="etlSyncAlert" style="display: none; padding: 4px 12px; background-color: #e0f2fe; color: #0369a1; border-radius: 4px; font-size: 13px; font-weight: 500; border: 1px solid #bae6fd;">
+              <!-- Sync time will be injected here -->
+            </div>
+          </div>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.runEtlNow()">Run Now</button>
+            <button class="global-btn" onclick="AdminSettings.refreshEtlLogs()">Refresh</button>
+          </div>
+        </div>
+        <div id="etlLogsTableContainer">Loading...</div>
+      </div>
+    </div>
+
+      </div> <!-- End of admin-content-area -->
+    </div> <!-- End of admin-layout -->
+
+  </div>
+  
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmation-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Confirm Deletion</h3>
+      <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="global-btn btn-secondary" onclick="closeConfirmationModal()">Cancel</button>
+        <button class="global-btn btn-danger" onclick="confirmDeleteIntRel()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calibration Confirmation Modal -->
+  <div id="calibration-confirmation-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Confirm Deletion</h3>
+      <p>Are you sure you want to delete this record?</p>
+      <div class="modal-actions">
+        <button class="global-btn btn-secondary" onclick="closeCalibrationConfirmationModal()">Cancel</button>
+        <button class="global-btn btn-danger" onclick="confirmDeleteCalibration()">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="etl-run-modal" class="modal-overlay">
+    <div class="modal-content etl-run-modal-content">
+      <div class="etl-run-modal-header">
+        <div>
+          <h3 style="margin-bottom: 6px;">ETL Run Console</h3>
+          <p id="etl-run-subtitle" class="etl-run-modal-subtitle">Configure & Run</p>
+        </div>
+        <div class="editor-actions">
+          <button class="global-btn btn-secondary" onclick="AdminSettings.stopEtlLiveLogs()">Stop Polling</button>
+          <button class="global-btn" onclick="AdminSettings.closeEtlRunModal()">Close</button>
+        </div>
+      </div>
+      
+      <div id="etl-config-form" style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 6px; border: 1px solid var(--border-color);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">GitHub Repo (Owner/Repo)</label>
+            <input type="text" id="gh-repo" value="MMHalim/HAPPIO_V2" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">Branch</label>
+            <input type="text" id="gh-branch" value="main" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">From (Egypt/Cairo)</label>
+            <input type="datetime-local" id="gh-from-cairo" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">To (Egypt/Cairo)</label>
+            <input type="datetime-local" id="gh-to-cairo" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">
+            GitHub Personal Access Token (PAT) 
+            <a href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=HAPPIO%20ETL%20Run%20Token" target="_blank" style="float: right; color: #3b82f6; text-decoration: none;">Generate New Token &nearr;</a>
+          </label>
+          <input type="password" id="gh-token" placeholder="ghp_..." style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Token must have 'repo' and 'workflow' scopes. Saved locally.</p>
+        </div>
+        <button class="global-btn" onclick="AdminSettings.triggerEtlAction()" style="width: 100%;">Start ETL Workflow</button>
+      </div>
+
+      <div id="etl-run-console" class="etl-run-console"></div>
+    </div>
+  </div>
+</body>
+</html>

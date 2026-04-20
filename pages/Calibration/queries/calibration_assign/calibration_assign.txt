@@ -1,0 +1,1 @@
+{ "Conversation_Id": "{{Input19.text}}", "Score_card": "{{scorecard.selectedOptionValue}}","day": "{{day_of_week.formattedDate}}"  }

@@ -1,0 +1,9 @@
+SELECT
+  LEFT(interaction_id, POSITION('-' IN interaction_id) - 1) as Conversation_ID,
+  id
+FROM
+  "Freshworks"
+WHERE
+  "Channel" = 'Sayed'
+ 
+	

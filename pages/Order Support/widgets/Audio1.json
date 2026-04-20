@@ -1,0 +1,47 @@
+{
+  "animateLoading": true,
+  "autoPlay": false,
+  "bottomRow": 76.00000000000871,
+  "displayName": "Audio",
+  "dynamicBindingPathList": [
+    {
+      "key": "url"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.90965be2578a5c1c8e2996b65e5b6988.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "8kf0qbk6hq",
+  "leftColumn": 0,
+  "minWidth": 450,
+  "mobileBottomRow": 162,
+  "mobileLeftColumn": 0,
+  "mobileRightColumn": 25,
+  "mobileTopRow": 158,
+  "originalBottomRow": 74,
+  "originalTopRow": 67.99999999999348,
+  "parentColumnSpace": 20.078125,
+  "parentId": "0",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 21,
+  "searchTags": [
+    "mp3",
+    "sound",
+    "wave",
+    "player"
+  ],
+  "tags": [
+    "Media"
+  ],
+  "topRow": 70.00000000000219,
+  "type": "AUDIO_WIDGET",
+  "url": "{{UJET.data.data[Select1.selectedOptionLabel].links.related}}",
+  "version": 1,
+  "widgetId": "0o3jzlc7cp",
+  "widgetName": "Audio1"
+}

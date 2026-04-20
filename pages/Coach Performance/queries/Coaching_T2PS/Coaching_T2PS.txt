@@ -1,0 +1,4 @@
+{ 
+	"id":"{{Table1Copy1.selectedRow.id}}",
+	"coaching_delivered":"{{Text1111CopyCopy.text}}"
+}

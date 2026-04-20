@@ -1,0 +1,67 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "borderRadius": "0.375rem",
+  "bottomRow": 7,
+  "boxShadow": "none",
+  "defaultOptionValue": "",
+  "displayName": "Select",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "sourceData"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a7b19dc8b31d68fcff57f1d2c0084a18.svg",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isFilterable": true,
+  "isLoading": false,
+  "isRequired": false,
+  "isVisible": true,
+  "key": "xthnaezs91",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "BOLD,ITALIC",
+  "labelText": "Agent Name",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 30,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 6,
+  "mobileLeftColumn": 30,
+  "mobileRightColumn": 50,
+  "mobileTopRow": 0,
+  "optionLabel": "name",
+  "optionValue": "code",
+  "parentColumnSpace": 9.412841796875,
+  "parentId": "6ai9l3xpyw",
+  "parentRowSpace": 10,
+  "placeholderText": "Select option",
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 61,
+  "searchTags": [
+    "dropdown"
+  ],
+  "serverSideFiltering": false,
+  "sourceData": "[\n    {\n        \"name\": \"Youkabed Farid\",\n        \"code\": \"youkabed.farid@tempo.fit\"\n    },\n    {\n        \"name\": \"Emad Mohamed\",\n        \"code\": \"emad.mohamed@tempo.fit\"\n    },\n    {\n        \"name\": \"Ramy Ghazala\",\n        \"code\": \"ramy.ghazala@tempo.fit\"\n    },\n    {\n        \"name\": \"Yagusuk Kamilo\",\n        \"code\": \"yagusuk@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Mohamed Amin\",\n        \"code\": \"Mohamedamin@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Heba El Sobky\",\n        \"code\": \"Hebasobky@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Shayma Hashem\",\n        \"code\": \"Shayma@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Halim\",\n        \"code\": \"Halim@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Marwan Fathi\",\n        \"code\": \"marwan.fathi@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Aida Clement\",\n        \"code\": \"aida.clement@tempo.fit\"\n    },\n    {\n        \"name\": \"Stephan Radu\",\n        \"code\": \"stephan.radu@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Ahmed Ussama\",\n        \"code\": \"ahmedusama@tempo.fit\"\n    }\n]",
+  "tags": [
+    "Suggested",
+    "Select"
+  ],
+  "topRow": 0,
+  "type": "SELECT_WIDGET",
+  "version": 1,
+  "widgetId": "uvwvgwam54",
+  "widgetName": "Input2"
+}

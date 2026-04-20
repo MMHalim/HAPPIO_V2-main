@@ -1,0 +1,63 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "autoFocus": false,
+  "borderRadius": "0.375rem",
+  "bottomRow": 377,
+  "boxShadow": "none",
+  "defaultText": "{{Table1.selectedRow.Comments_FCR}}",
+  "displayName": "Input",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    },
+    {
+      "key": "defaultText"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconAlign": "left",
+  "iconSVG": "/static/media/icon.9f505595da61a34f563dba82adeb06ec.svg",
+  "inputType": "MULTI_LINE_TEXT",
+  "isDeprecated": false,
+  "isDisabled": true,
+  "isLoading": false,
+  "isRequired": false,
+  "isSpellCheck": true,
+  "isVisible": true,
+  "key": "okq3dfwzyi",
+  "label": "Comments",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "ITALIC,BOLD",
+  "labelTextColor": "#18181b",
+  "labelTextSize": "0.875rem",
+  "labelWidth": "7",
+  "leftColumn": 0,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "originalBottomRow": 377,
+  "originalTopRow": 365,
+  "parentColumnSpace": 12.44580078125,
+  "parentId": "z9atjqpx5u",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "resetOnSubmit": true,
+  "rightColumn": 63,
+  "searchTags": [
+    "form",
+    "text input",
+    "number",
+    "textarea"
+  ],
+  "shouldAllowAutofill": false,
+  "showStepArrows": false,
+  "topRow": 365,
+  "type": "INPUT_WIDGET_V2",
+  "version": 2,
+  "widgetId": "mdq59xrcpr",
+  "widgetName": "Input12"
+}

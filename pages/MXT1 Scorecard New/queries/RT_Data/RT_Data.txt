@@ -1,0 +1,4 @@
+SELECT DISTINCT request_type 
+FROM "Freshworks" 
+WHERE request_type IS NOT NULL 
+ORDER BY request_type ASC;

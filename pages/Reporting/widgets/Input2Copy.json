@@ -1,0 +1,67 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "borderRadius": "0.375rem",
+  "bottomRow": 31,
+  "boxShadow": "none",
+  "defaultOptionValue": "",
+  "displayName": "Select",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "sourceData"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a7b19dc8b31d68fcff57f1d2c0084a18.svg",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isFilterable": true,
+  "isLoading": false,
+  "isRequired": false,
+  "isVisible": true,
+  "key": "xthnaezs91",
+  "labelAlignment": "right",
+  "labelPosition": "Left",
+  "labelStyle": "BOLD,ITALIC",
+  "labelText": "Agent Name",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 21,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 6,
+  "mobileLeftColumn": 30,
+  "mobileRightColumn": 50,
+  "mobileTopRow": 0,
+  "optionLabel": "name",
+  "optionValue": "code",
+  "parentColumnSpace": 9.412841796875,
+  "parentId": "0",
+  "parentRowSpace": 10,
+  "placeholderText": "Select option",
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 38,
+  "searchTags": [
+    "dropdown"
+  ],
+  "serverSideFiltering": false,
+  "sourceData": "[\n    {\n        \"name\": \"Abdelrahman Osama\",\n        \"code\": \"abdelrahman.osama@tempo.fit\"\n    },\n    {\n        \"name\": \"Anissa Almahayni\",\n        \"code\": \"anissa.almahayni@tempo.fit\"\n    },\n    {\n        \"name\": \"Haitham Sharkas\",\n        \"code\": \"haitham.sharkas@tempo.fit\"\n    },\n    {\n        \"name\": \"Hesham Ahmed\",\n        \"code\": \"hesham.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Marina Safwat\",\n        \"code\": \"marina.safwat@tempo.fit\"\n    },\n    {\n        \"name\": \"Marwa Ahmed\",\n        \"code\": \"marwa.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Mohamed Abo El Naga\",\n        \"code\": \"mohamed.aboelnaga@tempo.fit\"\n    },\n    {\n        \"name\": \"Mohamed Saleh\",\n        \"code\": \"mohamed.saleh@tempo.fit\"\n    },\n    {\n        \"name\": \"Shaimaa Gomaa\",\n        \"code\": \"shaymaa.gomaa@tempo.fit\"\n    },\n    {\n        \"name\": \"Yasmin Hany\",\n        \"code\": \"yasmin.hany@tempo.fit\"\n    },\n    {\n        \"name\": \"Abdelrahman Fathy\",\n        \"code\": \"abdelrahman.fathy@tempo.fit\"\n    },\n    {\n        \"name\": \"Ahmed Khalil\",\n        \"code\": \"ahmed.khalil@tempo.fit\"\n    },\n    {\n        \"name\": \"Aida Clement\",\n        \"code\": \"aida.clement@tempo.fit\"\n    },\n    {\n        \"name\": \"Aminu Ellams\",\n        \"code\": \"aminu.ellams@tempo.fit\"\n    },\n    {\n        \"name\": \"Ariath Piol\",\n        \"code\": \"ariath.piol@tempo.fit\"\n    },\n    {\n        \"name\": \"Elijah Mawut Panchol\",\n        \"code\": \"eijah.nacho@tempo.fit\"\n    },\n    {\n        \"name\": \"Eman Ahmed\",\n        \"code\": \"eman.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Esraa Tarek\",\n        \"code\": \"esraa.tarek@tempo.fit\"\n    },\n    {\n        \"name\": \"Hadia Ahmed\",\n        \"code\": \"hadia.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Hassan Khallaf\",\n        \"code\": \"hassan@tempo.fit\"\n    },\n    {\n        \"name\": \"Hisham Khalil\",\n        \"code\": \"hisham.khalil@tempo.fit\"\n    },\n    {\n        \"name\": \"Hussien Abdelshakor\",\n        \"code\": \"hussien.abdelshakor@tempo.fit\"\n    },\n    {\n        \"name\": \"Islam Adam\",\n        \"code\": \"islam.adam@tempo.fit\"\n    },\n    {\n        \"name\": \"Job James\",\n        \"code\": \"job.james@tempo.fit\"\n    },\n    {\n        \"name\": \"Kareem Raouf\",\n        \"code\": \"kareem.raouf@tempo.fit\"\n    },\n    {\n        \"name\": \"Khaled Ahmed Mohamed\",\n        \"code\": \"khaled.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Mariam Essam\",\n        \"code\": \"mariam.essam@tempo.fit\"\n    },\n    {\n        \"name\": \"Marwan Fathi\",\n        \"code\": \"marwan.fathi@tempo.fit\"\n    },\n    {\n        \"name\": \"Mohab Magdy\",\n        \"code\": \"mohab.magdy@tempo.fit\"\n    },\n    {\n        \"name\": \"Mohamed Salah\",\n        \"code\": \"mohammad.salah@tempo.fit\"\n    },\n    {\n        \"name\": \"Mohammed Elias\",\n        \"code\": \"mohammed.elias@tempo.fit\"\n    },\n    {\n        \"name\": \"Mona Abduallah Ammar\",\n        \"code\": \"mona.abduallah@tempo.fit\"\n    },\n    {\n        \"name\": \"Muhammed Nadir\",\n        \"code\": \"mohamed.nader@tempo.fit\"\n    },\n    {\n        \"name\": \"Nada Ashraf\",\n        \"code\": \"nada.ashraf@tempo.fit\"\n    },\n    {\n        \"name\": \"Nourhan Gamal\",\n        \"code\": \"nourhan.gamal@tempo.fit\"\n    },\n    {\n        \"name\": \"Radwa Ahmed\",\n        \"code\": \"radwa.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Ramadan Philip\",\n        \"code\": \"ramadan.philip@tempo.fit\"\n    },\n    {\n        \"name\": \"Rashad Mohamed\",\n        \"code\": \"rashad.mohamed@tempo.fit\"\n    },\n    {\n        \"name\": \"Stephan Radu\",\n        \"code\": \"stephan.radu@tempo.fit\"\n    },\n    {\n        \"name\": \"Youkabed Farid\",\n        \"code\": \"youkabed.farid@tempo.fit\"\n    },\n    {\n        \"name\": \"Lina Hesham\",\n        \"code\": \"linahesham@tempo.fit\"\n    },\n    {\n        \"name\": \"Maryam Ussama\",\n        \"code\": \"maryam.ussama@tempo.fit\"\n    },\n    {\n        \"name\": \"Emad Mohamed\",\n        \"code\": \"emad.mohamed@tempo.fit\"\n    },\n    {\n        \"name\": \"Fatma Mohammed\",\n        \"code\": \"fatma.mohammad@tempo.fit\"\n    },\n    {\n        \"name\": \"Louis Jean Pie\",\n        \"code\": \"louis.jean@tempo.fit\"\n    },\n    {\n        \"name\": \"Mahmoud Mohamed Fathy\",\n        \"code\": \"mahmoud.mohamed@tempo.fit\"\n    },\n    {\n        \"name\": \"Moataz Ahmed\",\n        \"code\": \"moataz.ahmed@tempo.fit\"\n    },\n    {\n        \"name\": \"Ramy Ghazala\",\n        \"code\": \"ramy.ghazala@tempo.fit\"\n    },\n    {\n        \"name\": \"Yagusuk Kamilo\",\n        \"code\": \"yagusuk@tempo.fit\"\n    },\n    {\n        \"name\": \"Ahmed Mahmoud\",\n        \"code\": \"ahmed.mahmoud@tempo.fit\"\n    },\n    {\n        \"name\": \"Bassem Hesham\",\n        \"code\": \"bassem.hesham@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Mohamed Amin\",\n        \"code\": \"Mohamedamin@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Heba El Sobky\",\n        \"code\": \"Hebasobky@tempo.fit\"\n    },\n\t\t{\n        \"name\": \"Shayma Hashem\",\n        \"code\": \"Shayma@tempo.fit\"\n    }\n]",
+  "tags": [
+    "Suggested",
+    "Select"
+  ],
+  "topRow": 27,
+  "type": "SELECT_WIDGET",
+  "version": 1,
+  "widgetId": "es49bjextw",
+  "widgetName": "Input2Copy"
+}

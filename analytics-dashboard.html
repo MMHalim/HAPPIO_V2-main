@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scorecard Analytics</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="global-theme.css" />
+  <script src="global-navigation.js?v=2" defer></script>
+  <script src="analytics-dashboard.js?v=3" defer></script>
+  <style>
+    .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .scorecard-header { 
+      font-size: 28px; 
+      font-weight: 800; 
+      margin-bottom: 8px; 
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      background-clip: text; 
+      color: transparent; 
+    }
+    .scorecard-subtitle { color: var(--text-secondary); margin-bottom: 24px; }
+    
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-title { color: var(--text-secondary); font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .stat-value-group { display: flex; align-items: baseline; gap: 12px; }
+    .stat-main { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+    .stat-sub { font-size: 14px; color: var(--text-secondary); }
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* Tables */
+    .table-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      max-height: 500px; /* Scrollable container */
+    }
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .table-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .table-scroll-area {
+      overflow: auto;
+      flex: 1;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .analytics-table th {
+      position: sticky;
+      top: 0;
+      background: #1f2937;
+      z-index: 10;
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+    [data-theme="light"] .analytics-table th {
+      background: #e2e8f0;
+    }
+    .analytics-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .analytics-table tbody tr:hover { background: var(--bg-nav-item-hover); cursor: pointer; }
+    
+    /* Date Picker Styles (Reused) */
+    .date-range-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 10px;
+      width: fit-content;
+      margin-bottom: 24px;
+    }
+    .calendar-icon { cursor: pointer; font-size: 18px; }
+    .date-text { font-weight: 600; color: var(--text-primary); }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: #1e293b; /* Solid background to prevent see-through */
+      width: 90%;
+      max-width: 1000px;
+      height: 90vh;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+    }
+    [data-theme="light"] .modal-content {
+      background: #ffffff; /* Solid background for light mode */
+    }
+    .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .modal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .detail-section {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { font-weight: 600; color: var(--text-primary); }
+    .detail-value { color: var(--text-secondary); text-align: right; }
+    
+    /* Range Picker Modal (copied from agent-mx-audits) */
+    .range-picker-modal { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; z-index:100004; }
+    .range-picker-modal .rp-content { background:var(--bg-card); backdrop-filter: blur(10px); color:var(--text-primary); border:1px solid var(--border-color); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.35); }
+    .rp-title { font-weight:800; margin-bottom:8px; color:var(--text-primary); }
+    .rp-controls { display:flex; align-items:center; gap:10px; }
+    .rp-col { border:1px solid var(--border-color); border-radius:12px; padding:10px; background: var(--bg-card); }
+    .rp-header-row { display:flex; gap:8px; margin-bottom:8px; }
+    .rp-header-row select { background: var(--bg-card); color: var(--text-primary); border:1px solid var(--border-color); border-radius:8px; padding:4px 6px; }
+    .rp-weekdays { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; font-size:12px; color:var(--text-secondary); }
+    .rp-days { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; }
+    .rp-day { text-align:center; padding:8px 0; border-radius:8px; cursor:pointer; background: var(--bg-nav-item); color: var(--text-primary); border:1px solid var(--border-color); }
+    .rp-day:hover { box-shadow: 0 0 0 2px rgba(124,58,237,0.35); }
+    .rp-day-out { opacity:0.35; }
+    .rp-day-selected { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+    .rp-day-inrange { background:rgba(124,58,237,0.18); color:var(--text-primary); }
+    .rp-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+    .btn-slim {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 10005;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-left: 4px solid var(--primary-color);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      color: #f3f4f6;
+      min-width: 300px;
+      max-width: 400px;
+      pointer-events: auto;
+      animation: slideIn 0.3s ease-out forwards;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .toast.error { border-left-color: var(--danger-color); }
+    .toast.success { border-left-color: var(--success-color); }
+    .toast.warning { border-left-color: #f59e0b; }
+    
+    .toast-icon { font-size: 20px; line-height: 1; }
+    .toast-content { flex: 1; }
+    .toast-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #ffffff; }
+    .toast-message { font-size: 13px; color: #d1d5db; line-height: 1.4; }
+    .toast-close { cursor: pointer; color: #9ca3af; font-size: 18px; line-height: 1; }
+    .toast-close:hover { color: #ffffff; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    /* Fix for Global Navigation Visibility */
+    .global-navigation { z-index: 2147483647 !important; }
+  </style>
+</head>
+<body>
+  <!-- Navigation will be injected here -->
+
+  <div class="page-content">
+    <div class="scorecard-header">Audits Analytics Dashboard</div>
+    <div class="scorecard-subtitle">Overview of audited cases across all scorecards</div>
+
+    <!-- Date Range Picker -->
+    <div class="date-range-control">
+      <span class="calendar-icon" id="openRangePickerBtn">📅</span>
+      <div class="date-text" id="dateRangeDisplay">Select Date Range</div>
+      <input type="hidden" id="dateFrom" />
+      <input type="hidden" id="dateTo" />
+      <button id="applyDateBtn" class="global-btn btn-slim" style="margin-left: auto;">Apply</button>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-grid">
+      <!-- T1 Stats -->
+      <div class="stat-card">
+        <div class="stat-title">T1 Scorecard</div>
+        <div class="stat-value-group">
+          <div class="stat-main" id="t1Count">—</div>
+          <div class="stat-sub">Audits</div>
+        </div>
+        <div class="stat-label">Avg Score: <strong id="t1Avg">—%</strong></div>
+      </div>
+      
+      <!-- SMS Stats -->
+      <div class="stat-card">
+        <div class="stat-title">SMS Scorecard</div>
+        <div class="stat-value-group">
+          <div class="stat-main" id="smsCount">—</div>
+          <div class="stat-sub">Audits</div>
+        </div>
+        <div class="stat-label">Avg Score: <strong id="smsAvg">—%</strong></div>
+      </div>
+
+      <!-- T2 PS Stats -->
+      <div class="stat-card">
+        <div class="stat-title">T2 PS Scorecard</div>
+        <div class="stat-value-group">
+          <div class="stat-main" id="t2psCount">—</div>
+          <div class="stat-sub">Audits</div>
+        </div>
+        <div class="stat-label">Avg Score: <strong id="t2psAvg">—%</strong></div>
+      </div>
+
+      <!-- T2 OS Stats -->
+      <div class="stat-card">
+        <div class="stat-title">T2 OS Scorecard</div>
+        <div class="stat-value-group">
+          <div class="stat-main" id="t2osCount">—</div>
+          <div class="stat-sub">Audits</div>
+        </div>
+        <div class="stat-label">Avg Score: <strong id="t2osAvg">—%</strong></div>
+      </div>
+    </div>
+
+    <!-- Tables Container -->
+    <div id="tablesContainer">
+      <!-- T1 Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">T1 Audits</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="position:relative;">
+               <input type="text" id="t1Search" placeholder="Search..." class="search-box" style="padding:6px 30px 6px 6px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+               <span id="t1Clear" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; color:#888;">✕</span>
+             </div>
+             <button id="t1FilterToggle" class="global-btn btn-slim">Filter</button>
+             <button id="t1Export" class="global-btn btn-slim">Export CSV</button>
+          </div>
+        </div>
+        <div id="t1FilterPanel" class="filter-panel" style="display:none;">
+          <div id="t1FilterRows"></div>
+          <div class="filter-actions">
+            <button id="t1AddFilterBtn" class="global-btn btn-slim btn-secondary">+ Add Filter</button>
+            <button id="t1ClearFilterBtn" class="global-btn btn-slim btn-secondary" style="display:none;">Clear All</button>
+          </div>
+        </div>
+        <div class="table-scroll-area">
+          <table class="analytics-table" id="t1Table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Channel</th>
+                <th>Taker Name</th>
+                <th>Conversation ID</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="8" style="text-align:center;">Select date range to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SMS Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">SMS Audits</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="position:relative;">
+               <input type="text" id="smsSearch" placeholder="Search..." class="search-box" style="padding:6px 30px 6px 6px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+               <span id="smsClear" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; color:#888;">✕</span>
+             </div>
+             <button id="smsFilterToggle" class="global-btn btn-slim">Filter</button>
+             <button id="smsExport" class="global-btn btn-slim">Export CSV</button>
+          </div>
+        </div>
+        <div id="smsFilterPanel" class="filter-panel" style="display:none;">
+          <div id="smsFilterRows"></div>
+          <div class="filter-actions">
+            <button id="smsAddFilterBtn" class="global-btn btn-slim btn-secondary">+ Add Filter</button>
+            <button id="smsClearFilterBtn" class="global-btn btn-slim btn-secondary" style="display:none;">Clear All</button>
+          </div>
+        </div>
+        <div class="table-scroll-area">
+          <table class="analytics-table" id="smsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Taker Name</th>
+                <th>Conversation ID</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="7" style="text-align:center;">Select date range to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- T2 PS Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">T2 PS Audits</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="position:relative;">
+               <input type="text" id="t2psSearch" placeholder="Search..." class="search-box" style="padding:6px 30px 6px 6px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+               <span id="t2psClear" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; color:#888;">✕</span>
+             </div>
+             <button id="t2psFilterToggle" class="global-btn btn-slim">Filter</button>
+             <button id="t2psExport" class="global-btn btn-slim">Export CSV</button>
+          </div>
+        </div>
+        <div id="t2psFilterPanel" class="filter-panel" style="display:none;">
+          <div id="t2psFilterRows"></div>
+          <div class="filter-actions">
+            <button id="t2psAddFilterBtn" class="global-btn btn-slim btn-secondary">+ Add Filter</button>
+            <button id="t2psClearFilterBtn" class="global-btn btn-slim btn-secondary" style="display:none;">Clear All</button>
+          </div>
+        </div>
+        <div class="table-scroll-area">
+          <table class="analytics-table" id="t2psTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Taker Name</th>
+                <th>Conversation ID</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="7" style="text-align:center;">Select date range to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- T2 OS Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">T2 OS Audits</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="position:relative;">
+               <input type="text" id="t2osSearch" placeholder="Search..." class="search-box" style="padding:6px 30px 6px 6px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+               <span id="t2osClear" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; color:#888;">✕</span>
+             </div>
+             <button id="t2osFilterToggle" class="global-btn btn-slim">Filter</button>
+             <button id="t2osExport" class="global-btn btn-slim">Export CSV</button>
+          </div>
+        </div>
+        <div id="t2osFilterPanel" class="filter-panel" style="display:none;">
+          <div id="t2osFilterRows"></div>
+          <div class="filter-actions">
+            <button id="t2osAddFilterBtn" class="global-btn btn-slim btn-secondary">+ Add Filter</button>
+            <button id="t2osClearFilterBtn" class="global-btn btn-slim btn-secondary" style="display:none;">Clear All</button>
+          </div>
+        </div>
+        <div class="table-scroll-area">
+          <table class="analytics-table" id="t2osTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Taker Name</th>
+                <th>Conversation ID</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="7" style="text-align:center;">Select date range to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Social Media Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">Social Media Audits</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="position:relative;">
+               <input type="text" id="socialSearch" placeholder="Search..." class="search-box" style="padding:6px 30px 6px 6px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+               <span id="socialClear" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; color:#888;">✕</span>
+             </div>
+             <button id="socialFilterToggle" class="global-btn btn-slim">Filter</button>
+             <button id="socialExport" class="global-btn btn-slim">Export CSV</button>
+          </div>
+        </div>
+        <div id="socialFilterPanel" class="filter-panel" style="display:none;">
+          <div id="socialFilterRows"></div>
+          <div class="filter-actions">
+            <button id="socialAddFilterBtn" class="global-btn btn-slim btn-secondary">+ Add Filter</button>
+            <button id="socialClearFilterBtn" class="global-btn btn-slim btn-secondary" style="display:none;">Clear All</button>
+          </div>
+        </div>
+        <div class="table-scroll-area">
+          <table class="analytics-table" id="socialTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Taker Name</th>
+                <th>Channel</th>
+                <th>Post URL</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="8" style="text-align:center;">Select date range to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Range Picker Modal -->
+  <div id="rangePickerModal" class="range-picker-modal">
+    <div class="rp-content">
+      <div class="rp-title">Select date range:</div>
+      <div class="rp-controls">
+        <button id="rpPrev" class="global-btn btn-slim" type="button">‹</button>
+        <div class="rp-col">
+          <div class="rp-header-row">
+            <select id="rpMonthLeft"></select>
+            <select id="rpYearLeft"></select>
+          </div>
+          <div class="rp-weekdays"><div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div></div>
+          <div id="rpDaysLeft" class="rp-days"></div>
+        </div>
+        <div class="rp-col">
+          <div class="rp-header-row">
+            <select id="rpMonthRight"></select>
+            <select id="rpYearRight"></select>
+          </div>
+          <div class="rp-weekdays"><div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div></div>
+          <div id="rpDaysRight" class="rp-days"></div>
+        </div>
+        <button id="rpNext" class="global-btn btn-slim" type="button">›</button>
+      </div>
+      <div class="rp-footer">
+        <button id="rpCancel" class="global-btn btn-slim" type="button">Cancel</button>
+        <button id="rpDone" class="global-btn btn-slim" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Details Modal -->
+  <div id="auditModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Audit Details</div>
+        <div id="modalControls" style="display:flex; gap:10px; align-items:center;">
+          <button class="global-btn" onclick="document.getElementById('auditModal').style.display='none'">Close</button>
+        </div>
+      </div>
+      <div class="modal-body" id="auditModalBody">
+        <!-- Content injected via JS -->
+      </div>
+    </div>
+  </div>
+</body>
+</html>

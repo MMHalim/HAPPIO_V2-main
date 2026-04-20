@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Management Dashboard</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="global-theme.css">
+    <style>
+        /* Page-specific styles can go here */
+        .page-content {
+            padding: 20px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation will be inserted here by global-navigation.js -->
+    
+    <!-- Page Content -->
+    <div class="page-content">
+        <div class="page-title">Your Page Title Here</div>
+        
+        <!-- Your page content goes here -->
+        <div class="global-card">
+            <div class="global-card-title">Page Content</div>
+            <div class="global-card-subtitle">This is where your page content goes</div>
+            
+            <!-- Example content -->
+            <div style="text-align: center; padding: 40px;">
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    This is a template for creating new pages with global theme and navigation.
+                </p>
+                <button class="global-btn">Example Button</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Theme and Navigation Script -->
+    <script src="global-navigation.js"></script>
+    
+    <!-- Page-specific scripts can go here -->
+    <script>
+        // Page-specific JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded with global theme system');
+            
+            // Check authentication
+            const token = localStorage.getItem('login_token');
+            if (!token) {
+                console.log('No authentication token found, redirecting to login');
+                window.location.href = '/login.html';
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

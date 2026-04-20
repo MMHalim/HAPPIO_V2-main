@@ -1,0 +1,11 @@
+{
+  "gitSyncId": "64cd5af7b66be44a5c6e2d9b_64e140f6e9369c24829037ec",
+  "id": "Order Support_Channel",
+  "unpublishedCollection": {
+    "name": "Channel",
+    "pageId": "Order Support",
+    "pluginId": "js-plugin",
+    "pluginType": "JS",
+    "variables": []
+  }
+}

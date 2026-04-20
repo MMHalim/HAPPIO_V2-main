@@ -1,0 +1,150 @@
+{
+  "appIsExample": false,
+  "appLayout": {
+    "type": "DESKTOP"
+  },
+  "applicationDetail": {
+    "appPositioning": {
+      "type": "FIXED"
+    },
+    "navigationSetting": {
+      "colorStyle": "light",
+      "itemStyle": "text",
+      "logoAssetId": "6460c267e4995a7c25a500e4",
+      "logoConfiguration": "logoAndApplicationTitle",
+      "navStyle": "stacked",
+      "orientation": "top",
+      "position": "static",
+      "showNavbar": false,
+      "showSignIn": true
+    },
+    "themeSetting": {
+      "appMaxWidth": "LARGE",
+      "density": 1.0,
+      "sizing": 1.0
+    }
+  },
+  "applicationVersion": 2,
+  "color": "#ECECEC",
+  "embedSetting": {
+    "height": "720px",
+    "showNavigationBar": false,
+    "width": "1024px"
+  },
+  "evaluationVersion": 2,
+  "icon": "bag",
+  "pages": [
+    {
+      "id": "Manage Users",
+      "isDefault": false
+    },
+    {
+      "id": "Login_Modern",
+      "isDefault": true
+    },
+    {
+      "id": "Dashboard",
+      "isDefault": false
+    },
+    {
+      "id": "Forget Password",
+      "isDefault": false
+    },
+    {
+      "id": "MXT1 Scorecard",
+      "isDefault": false
+    },
+    {
+      "id": "UJET Call History",
+      "isDefault": false
+    },
+    {
+      "id": "My Performance T1",
+      "isDefault": false
+    },
+    {
+      "id": "Order Support",
+      "isDefault": false
+    },
+    {
+      "id": "Product Support_old",
+      "isDefault": false
+    },
+    {
+      "id": "My Performance T2 OS",
+      "isDefault": false
+    },
+    {
+      "id": "My Performance T2 PS",
+      "isDefault": false
+    },
+    {
+      "id": "Reporting",
+      "isDefault": false
+    },
+    {
+      "id": "Managing Auditors",
+      "isDefault": false
+    },
+    {
+      "id": "Coach Performance",
+      "isDefault": false
+    },
+    {
+      "id": "MXT1 Scorecard New",
+      "isDefault": false
+    },
+    {
+      "id": "MX T2 Scorecard NewOS",
+      "isDefault": false
+    },
+    {
+      "id": "Calibration",
+      "isDefault": false
+    },
+    {
+      "id": "Page1",
+      "isDefault": false
+    },
+    {
+      "id": "Product Support",
+      "isDefault": false
+    },
+    {
+      "id": "MX Social Media Scorecard",
+      "isDefault": false
+    },
+    {
+      "id": "My Performance T1 Copy",
+      "isDefault": false
+    },
+    {
+      "id": "MX T2 Scorecard NewOS 2025",
+      "isDefault": false
+    }
+  ],
+  "unpublishedAppLayout": {
+    "type": "DESKTOP"
+  },
+  "unpublishedApplicationDetail": {
+    "appPositioning": {
+      "type": "FIXED"
+    },
+    "navigationSetting": {
+      "colorStyle": "light",
+      "itemStyle": "text",
+      "logoAssetId": "6460c267e4995a7c25a500e4",
+      "logoConfiguration": "logoAndApplicationTitle",
+      "navStyle": "stacked",
+      "orientation": "top",
+      "position": "static",
+      "showNavbar": false,
+      "showSignIn": true
+    },
+    "themeSetting": {
+      "appMaxWidth": "LARGE",
+      "density": 1.0,
+      "sizing": 1.0
+    }
+  }
+}

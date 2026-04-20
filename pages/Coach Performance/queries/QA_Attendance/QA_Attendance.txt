@@ -1,0 +1,15 @@
+SELECT 
+    created_at AS timestamp,
+    agent_name AS name,
+    agent_email AS email,
+    TO_CHAR(created_at, 'HH24:MI:SS') AS login_time,
+    TO_CHAR(created_at, 'YYYY/MM/DD') AS date
+FROM 
+    "LoginData"
+WHERE 
+    agent_name IN ('Hagar Alaa', 'Fatma Mohamed')
+    AND created_at >= '{{DatePickerFrom.formattedDate}}'
+    AND created_at <= '{{DatePickerTo.formattedDate}}'
+ORDER BY 
+    agent_name ASC, 
+    created_at ASC;

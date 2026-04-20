@@ -1,0 +1,68 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "borderRadius": "0.375rem",
+  "bottomRow": 32,
+  "boxShadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+  "defaultOptionValue": "",
+  "displayName": "MultiSelect",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "sourceData"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.801e0376f5d71c420e7b490da23a44a6.svg",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isFilterable": true,
+  "isLoading": false,
+  "isRequired": true,
+  "isVisible": true,
+  "key": "jlpji1g1pp",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "BOLD,ITALIC",
+  "labelText": "Interaction related to",
+  "labelTextColor": "#18181b",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 2,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 9,
+  "mobileLeftColumn": 2,
+  "mobileRightColumn": 22,
+  "mobileTopRow": 2,
+  "optionLabel": "name",
+  "optionValue": "code",
+  "parentColumnSpace": 6.30126953125,
+  "parentId": "e7mfxhmp4u",
+  "parentRowSpace": 10,
+  "placeholderText": "Select option(s)",
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 60,
+  "searchTags": [
+    "dropdown",
+    "tags"
+  ],
+  "serverSideFiltering": false,
+  "sourceData": "[\n      {\"name\": \"Tempo Studio - Pre-Sales\", \"code\": \"TEMPOSTUDIO-PRESALES\"},\n    {\"name\": \"Tempo Move - Pre-Sales\", \"code\": \"TEMPOMOVE-PRESALES\"},\n    {\"name\": \"Accessories - Pre-Sales\", \"code\": \"ACCESSORIES-PRESALES\"},\n    {\"name\": \"Tempo Studio ETA\", \"code\": \"TEMPOSTUDIO-ETA\"},\n    {\"name\": \"Tempo Move ETA\", \"code\": \"TEMPOMOVE-ETA\"},\n    {\"name\": \"Accessories ETA\", \"code\": \"ACCESSORIES-ETA\"},\n    {\"name\": \"Tempo Studio - Specifications/Compatibility\", \"code\": \"TEMPOSTUDIO-SPECIFICATIONS/COMPATIBILITY\"},\n    {\"name\": \"Tempo Move- Specifications/Compatibility\", \"code\": \"TEMPOMOVE-SPECIFICATIONS/COMPATIBILITY\"},\n    {\"name\": \"Accessories - Specifications/Compatibility\", \"code\": \"ACCESSORIES-SPECIFICATIONS/COMPATIBILITY\"},\n    {\"name\": \"Tempo Studio - Delivery Issues\", \"code\": \"TEMPOSTUDIO-DELIVERYISSUES\"},\n    {\"name\": \"Tempo Move - Delivery Issues\", \"code\": \"TEMPOMOVE-DELIVERYISSUES\"},\n    {\"name\": \"Accessories - Delivery Issues\", \"code\": \"ACCESSORIES-DELIVERYISSUES\"},\n    {\"name\": \"Tempo Studio - Cancellation\", \"code\": \"TEMPOSTUDIO-CANCELLATION\"},\n    {\"name\": \"Tempo Move - Cancellation\", \"code\": \"TEMPOMOVE-CANCELLATION\"},\n    {\"name\": \"Accessories - Cancellation\", \"code\": \"ACCESSORIES-CANCELLATION\"},\n    {\"name\": \"Tempo Studio - Return\", \"code\": \"TEMPOSTUDIO-RETURN\"},\n    {\"name\": \"Tempo Move - Return\", \"code\": \"TEMPOMOVE-RETURN\"},\n    {\"name\": \"Accessories - Return\", \"code\": \"ACCESSORIES-RETURN\"},\n    {\"name\": \"Tempo Studio - Churn\", \"code\": \"TEMPOSTUDIO-CHURN\"},\n    {\"name\": \"Studio - Classes/Programs/Content - Missing/Feedback\", \"code\": \"STUDIO-CLASSES/PROGRAMS/CONTENT-MISSING/FEEDBACK\"},\n    {\"name\": \"Move - Classes/Programs/Content - Missing/Feedback\", \"code\": \"MOVE-CLASSES/PROGRAMS/CONTENT-MISSING/FEEDBACK\"},\n    {\"name\": \"Tempo Studio - Membership/Billing inquiry/Refund\", \"code\": \"TEMPOSTUDIO-MEMBERSHIP/BILLINGINQUIRY/REFUND\"},\n    {\"name\": \"Tempo Move - Membership/Billing inquiry/Refund\", \"code\": \"TEMPOMOVE-MEMBERSHIP/BILLINGINQUIRY/REFUND\"},\n    {\"name\": \"Tempo Studio - Subscription issue\", \"code\": \"TEMPOSTUDIO-SUBSCRIPTIONISSUE\"},\n    {\"name\": \"Tempo Move - Subscription issue\", \"code\": \"TEMPOMOVE-SUBSCRIPTIONISSUE\"},\n    {\"name\": \"Membership pause\", \"code\": \"MEMBERSHIPPAUSE\"},\n    {\"name\": \"Membership cancellation\", \"code\": \"MEMBERSHIPCANCELLATION\"},\n    {\"name\": \"Transfer of ownership\", \"code\": \"TRANSFEROFOWNERSHIP\"},\n    {\"name\": \"Modify/Update information (Credit Card - Color - Address)\", \"code\": \"MODIFY/UPDATEINFORMATION(CREDITCARD-COLOR-ADDRESS)\"},\n    {\"name\": \"Tempo Studio - 3D sensor issue\", \"code\": \"TEMPOSTUDIO-3DSENSORISSUE\"},\n    {\"name\": \"Tempo Studio - Network issue\", \"code\": \"TEMPOSTUDIO-NETWORKISSUE\"},\n    {\"name\": \"Tempo Studio - Display issue\", \"code\": \"TEMPOSTUDIO-DISPLAYISSUE\"},\n    {\"name\": \"Tempo Studio - Bluetooth issue\", \"code\": \"TEMPOSTUDIO-BLUETOOTHISSUE\"},\n    {\"name\": \"Tempo Studio - Audio issue\", \"code\": \"TEMPOSTUDIO-AUDIOISSUE\"},\n    {\"name\": \"Tempo Studio - Motherboard issue\", \"code\": \"TEMPOSTUDIO-MOTHERBOARDISSUE\"},\n    {\"name\": \"Tempo Studio - Calories/Program issue\", \"code\": \"TEMPOSTUDIO-CALORIES/PROGRAMISSUE\"},\n    {\"name\": \"Tempo Move - Core issue (HDMI, USB, Connection, etc.)\", \"code\": \"TEMPOMOVE-COREISSUE(HDMI,USB,CONNECTION,ETC.)\"},\n    {\"name\": \"Tempo Move - Cabinet issue (Magnetic Door, Wooden Hinge, Rubber Dumbbell Holder)\", \"code\": \"TEMPOMOVE-CABINETISSUE(MAGNETICDOOR,WOODENHINGE,RUBBERDUMBBELLHOLDER)\"},\n    {\"name\": \"Apple Watch issue\", \"code\": \"APPLEWATCHISSUE\"},\n    {\"name\": \"HRM issue\", \"code\": \"HRMISSUE\"},\n    {\"name\": \"Mobile App issue (Android/IOS)\", \"code\": \"MOBILEAPPISSUE(ANDROID/IOS)\"},\n    {\"name\": \"Accessories issue/malfunction\", \"code\": \"ACCESSORIESISSUE/MALFUNCTION\"},\n    {\"name\": \"Partnership\", \"code\": \"PARTNERSHIP\"},\n    {\"name\": \"Marketing\", \"code\": \"MARKETING\"},\n    {\"name\": \"Tempo Studio - Delayed Bundle Accessories\", \"code\": \"TEMPOSTUDIO-DELAYEDBUNDLEACCESSORIES\"},\n    {\"name\": \"Tempo Studio - Missing Accessories\", \"code\": \"TEMPOSTUDIO-MISSINGACCESSORIES\"},\n    {\"name\": \"Tempo Move - Missing Accessories\", \"code\": \"TEMPOMOVE-MISSINGACCESSORIES\"},\n    {\"name\": \"Tempo Studio - Promotions\", \"code\": \"TEMPOSTUDIO-PROMOTIONS\"},\n    {\"name\": \"Tempo Move - Promotions\", \"code\": \"TEMPOMOVE-PROMOTIONS\"},\n    {\"name\": \"Tempo Studio - Warranty\", \"code\": \"TEMPOSTUDIO-WARRANTY\"},\n    {\"name\": \"Tempo Move - Warranty\", \"code\": \"TEMPOMOVE-WARRANTY\"},\n    {\"name\": \"Tempo Studio - Physical Damage\", \"code\": \"TEMPOSTUDIO-PHYSICALDAMAGE\"},\n    {\"name\": \"Tempo Move - Physical Damage\", \"code\": \"TEMPOMOVE-PHYSICALDAMAGE\"},\n    {\"name\": \"Tempo Studio - Software\", \"code\": \"TEMPOSTUDIO-SOFTWARE\"},\n    {\"name\": \"Tempo Move - Software\", \"code\": \"TEMPOMOVE-SOFTWARE\"},\n    {\"name\": \"Fraud\", \"code\": \"FRAUD\"},\n    {\"name\": \"Tempo Membership- Pre Sales\", \"code\": \"TEMPOMEMBERSHIP-PRESALES\"},\n    {\"name\": \"Tempo Membership Upgrade Inquiry\", \"code\": \"TEMPOMEMBERSHIPUPGRADEINQUIRY\"},\n    {\"name\": \"Tempo Membership Upgrade Request\", \"code\": \"TEMPOMEMBERSHIPUPGRADEREQUEST\"},\n    {\"name\": \"Tempo Membership Cancellation\", \"code\": \"TEMPOMEMBERSHIPCANCELLATION\"},\n    {\"name\": \"Tempo Membership Pause\", \"code\": \"TEMPOMEMBERSHIPPAUSE\"},\n    {\"name\": \"Challenges\", \"code\": \"CHALLENGES\"},\n    {\"name\": \"Join Program\", \"code\": \"JOINPROGRAM\"},\n    {\"name\": \"Coach Availability\", \"code\": \"COACHAVAILABILITY\"},\n    {\"name\": \"Replace 1:1\", \"code\": \"REPLACE1:1\"},\n    {\"name\": \"Live Class Schedule\", \"code\": \"LIVECLASSSCHEDULE\"},\n    {\"name\": \"Tempo Membership ETA\", \"code\": \"TEMPOMEMBERSHIP-ETA\"},\n    {\"name\": \"Tempo Membership - Downgrade Request\", \"code\": \"TEMPOMEMBERSHIP-DOWNGRADEREQUEST\"},\n    {\"name\": \"Tempo Membership - Downgrade Inquiry\", \"code\": \"TEMPOMEMBERSHIP-DOWNGRADEINQUIRY\"},\n    {\"name\": \"Tempo Membership - Subscription Issue\", \"code\": \"TEMPOMEMBERSHIP-SUBSCRIPTIONISSUE\"},\n    {\"name\": \"Account Access\", \"code\": \"ACCOUNTACCESS\"},\n    {\"name\": \"Add/Remove Profile\", \"code\": \"ADD/REMOVEPROFILE\"},\n    {\"name\": \"Tempo Leased - Buyout\", \"code\": \"TEMPOLEASED-BUYOUT\"},\n    {\"name\": \"Tempo Leased - Membership Inquiry\", \"code\": \"TEMPOLEASED-MEMBERSHIPINQUIRY\"},\n    {\"name\": \"Tempo Move - Churn\", \"code\": \"TEMPOMOVE-CHURN\"},\n    {\"name\": \"Tempo Leased - Churn\", \"code\": \"TEMPOLEASED-CHURN\"},\n    {\"name\": \"Accessories Inquiry\", \"code\": \"ACCESSORIESINQUIRY\"},\n    {\"name\": \"Tempo Leased - Return\", \"code\": \"TEMPOLEASED-RETURN\"},\n    {\"name\": \"Referral Program\", \"code\": \"REFERRALPROGRAM\"},\n    {\"name\": \"Membership Requirements\", \"code\": \"MEMBERSHIPREQUIREMENTS\"},\n    {\"name\": \"Order Confirmation/Receipt\", \"code\": \"ORDERCONFIRMATION/RECEIPT\"},\n    {\"name\": \"Membership Reactivation\", \"code\": \"MEMBERSHIPREACTIVATION\"},\n    {\"name\": \"FC Trial Inquiry\", \"code\": \"FCTRIALINQUIRY\"},\n    {\"name\": \"Bundled Membership Request\", \"code\": \"BUNDLEDMEMBERSHIPREQUEST\"},\n    {\"name\": \"Bundled Membership Inquiry\", \"code\": \"BUNDLEDMEMBERSHIPINQUIRY\"},\n    {\"name\": \"Bundled Membership Cancellation\", \"code\": \"BUNDLEDMEMBERSHIPCANCELLATION\"},\n    {\"name\": \"Apparel Promotions\", \"code\": \"APPARELPROMOTIONS\"},\n    {\"name\": \"Tempo New Experience FAQs\", \"code\": \"TEMPONEWEXPERIENCEFAQS\"},\n    {\"name\": \"Tempo New Experience Technical\", \"code\": \"TEMPONEWEXPERIENCETECHNICAL\"}\n\n]",
+  "tags": [
+    "Select"
+  ],
+  "topRow": 24,
+  "type": "MULTI_SELECT_WIDGET_V2",
+  "version": 1,
+  "widgetId": "wjl8aoewya",
+  "widgetName": "MultiSelect5"
+}

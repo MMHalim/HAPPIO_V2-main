@@ -1,0 +1,70 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "borderRadius": "1.5rem",
+  "bottomRow": 74.00000000000291,
+  "boxShadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+  "defaultOptionValue": "0",
+  "displayName": "Select",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "sourceData"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a7b19dc8b31d68fcff57f1d2c0084a18.svg",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isFilterable": false,
+  "isLoading": false,
+  "isRequired": false,
+  "isVisible": true,
+  "key": "qny9pba43n",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelStyle": "BOLD,ITALIC",
+  "labelText": "",
+  "labelTextColor": "#18181b",
+  "labelTextSize": "1rem",
+  "labelWidth": 5,
+  "leftColumn": 22,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 129,
+  "mobileLeftColumn": 0,
+  "mobileRightColumn": 16,
+  "mobileTopRow": 122,
+  "optionLabel": "name",
+  "optionValue": "code",
+  "originalBottomRow": 72.79999999999927,
+  "originalTopRow": 68.79999999999855,
+  "parentColumnSpace": 20.078125,
+  "parentId": "0",
+  "parentRowSpace": 10,
+  "placeholderText": "",
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 26,
+  "searchTags": [
+    "dropdown"
+  ],
+  "serverSideFiltering": false,
+  "sourceData": "[\n{\n    \"name\": \"0\",\n    \"code\": \"0\"\n  },\n  {\n    \"name\": \"1\",\n    \"code\": \"1\"\n  },\n  {\n    \"name\": \"2\",\n    \"code\": \"2\"\n  },\n  {\n    \"name\": \"3\",\n    \"code\": \"3\"\n  },\n\t{\n    \"name\": \"4\",\n    \"code\": \"4\"\n  },\n  {\n    \"name\": \"5\",\n    \"code\": \"5\"\n  },\n  {\n    \"name\": \"6\",\n    \"code\": \"6\"\n  },\n\t{\n    \"name\": \"7\",\n    \"code\": \"7\"\n  },\n  {\n    \"name\": \"8\",\n    \"code\": \"8\"\n  },\n  {\n    \"name\": \"9\",\n    \"code\": \"9\"\n  },\n\t{\n    \"name\": \"10\",\n    \"code\": \"10\"\n  }\n]",
+  "tags": [
+    "Suggested",
+    "Select"
+  ],
+  "topRow": 70.00000000000219,
+  "type": "SELECT_WIDGET",
+  "version": 1,
+  "widgetId": "w4pmlpng74",
+  "widgetName": "Select1"
+}

@@ -1,0 +1,20 @@
+{
+  "gitSyncId": "659f60f052fbee42141b9cfe_c94d624d-6443-4cf2-b245-4b9d69d2f95c",
+  "id": "MXT1 Scorecard_JSObject1",
+  "unpublishedCollection": {
+    "name": "JSObject1",
+    "pageId": "MXT1 Scorecard",
+    "pluginId": "js-plugin",
+    "pluginType": "JS",
+    "variables": [
+      {
+        "name": "myVar1",
+        "value": "[]"
+      },
+      {
+        "name": "myVar2",
+        "value": "{}"
+      }
+    ]
+  }
+}

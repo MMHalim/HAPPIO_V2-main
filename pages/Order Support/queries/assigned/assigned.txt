@@ -1,0 +1,3 @@
+UPDATE "Freshworks"
+SET "assigned_qa" = '{{Input3.text}}'
+WHERE "id" = '{{get_T2_OS.data[0].id}}';

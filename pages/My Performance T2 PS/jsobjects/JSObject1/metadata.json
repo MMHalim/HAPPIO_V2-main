@@ -1,0 +1,20 @@
+{
+  "gitSyncId": "659f60f052fbee42141b9cfe_814abfd8-f7b2-4e27-bbcd-cdbda9602359",
+  "id": "My Performance T2 PS_JSObject1",
+  "unpublishedCollection": {
+    "name": "JSObject1",
+    "pageId": "My Performance T2 PS",
+    "pluginId": "js-plugin",
+    "pluginType": "JS",
+    "variables": [
+      {
+        "name": "myVar1",
+        "value": "[]"
+      },
+      {
+        "name": "myVar2",
+        "value": "{}"
+      }
+    ]
+  }
+}

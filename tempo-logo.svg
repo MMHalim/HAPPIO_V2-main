@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="48" viewBox="0 0 180 48">
+  <style>
+    .word { font-family: Inter, Arial, sans-serif; font-weight: 700; font-size: 28px; fill: #000; }
+  </style>
+  <g>
+    <path d="M10 10 L20 24 L10 38" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="word" x="34" y="32">TEMPO</text>
+  </g>
+</svg>

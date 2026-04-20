@@ -1,0 +1,4 @@
+{ 
+	"id":"{{Table1.selectedRow.id}}",
+	"Agent_Acknowledge":"true"
+}

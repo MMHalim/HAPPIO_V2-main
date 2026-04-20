@@ -1,0 +1,65 @@
+{
+  "animateLoading": true,
+  "borderRadius": "1.5rem",
+  "bottomRow": 24,
+  "boxShadow": "none",
+  "buttonColor": "#15803d",
+  "buttonStyle": "PRIMARY_BUTTON",
+  "buttonVariant": "PRIMARY",
+  "disabledWhenInvalid": false,
+  "displayName": "Button",
+  "dynamicBindingPathList": [
+    {
+      "key": "isDisabled"
+    }
+  ],
+  "dynamicPropertyPathList": [
+    {
+      "key": "isDisabled"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onClick"
+    }
+  ],
+  "hideCard": false,
+  "iconAlign": "right",
+  "iconName": "confirm",
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.05d209fafeb13a8569e3b4e97069d9ee.svg",
+  "isDefaultClickDisabled": true,
+  "isDeprecated": false,
+  "isDisabled": "{{Table1.selectedRow.Agent_Acknowledge ===\"true\" || Table1.selectedRow.Appealed ===\"true\"}}",
+  "isLoading": false,
+  "isVisible": true,
+  "key": "ohxwn4yyrt",
+  "leftColumn": 49,
+  "minWidth": 120,
+  "mobileBottomRow": 22,
+  "mobileLeftColumn": 47,
+  "mobileRightColumn": 63,
+  "mobileTopRow": 18,
+  "onClick": "{{Aknowledge_T1.run();\nmy_performance.my_search();\nshowAlert('Acknowledged !', 'success');\ncloseModal(Modal1.name);}}",
+  "originalBottomRow": 24,
+  "originalTopRow": 20,
+  "parentId": "5w4ltmdka2",
+  "placement": "CENTER",
+  "recaptchaType": "V3",
+  "renderMode": "CANVAS",
+  "resetFormOnClick": false,
+  "responsiveBehavior": "hug",
+  "rightColumn": 59,
+  "searchTags": [
+    "click",
+    "submit"
+  ],
+  "tags": [
+    "Buttons"
+  ],
+  "text": "Acknowledge",
+  "topRow": 20,
+  "type": "BUTTON_WIDGET",
+  "version": 1,
+  "widgetId": "7coaf0dsc4",
+  "widgetName": "Button2"
+}

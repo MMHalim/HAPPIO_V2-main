@@ -1,0 +1,5 @@
+UPDATE "Freshworks"
+SET "HAPPIO_Status" = 'QAED',
+    "Skipped_by" = '{{Input3.text}}',
+    "Skip_reason" = '{{Input19.text}}'
+WHERE "id" = '{{get_mx_con.data[0].id}}';

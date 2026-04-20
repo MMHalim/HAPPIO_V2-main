@@ -1,0 +1,3 @@
+UPDATE "Freshworks"
+SET "HAPPIO_Status" = 'QAED'
+WHERE "id" = '{{get_T2_OS.data[0].id}}';

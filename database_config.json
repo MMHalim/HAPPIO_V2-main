@@ -1,0 +1,37 @@
+{
+  "supabase": {
+    "url": "https://kupaxfvjfobfdgtbfnnt.supabase.co",
+    "auth_url": "https://kupaxfvjfobfdgtbfnnt.supabase.co/auth/v1",
+    "rest_url": "https://kupaxfvjfobfdgtbfnnt.supabase.co/rest/v1",
+    "service_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4NDA2MDA5OCwiZXhwIjoxOTk5NjM2MDk4fQ.zdeD358JXMMrUzRg9mmBnPAjlkgk8jAROkQ64v98vj0",
+    "client_api_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw",
+    "database": {
+      "host": "db.kupaxfvjfobfdgtbfnnt.supabase.co",
+      "port": 5432,
+      "database": "postgres",
+      "username": "postgres",
+      "password": "FjTfHUrrCZpwTrJYyBxH"
+    }
+  },
+  "appsmith": {
+    "datasources": {
+      "Freshchat_Supabase": {
+        "type": "postgres",
+        "host": "db.kupaxfvjfobfdgtbfnnt.supabase.co",
+        "port": 5432,
+        "database": "postgres",
+        "username": "postgres",
+        "password": "FjTfHUrrCZpwTrJYyBxH",
+        "ssl": true
+      },
+      "Auth": {
+        "type": "restapi",
+        "url": "https://kupaxfvjfobfdgtbfnnt.supabase.co/auth/v1",
+        "headers": {
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw",
+          "Content-Type": "application/json"
+        }
+      }
+    }
+  }
+}

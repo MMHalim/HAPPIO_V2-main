@@ -1,0 +1,182 @@
+/* Global Theme System */
+* { box-sizing: border-box; }
+
+:root {
+    --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    --bg-secondary: rgba(15, 23, 42, 0.6);
+    --bg-card: rgba(15, 23, 42, 0.6);
+    --bg-popup: #1e293b;
+    --bg-header: rgba(15, 23, 42, 0.8);
+    --bg-user-menu: rgba(255, 255, 255, 0.1);
+    --bg-theme-toggle: rgba(255, 255, 255, 0.1);
+    --bg-nav-item: rgba(255, 255, 255, 0.05);
+    --bg-nav-item-hover: rgba(255, 255, 255, 0.1);
+    --bg-nav-item-active: rgba(96, 165, 250, 0.2);
+    --bg-hover: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-meta: #94a3b8;
+    --text-nav: #f8fafc;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(96, 165, 250, 0.3);
+    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-light: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+}
+
+[data-theme="light"] {
+    --bg-primary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+    --bg-secondary: rgba(255, 255, 255, 0.8);
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-popup: #ffffff;
+    --bg-header: rgba(255, 255, 255, 0.95);
+    --bg-user-menu: rgba(15, 23, 42, 0.1);
+    --bg-theme-toggle: rgba(15, 23, 42, 0.1);
+    --bg-nav-item: rgba(15, 23, 42, 0.05);
+    --bg-nav-item-hover: rgba(15, 23, 42, 0.1);
+    --bg-nav-item-active: rgba(59, 130, 246, 0.2);
+    --bg-hover: rgba(15, 23, 42, 0.1);
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-meta: #64748b;
+    --text-nav: #1e293b;
+    --border-color: rgba(15, 23, 42, 0.1);
+    --border-hover: rgba(59, 130, 246, 0.3);
+    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    --shadow-light: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --danger-color: #ef4444;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.global-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.global-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.global-btn.btn-secondary {
+    background: var(--bg-user-menu);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.global-btn.btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+.global-btn.btn-slim {
+    padding: 4px 12px;
+    font-size: 13px;
+}
+
+.global-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+/* Filter Panel Styles */
+.filter-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  animation: slideDown 0.2s ease-out;
+  box-shadow: var(--shadow-light);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-row select, .filter-row input {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-nav-item);
+  color: var(--text-primary);
+  font-size: 14px;
+  min-width: 60px; /* Reduced from 140px to allow fitting short text */
+  transition: all 0.2s;
+}
+
+[data-theme="light"] .filter-row select, 
+[data-theme="light"] .filter-row input {
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+
+.filter-row select:focus, .filter-row input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.filter-btn-remove {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.filter-btn-remove:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+}

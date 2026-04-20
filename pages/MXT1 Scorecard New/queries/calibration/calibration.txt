@@ -1,0 +1,9 @@
+SELECT
+  "Conversation_Id"
+FROM
+  "Assigning_Calibration"
+WHERE
+  "Score_card" = {{Textscorecard.text}}
+ORDER BY
+  "id" DESC
+LIMIT 1;

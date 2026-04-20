@@ -1,0 +1,3 @@
+UPDATE "T1_QA_New_Scorecards"
+SET "Agent_Appeal_Comments" = '{{Input19.text}}'
+WHERE "id" = '{{Table1.selectedRow.id}}';

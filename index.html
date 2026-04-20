@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAPPIO</title>
+  <script>
+    // Check for recovery token or other hash parameters and preserve them during redirect
+    if (window.location.hash && window.location.hash.includes('type=recovery')) {
+      window.location.href = '/reset-password.html' + window.location.hash;
+    } else {
+      window.location.href = '/login.html' + window.location.hash;
+    }
+  </script>
+  <link rel="icon" href="favicon.png" type="image/png" />
+  <link rel="stylesheet" href="global-theme.css" />
+</head>
+<body>
+  <noscript>
+    <p>If you are not redirected, open <a href="/login.html">login.html</a>.</p>
+  </noscript>
+</body>
+</html>

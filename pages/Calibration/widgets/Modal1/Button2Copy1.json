@@ -1,0 +1,58 @@
+{
+  "animateLoading": true,
+  "borderRadius": "1.5rem",
+  "bottomRow": 43,
+  "boxShadow": "none",
+  "buttonColor": "#22c55e",
+  "buttonVariant": "PRIMARY",
+  "disabledWhenInvalid": false,
+  "displayName": "Button",
+  "dynamicBindingPathList": [],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onClick"
+    }
+  ],
+  "hideCard": false,
+  "iconAlign": "left",
+  "iconName": "cross",
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.05d209fafeb13a8569e3b4e97069d9ee.svg",
+  "isDefaultClickDisabled": true,
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isLoading": false,
+  "isVisible": false,
+  "key": "gad0ckqaxk",
+  "leftColumn": 59,
+  "minWidth": 120,
+  "mobileBottomRow": 18,
+  "mobileLeftColumn": 51,
+  "mobileRightColumn": 58,
+  "mobileTopRow": 14,
+  "onClick": "{{my_performance.hidedelete();}}",
+  "originalBottomRow": 41,
+  "originalTopRow": 37,
+  "parentColumnSpace": 14.5,
+  "parentId": "5w4ltmdka2",
+  "parentRowSpace": 10,
+  "placement": "CENTER",
+  "recaptchaType": "V3",
+  "renderMode": "CANVAS",
+  "resetFormOnClick": false,
+  "responsiveBehavior": "hug",
+  "rightColumn": 61,
+  "searchTags": [
+    "click",
+    "submit"
+  ],
+  "tags": [
+    "Buttons"
+  ],
+  "text": "",
+  "tooltip": "Discard",
+  "topRow": 39,
+  "type": "BUTTON_WIDGET",
+  "version": 1,
+  "widgetId": "so4tqigqji",
+  "widgetName": "Button2Copy1"
+}

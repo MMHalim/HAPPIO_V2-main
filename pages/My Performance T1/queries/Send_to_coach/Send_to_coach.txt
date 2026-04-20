@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appeal Request # {{Table1.selectedRow.id}}</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f4f4f4;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+}
+.card {
+	background-color: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+padding: 20px;
+width: 300px;
+text-align: center;
+}
+.header {
+	font-size: 20px;
+	font-weight: bold;
+	margin-bottom: 15px;
+	color: #333333;
+}
+.logo {
+	margin-bottom: 15px;
+}
+.result {
+	font-size: 18px;
+	margin-bottom: 15px;
+	color: #007bff; /* Blue color for positive results */
+}
+.message {
+	font-size: 16px;
+	color: #555555;
+}
+.footer {
+	margin-top: 20px;
+	color: #777777;
+}
+</style>
+</head>
+<body>
+<div class="card">
+<br>
+<div class="conversation-id">
+  <a href="{{Table1.selectedRow.URL}}" target="_blank">Conversation Link</a>
+</div>
+<br>
+<br>
+<div class="header">Points of Discussion</div>
+<br>
+<br>
+
+<div class="Apeeal Points">  {{Input19.text}}</div>
+<br>
+<br>
+
+<div class="logo">
+<img src="https://kupaxfvjfobfdgtbfnnt.supabase.co/storage/v1/object/sign/ChatData/tempo_logo-removebg-preview.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJDaGF0RGF0YS90ZW1wb19sb2dvLXJlbW92ZWJnLXByZXZpZXcucG5nIiwiaWF0IjoxNzQyODQ1NTQzLCJleHAiOjE3NzQzODE1NDN9.cTQWItBzs3CK6vfv7A0owkDVhjX-_K1Yfw_XGF-_8Yo" alt="Tempo.fit Logo" width="150">
+</div>
+</div>
+</body>
+</html>

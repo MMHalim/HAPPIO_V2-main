@@ -1,0 +1,66 @@
+{
+  "animateLoading": true,
+  "backgroundColor": "transparent",
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "borderWidth": "5",
+  "bottomRow": 297,
+  "displayName": "Text",
+  "dynamicBindingPathList": [
+    {
+      "key": "truncateButtonColor"
+    },
+    {
+      "key": "fontFamily"
+    },
+    {
+      "key": "borderRadius"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicTriggerPathList": [],
+  "fontFamily": "{{appsmith.theme.fontFamily.appFont}}",
+  "fontSize": "1rem",
+  "fontStyle": "BOLD,ITALIC",
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a47d6d5dbbb718c4dc4b2eb4f218c1b7.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "hz1pr8io0t",
+  "leftColumn": 1,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 11,
+  "mobileLeftColumn": 1,
+  "mobileRightColumn": 17,
+  "mobileTopRow": 7,
+  "originalBottomRow": 325,
+  "originalTopRow": 269,
+  "overflow": "SCROLL",
+  "parentColumnSpace": 7.80078125,
+  "parentId": "uhmec4kn1m",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 63,
+  "searchTags": [
+    "typography",
+    "paragraph",
+    "label"
+  ],
+  "shouldTruncate": false,
+  "tags": [
+    "Suggested",
+    "Content"
+  ],
+  "text": "\n1. Adding the correct Note Template to cover all the critical points. An updated note summary must be added if there is a long thread.\n\nNote Template must cover the following:\n\nSerial Number (if Studio) | Core 1.0/2.0 (If Move)\nThe detailed reported issue.\nThe troubleshooting steps we did to resolve the issue, and if there aren't, then add a reference of why we didn't follow a specific path to troubleshoot.\nFULL ADDRESS of the customer if the issue is unresolved by troubleshooting.\nVideo call recording link.\nResolution/Next steps\nSlack link [IF APPLICABLE]\nReplacement tracking number/ETA if submitted through MX Shipping [IF APPLICABLE]\nReplacement Order Number if submitted through Shopify [IF APPLICABLE]\nJira ticket link [IF APPLICABLE]\n\n2. If we send a replacement item, the address must be updated on the primary customer's profile in Shopify directly in case the customer provided a different address.\n\n3. Choosing the correct/relevant VOC category.",
+  "textAlign": "CENTER",
+  "textColor": "#231F20",
+  "topRow": 251,
+  "truncateButtonColor": "{{appsmith.theme.colors.primaryColor}}",
+  "type": "TEXT_WIDGET",
+  "version": 1,
+  "widgetId": "b0uimy0ouu",
+  "widgetName": "Text114CopyCopy1CopyCopyCopyCopyCopy2"
+}

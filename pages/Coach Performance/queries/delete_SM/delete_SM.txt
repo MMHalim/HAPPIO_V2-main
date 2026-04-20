@@ -1,0 +1,3 @@
+{ 
+	"id":"{{Table2.selectedRow.id}}"
+}

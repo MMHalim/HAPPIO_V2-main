@@ -1,0 +1,75 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "bottomRow": 30,
+  "boxShadow": "none",
+  "defaultOptionValue": "GREEN",
+  "displayName": "Select",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    },
+    {
+      "key": "borderRadius"
+    },
+    {
+      "key": "labelTextColor"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "sourceData"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.a7b19dc8b31d68fcff57f1d2c0084a18.svg",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isFilterable": false,
+  "isLoading": false,
+  "isRequired": false,
+  "isVisible": true,
+  "key": "3f23uuq93d",
+  "labelAlignment": "left",
+  "labelPosition": "Top",
+  "labelText": "Select Team",
+  "labelTextColor": "{{appsmith.theme.colors.backgroundColor}}",
+  "labelTextSize": "1rem",
+  "labelWidth": 5,
+  "leftColumn": 14,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 25,
+  "mobileLeftColumn": 25,
+  "mobileRightColumn": 45,
+  "mobileTopRow": 18,
+  "optionLabel": "name",
+  "optionValue": "code",
+  "originalBottomRow": 30,
+  "originalTopRow": 23,
+  "parentColumnSpace": 17.625,
+  "parentId": "gr94nxvy54",
+  "parentRowSpace": 10,
+  "placeholderText": "Select option",
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 33,
+  "searchTags": [
+    "dropdown"
+  ],
+  "serverSideFiltering": false,
+  "sourceData": "[\n  {\n    \"name\": \"T1 Email Support\",\n    \"code\": \"T1_EMAIL_SUPPORT\"\n  },\n  {\n    \"name\": \"T1 Chat Support\",\n    \"code\": \"T1_CHAT_SUPPORT\"\n  },\n  {\n    \"name\": \"Sales Live-Chat\",\n    \"code\": \"SALES_LIVE_CHAT\"\n  },\n  {\n    \"name\": \"Sales Team (Phone)\",\n    \"code\": \"SALES_TEAM_PHONE\"\n  },\n  {\n    \"name\": \"Sales Email\",\n    \"code\": \"SALES_EMAIL\"\n  },\n  {\n    \"name\": \"General Support (Phone)\",\n    \"code\": \"GENERAL_SUPPORT_PHONE\"\n  }\n]",
+  "tags": [
+    "Suggested",
+    "Select"
+  ],
+  "topRow": 23,
+  "type": "SELECT_WIDGET",
+  "version": 1,
+  "widgetId": "5bs4185xxh",
+  "widgetName": "Select2"
+}

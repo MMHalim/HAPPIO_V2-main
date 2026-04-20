@@ -1,0 +1,75 @@
+{
+  "accentColor": "{{appsmith.theme.colors.primaryColor}}",
+  "animateLoading": true,
+  "autoFocus": false,
+  "borderRadius": "0.375rem",
+  "bottomRow": 117.00000000000728,
+  "boxShadow": "none",
+  "defaultText": " [\n    \"Mustafa Awadallah\",\n    \"Ahmed El Sawy\",\n    \"Ahmed Hamed\",\n    \"Amin Mohamed\",\n    \"Mahmoud El Abnoudy\",\n    \"Mohamed Mounir\",\n    \"Mostafa Adel\",\n    \"Shoukry Boules\",\n    \"Shayma Hashem\",\n    \"Mohamed Amin\",\n    \"Heba El Sobky\",\n    \"Mohamed Halim\",\n    \"Ahmed Ussama\"\n  ]",
+  "displayName": "Input",
+  "dynamicBindingPathList": [
+    {
+      "key": "accentColor"
+    },
+    {
+      "key": "isVisible"
+    }
+  ],
+  "dynamicHeight": "FIXED",
+  "dynamicPropertyPathList": [
+    {
+      "key": "isVisible"
+    }
+  ],
+  "dynamicTriggerPathList": [],
+  "hideCard": false,
+  "iconAlign": "left",
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.f2c34197dbcf03595098986de898928f.svg",
+  "inputType": "MULTI_LINE_TEXT",
+  "isDeprecated": false,
+  "isDisabled": false,
+  "isLoading": false,
+  "isRequired": false,
+  "isVisible": "{{Switch1.isSwitchedOn}}",
+  "key": "8z7uh05r2d",
+  "label": "Auditors List",
+  "labelAlignment": "left",
+  "labelPosition": "Auto",
+  "labelStyle": "",
+  "labelTextSize": "0.875rem",
+  "labelWidth": 5,
+  "leftColumn": 51,
+  "maxDynamicHeight": 9000,
+  "minDynamicHeight": 4,
+  "minWidth": 450,
+  "mobileBottomRow": 68,
+  "mobileLeftColumn": 44,
+  "mobileRightColumn": 59,
+  "mobileTopRow": 61,
+  "originalBottomRow": 117.00000000000728,
+  "originalTopRow": 67.00000000000728,
+  "parentColumnSpace": 19.8125,
+  "parentId": "0",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "resetOnSubmit": false,
+  "responsiveBehavior": "fill",
+  "rightColumn": 64,
+  "searchTags": [
+    "form",
+    "text input",
+    "number",
+    "textarea"
+  ],
+  "shouldAllowAutofill": false,
+  "showStepArrows": false,
+  "tags": [
+    "Suggested",
+    "Inputs"
+  ],
+  "topRow": 67.00000000000728,
+  "type": "INPUT_WIDGET_V2",
+  "version": 2,
+  "widgetId": "01lo4g3zvs",
+  "widgetName": "Input2"
+}

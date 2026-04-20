@@ -1,0 +1,3 @@
+UPDATE "Freshworks"
+SET "assigned_qa" = '{{Taker_name.text}}'
+WHERE "id" = '{{get_mx_con.data[0].id}}';

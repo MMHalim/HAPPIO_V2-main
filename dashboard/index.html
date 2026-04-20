@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quality Management System</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="stylesheet" href="/global-theme.css">
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recent-activity {
+            list-style: none;
+            padding: 0;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        /* MTD Top Scorers styles (ported from login/preview) */
+        .mtd-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: var(--shadow);
+        }
+        .mtd-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .mtd-list { display:grid; gap:12px; list-style:none; padding:0; margin:0; justify-items: center; }
+        .mtd-list[data-count="1"] { grid-template-columns: 1fr; }
+        .mtd-list[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+        .mtd-list[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+        .mtd-list[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+        .mtd-list[data-count="5"] { grid-template-columns: repeat(5, 1fr); }
+        @media (max-width: 1200px) {
+            .mtd-list[data-count="5"] { grid-template-columns: repeat(4, 1fr); }
+            .mtd-list[data-count="4"] { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 992px) {
+            .mtd-list[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
+            .mtd-list[data-count="4"] { grid-template-columns: repeat(3, 1fr); }
+            .mtd-list[data-count="3"] { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .mtd-list[data-count="5"],
+            .mtd-list[data-count="4"],
+            .mtd-list[data-count="3"],
+            .mtd-list[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 520px) {
+            .mtd-list[data-count="5"],
+            .mtd-list[data-count="4"],
+            .mtd-list[data-count="3"],
+            .mtd-list[data-count="2"] { grid-template-columns: 1fr; }
+        }
+        .mtd-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); overflow:hidden; position:relative; width: 220px; text-align: center; }
+        .mtd-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-light); }
+        .mtd-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--bg-soft); display:flex; align-items:center; justify-content:center; font-weight:700; color: var(--text-primary); overflow:hidden; flex: 0 0 56px; }
+        .mtd-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display:block; }
+        .mtd-vert { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; width:100%; gap:8px; }
+        .mtd-name { font-weight:600; color: var(--text-primary); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2; min-width:0; }
+        .mtd-meta { font-size:12px; color: var(--text-secondary); }
+        .mtd-score { font-weight:700; color: var(--primary-color); font-variant-numeric: tabular-nums; }
+
+        .mtd-category { margin-bottom: 28px; }
+        .mtd-category-empty { color: var(--text-secondary); text-align:center; padding: 12px 0; }
+        .mtd-category-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 12px; }
+        .mtd-card { position: relative; isolation: isolate; }
+        .mtd-card * { box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="content-card">
+            <h2 class="card-title">🏅 Top 5 Agent Rankings by Category</h2>
+            <div class="mtd-card">
+                <div id="mtdContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Navigation Script -->
+    <script src="/global-navigation.js"></script>
+    
+    <script>
+        console.log("Dashboard script version: 1.1 loaded");
+        // Authentication check and load MTD rankings
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('login_token');
+            if (!token) { window.location.href = '/login.html'; return; }
+            await loadMtdRanking(token);
+        });
+
+        async function loadMtdRanking(token) {
+            let SUPABASE_URL = 'https://kupaxfvjfobfdgtbfnnt.supabase.co';
+            let ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw';
+            let SERVICE_KEY = null;
+            try {
+                const cfg = await fetch('/database_config.json').then(r => r.json()).catch(() => null);
+                if (cfg && cfg.supabase) {
+                    SUPABASE_URL = cfg.supabase.url || SUPABASE_URL;
+                    ANON_KEY = cfg.supabase.client_api_key || ANON_KEY;
+                    SERVICE_KEY = cfg.supabase.service_key || null;
+                }
+            } catch(_) {}
+            const container = document.getElementById('mtdContainer');
+            container.innerHTML = '<div style="text-align:center;padding:20px;">Loading MTD rankings…</div>';
+
+            try {
+                const photoData = await fetchUserPhotos(SUPABASE_URL, ANON_KEY, token, SERVICE_KEY).catch(() => ({ nameMap: new Map(), emailMap: new Map(), emailLocalMap: new Map() }));
+                const photoMap = photoData.nameMap || new Map();
+                const emailLocalMap = photoData.emailLocalMap || new Map();
+
+                function normalizeName(n){
+                    return (n||'').trim().toLowerCase().replace(/\s+/g,' ');
+                }
+                function localVariantsFromName(n){
+                    const parts = normalizeName(n).split(' ');
+                    const base = parts.length >= 2 ? `${parts[0]}.${parts[1]}` : (parts[0] || '');
+                    return [base, base.replace('.', '_'), base.replace('.', '')];
+                }
+                function getPhotoForName(n){
+                    if (!n) return null;
+                    const direct = photoMap.get(n) || photoMap.get(n.trim());
+                    if (direct) return direct;
+                    for (const v of localVariantsFromName(n)){
+                        const p = emailLocalMap.get(v);
+                        if (p) return p;
+                    }
+                    return null;
+                }
+
+                const categories = [
+                    { name: 'MX T1', table: 'T1_QA_New_Scorecards', icon: '📞' },
+                    { name: 'Order Support', table: 'T2_OS_NEW_2025', icon: '🚚' },
+                    { name: 'Product Support', table: 't2_ps_scorecards', icon: '🛠️' },
+                    { name: 'Social Media', table: 'MX_Social_Media_Scorecard', icon: '📱' },
+                    { name: 'MX T1 SMS', table: 'sms_scorecard', icon: '✉️' }
+                ];
+
+                const allRankings = await Promise.all(
+                    categories.map(async (cat) => {
+                        try {
+                            const ranking = await loadCategoryRanking(SUPABASE_URL, ANON_KEY, token, cat.table, SERVICE_KEY);
+                            return { ...cat, ranking: ranking.slice(0, 5) };
+                        } catch (err) {
+                            console.warn(`Failed to load ${cat.name}:`, err);
+                            return { ...cat, ranking: [] };
+                        }
+                    })
+                );
+
+                container.innerHTML = allRankings.map(cat => {
+                    if (cat.ranking.length === 0) {
+                        return `<div class="mtd-category"><div class="mtd-title">${cat.icon} ${cat.name}</div><div class="mtd-category-empty">No data available</div></div>`;
+                    }
+                    return `<div class="mtd-category"><div class="mtd-title">${cat.icon} ${cat.name}</div><ul class="mtd-list" data-count="${cat.ranking.length}">${cat.ranking.map((r,i)=>{
+                        const emailLocal = r.emailLocal || null;
+                        const photoByEmail = emailLocal ? emailLocalMap.get(emailLocal) : null;
+                        const photo = photoByEmail || getPhotoForName(r.name);
+                        const initials = (r.name||'NA').split(/\s+/).map(p=>p[0]).join('').slice(0,2).toUpperCase();
+                        const rank = i+1; const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+                        const safeName = (r.name || 'Unknown').trim();
+                        return `<li class="mtd-item rank-${rank}" title="${safeName}"><div class="mtd-vert"><div class="mtd-avatar">${photo?`<img src="${photo}" alt="${safeName}">`:initials}</div><div class="mtd-name">${medal ? medal + ' ' : ''}${rank}. ${safeName}</div><div class="mtd-meta">Audits: ${r.count}</div><div class="mtd-score">${r.avg}%</div></div></li>`;
+                    }).join('')}</ul></div>`;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = `<div style="color:#EF4444;text-align:center;padding:20px;">${err.message || 'Error loading MTD data'}</div>`;
+            }
+        }
+
+        async function loadCategoryRanking(SUPABASE_URL, ANON_KEY, token, tableName, SERVICE_KEY = null) {
+            const now = new Date();
+            const first = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+            let nameField = 'Agent_Name';
+            let scoreField = 'Final_Score';
+            let emailField = null;
+            // Handle Product Support table which uses lowercase field names
+            if (tableName === 't2_ps_scorecards') { nameField = 'agent_name'; scoreField = 'final_score'; emailField = 'agent_email'; }
+            if (tableName === 'sms_scorecard') { nameField = 'agent_name'; scoreField = 'final_score'; emailField = 'agent_email'; }
+
+            function parseSupabaseDate(d) {
+                if (!d) return null;
+                if (typeof d === 'string') {
+                    let s = d.trim();
+                    // Normalize space between date and time
+                    if (s.includes(' ')) s = s.replace(' ', 'T');
+                    // Trim fractional seconds to 3 digits
+                    s = s.replace(/(\.\d{3})\d+/, '$1');
+                    // Normalize timezone: '+00' -> '+00:00', '+0000' -> '+00:00'
+                    s = s.replace(/\+([0-9]{2})$/, '+$1:00');
+                    s = s.replace(/\+([0-9]{2})([0-9]{2})$/, '+$1:$2');
+                    return new Date(s);
+                }
+                try { return new Date(d); } catch(_) { return null; }
+            }
+            
+            async function fetchRows(authBearer, apikeyOverride = null) {
+                const url = new URL(`${SUPABASE_URL}/rest/v1/${tableName}`);
+                const selectCols = [nameField, scoreField];
+                
+                // Server-side filtering to reduce payload size
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const startOfMonthStr = startOfMonth.toISOString();
+                const startOfMonthDateStr = startOfMonthStr.split('T')[0]; // YYYY-MM-DD
+
+                if (tableName === 'sms_scorecard') {
+                    // sms_scorecard does not have date_created; only use created_at
+                    selectCols.push('created_at');
+                    if (emailField) selectCols.push(emailField);
+                    url.searchParams.set('created_at', `gte.${startOfMonthStr}`);
+                } else {
+                    // Most legacy tables have either date_created or created_at
+                    selectCols.push('date_created', 'created_at');
+                    if (emailField) selectCols.push(emailField);
+                    // Filter by date_created (primary) or created_at
+                    // Since OR filtering across columns is tricky in simple REST syntax without logical operators,
+                    // we'll filter by date_created as it's the primary business date field for these tables.
+                    // Fallback: If date_created is null/missing in some rows, this might miss them, 
+                    // but for scorecards it's usually populated.
+                    // To be safe, we can try to filter where date_created >= start OR created_at >= start
+                    // But standard PostgREST syntax for OR is: or=(date_created.gte.X,created_at.gte.X)
+                    url.searchParams.set('or', `(date_created.gte.${startOfMonthDateStr},created_at.gte.${startOfMonthStr})`);
+                }
+                
+                url.searchParams.set('select', selectCols.join(','));
+                url.searchParams.set('limit', '2000'); // Reduced from 10000
+                
+                const keyForHeaders = apikeyOverride || ANON_KEY;
+                const res = await fetch(url.toString(), { headers: { 'apikey': keyForHeaders, 'Authorization': `Bearer ${authBearer}`, 'Accept': 'application/json' } });
+                return res.ok ? res.json() : Promise.reject(new Error(`Fetch ${tableName} failed (${res.status})`));
+            }
+
+            let rows = [];
+            try {
+                rows = await fetchRows(token);
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    // Fallback to anon key auth in case RLS blocks user token
+                    rows = await fetchRows(ANON_KEY, ANON_KEY);
+                    console.warn(`Fallback to anon auth for ${tableName}`);
+                    if ((!Array.isArray(rows) || rows.length === 0) && SERVICE_KEY) {
+                        rows = await fetchRows(SERVICE_KEY, SERVICE_KEY);
+                        console.warn(`Fallback to service key for ${tableName}`);
+                    }
+                }
+            } catch (e) {
+                try {
+                    rows = await fetchRows(ANON_KEY, ANON_KEY);
+                    console.warn(`Primary auth failed for ${tableName}, using anon:`, e && e.message);
+                    if ((!Array.isArray(rows) || rows.length === 0) && SERVICE_KEY) {
+                        rows = await fetchRows(SERVICE_KEY, SERVICE_KEY);
+                        console.warn(`Anon failed for ${tableName}, using service key.`);
+                    }
+                } catch (e2) {
+                    if (SERVICE_KEY) {
+                        try {
+                            rows = await fetchRows(SERVICE_KEY, SERVICE_KEY);
+                            console.warn(`Anon auth error for ${tableName}, using service key:`, e2 && e2.message);
+                        } catch (e3) { throw e3; }
+                    } else {
+                        throw e2;
+                    }
+                }
+            }
+
+            const firstDate = new Date(first);
+            const lastDate = new Date(today);
+            const filteredRows = rows.filter(r => {
+                const d = r.date_created || r.created_at;
+                const dt = parseSupabaseDate(d);
+                if (!dt || Number.isNaN(dt.getTime())) return false;
+                return dt >= firstDate && dt <= lastDate;
+            });
+
+            const map = new Map();
+            for (const r of filteredRows) {
+                let name = r.Agent_Name || r.agent_name || r.AgentName || r.agentName || r.Name || r.name || r.agent_email || 'Unknown';
+                if (name.includes('@') && name.includes('.')) { name = name.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); }
+                const pctStr = (r.Final_Score ?? r.final_score ?? r.Score ?? r.score ?? '').toString().replace('%','').trim();
+                const val = Number(pctStr);
+                if (!Number.isFinite(val)) continue; // skip rows without numeric score
+                const emailLocal = (r.agent_email || r.AgentEmail || r.email || '').split('@')[0]?.toLowerCase() || null;
+                const e = map.get(name) || { sum: 0, n: 0, emailLocal: emailLocal };
+                if (!e.emailLocal && emailLocal) e.emailLocal = emailLocal;
+                e.sum += val; e.n += 1; map.set(name, e);
+            }
+            return Array.from(map.entries()).map(([name,e]) => ({ name, avg: e.n ? Math.round((e.sum/e.n)*100)/100 : 0, count: e.n, emailLocal: e.emailLocal || null })).sort((a,b)=> b.avg - a.avg);
+        }
+
+        async function fetchUserPhotos(SUPABASE_URL, ANON_KEY, token, SERVICE_KEY = null) {
+            try {
+                const url = new URL(`${SUPABASE_URL}/rest/v1/users`);
+                url.searchParams.set('select', 'Name,email,profile_photo');
+                url.searchParams.set('limit', '10000');
+                async function tryFetch(authBearer, apikeyOverride = null) {
+                    const keyForHeaders = apikeyOverride || ANON_KEY;
+                    const res = await fetch(url.toString(), { headers: { 'apikey': keyForHeaders, 'Authorization': `Bearer ${authBearer}`, 'Accept': 'application/json' } });
+                    return res.ok ? res.json() : null;
+                }
+                let rows = await tryFetch(token);
+                if (!rows) { rows = await tryFetch(ANON_KEY, ANON_KEY); }
+                if (!rows && SERVICE_KEY) { rows = await tryFetch(SERVICE_KEY, SERVICE_KEY); }
+                if (!rows) { return { nameMap: new Map(), emailMap: new Map(), emailLocalMap: new Map() }; }
+                const nameMap = new Map(); const emailMap = new Map(); const emailLocalMap = new Map();
+                for (const r of rows) {
+                    const name = r.Name || '';
+                    const email = r.email || '';
+                    const photo = r.profile_photo || '';
+                    if (name && photo) nameMap.set(name, photo);
+                    if (email && photo) {
+                        emailMap.set(email, photo);
+                        const local = email.split('@')[0].toLowerCase();
+                        emailLocalMap.set(local, photo);
+                    }
+                }
+                return { nameMap, emailMap, emailLocalMap };
+            } catch (err) { return { nameMap: new Map(), emailMap: new Map(), emailLocalMap: new Map() }; }
+        }
+    </script>
+</body>
+</html>

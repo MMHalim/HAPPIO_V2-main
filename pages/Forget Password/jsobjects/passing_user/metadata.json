@@ -1,0 +1,11 @@
+{
+  "gitSyncId": "6460b1a4e4995a7c25a50018_646534b3a63f65753dcb37ff",
+  "id": "Forget Password_passing_user",
+  "unpublishedCollection": {
+    "name": "passing_user",
+    "pageId": "Forget Password",
+    "pluginId": "js-plugin",
+    "pluginType": "JS",
+    "variables": []
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "animateLoading": true,
+  "bottomRow": 595,
+  "capSide": 0,
+  "capType": "nc",
+  "displayName": "Divider",
+  "dividerColor": "#858282",
+  "dynamicBindingPathList": [],
+  "hideCard": false,
+  "iconSVG": "https://appcdn.appsmith.com/static/media/icon.3b7d47d7bd70da418a827287042cbb7f.svg",
+  "isDeprecated": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "q910rank2t",
+  "leftColumn": 0,
+  "minWidth": 450,
+  "mobileBottomRow": 584,
+  "mobileLeftColumn": 0,
+  "mobileRightColumn": 20,
+  "mobileTopRow": 580,
+  "orientation": "horizontal",
+  "originalBottomRow": 596,
+  "originalTopRow": 592,
+  "parentColumnSpace": 8.3759765625,
+  "parentId": "ow4eh0wieh",
+  "parentRowSpace": 10,
+  "renderMode": "CANVAS",
+  "responsiveBehavior": "fill",
+  "rightColumn": 64,
+  "searchTags": [
+    "line"
+  ],
+  "strokeStyle": "solid",
+  "tags": [
+    "Layout"
+  ],
+  "thickness": 2,
+  "topRow": 591,
+  "type": "DIVIDER_WIDGET",
+  "version": 1,
+  "widgetId": "alnmj9zwkj",
+  "widgetName": "Divider7"
+}

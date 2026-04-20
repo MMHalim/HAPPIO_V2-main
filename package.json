@@ -1,0 +1,16 @@
+{
+  "name": "happio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static app with Vercel serverless functions",
+  "scripts": {
+    "dev": "python3 -m http.server 8020",
+    "preview": "python3 -m http.server 8000"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.11"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

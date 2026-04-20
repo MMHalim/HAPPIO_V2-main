@@ -1,0 +1,2 @@
+SELECT * FROM public."users" 
+WHERE user_role IN ('MX-T2 OS User','Administrator','QA Coach', 'Team Leader')

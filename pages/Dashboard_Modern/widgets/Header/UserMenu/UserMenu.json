@@ -1,0 +1,38 @@
+{
+  "gitSyncId": "modern_user_menu_001",
+  "unpublishedWidget": {
+    "backgroundColor": "#F8FAFC",
+    "borderColor": "#E2E8F0",
+    "borderRadius": "12px",
+    "borderWidth": "1px",
+    "bottomRow": 60,
+    "canExtend": true,
+    "containerStyle": "card",
+    "detachFromLayout": false,
+    "dynamicBindingPathList": [],
+    "dynamicHeight": "FIXED",
+    "dynamicTriggers": [],
+    "flexLayers": [],
+    "isCanvas": true,
+    "leftColumn": 50,
+    "minHeight": 50,
+    "mobileBottomRow": 60,
+    "mobileLeftColumn": 40,
+    "mobileRightColumn": 60,
+    "mobileTopRow": 5,
+    "mobileWidthInPercentage": 30,
+    "parentColumnSpace": 1,
+    "parentRowSpace": 1,
+    "responsiveBehavior": "fill",
+    "rightColumn": 60,
+    "snapColumns": 10,
+    "snapRows": 3,
+    "topRow": 5,
+    "type": "CONTAINER_WIDGET",
+    "useAutoLayout": false,
+    "version": 1,
+    "widgetId": "user_menu_001",
+    "widgetName": "UserMenu"
+  }
+}
+

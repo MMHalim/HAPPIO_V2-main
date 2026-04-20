@@ -1,0 +1,50 @@
+{
+  "animateLoading": true,
+  "borderRadius": "{{appsmith.theme.borderRadius.appBorderRadius}}",
+  "bottomRow": 233,
+  "boxShadow": "none",
+  "buttonColor": "{{appsmith.theme.colors.primaryColor}}",
+  "buttonVariant": "PRIMARY",
+  "disabledWhenInvalid": false,
+  "dynamicBindingPathList": [
+    {
+      "key": "buttonColor"
+    },
+    {
+      "key": "borderRadius"
+    }
+  ],
+  "dynamicTriggerPathList": [
+    {
+      "key": "onClick"
+    }
+  ],
+  "isDefaultClickDisabled": true,
+  "isDisabled": false,
+  "isLoading": false,
+  "isVisible": true,
+  "key": "14016qm4gf",
+  "leftColumn": 54,
+  "minWidth": 120,
+  "mobileBottomRow": 245,
+  "mobileLeftColumn": 44,
+  "mobileRightColumn": 60,
+  "mobileTopRow": 241,
+  "needsErrorInfo": false,
+  "onClick": "{{update_t1_attributes.run().then(() => {\n  showAlert('Attributes Updated Successfully !', 'success');\n}).catch(() => {\n  showAlert('Please Try Again !', 'error');\n});}}",
+  "parentColumnSpace": 9.77734375,
+  "parentId": "kozq3wbbbl",
+  "parentRowSpace": 10,
+  "placement": "CENTER",
+  "recaptchaType": "V3",
+  "renderMode": "CANVAS",
+  "resetFormOnClick": false,
+  "responsiveBehavior": "hug",
+  "rightColumn": 62,
+  "text": "Submit",
+  "topRow": 229,
+  "type": "BUTTON_WIDGET",
+  "version": 1,
+  "widgetId": "2mpojc2lqk",
+  "widgetName": "Button1"
+}

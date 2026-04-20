@@ -1,0 +1,67 @@
+{
+  "gitSyncId": "modern_communication_radio_001",
+  "unpublishedWidget": {
+    "backgroundColor": "transparent",
+    "borderColor": "transparent",
+    "borderRadius": "0px",
+    "borderWidth": "0px",
+    "bottomRow": 100,
+    "canExtend": true,
+    "containerStyle": "none",
+    "detachFromLayout": false,
+    "dynamicBindingPathList": [],
+    "dynamicHeight": "FIXED",
+    "dynamicTriggers": [],
+    "flexLayers": [],
+    "fontFamily": "Inter",
+    "fontSize": "14px",
+    "isCanvas": false,
+    "isDisabled": false,
+    "isRequired": true,
+    "isValid": true,
+    "label": "Score",
+    "labelStyle": "#374151",
+    "labelTextColor": "#374151",
+    "leftColumn": 2,
+    "minHeight": 50,
+    "mobileBottomRow": 100,
+    "mobileLeftColumn": 2,
+    "mobileRightColumn": 18,
+    "mobileTopRow": 40,
+    "mobileWidthInPercentage": 80,
+    "options": [
+      {
+        "label": "Excellent (100%)",
+        "value": "100"
+      },
+      {
+        "label": "Good (80%)",
+        "value": "80"
+      },
+      {
+        "label": "Average (60%)",
+        "value": "60"
+      },
+      {
+        "label": "Poor (40%)",
+        "value": "40"
+      },
+      {
+        "label": "Unsatisfactory (20%)",
+        "value": "20"
+      }
+    ],
+    "parentColumnSpace": 1,
+    "parentRowSpace": 1,
+    "responsiveBehavior": "fill",
+    "rightColumn": 18,
+    "snapColumns": 16,
+    "snapRows": 3,
+    "topRow": 40,
+    "type": "RADIO_GROUP_WIDGET",
+    "useAutoLayout": false,
+    "version": 1,
+    "widgetId": "communication_radio_001",
+    "widgetName": "CommunicationRadio"
+  }
+}

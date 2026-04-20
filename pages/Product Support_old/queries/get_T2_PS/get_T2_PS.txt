@@ -1,0 +1,19 @@
+SELECT
+  LEFT(interaction_id, POSITION('-' IN interaction_id) - 1) as Conversation_ID,
+  id
+FROM
+  "Freshworks"
+WHERE
+  (
+    "last_responded_by" = '{{agent_email.text}}'
+    OR "first_assigned_by" = '{{agent_email.text}}'
+    OR "first_responded_by" = '{{agent_email.text}}'
+  )
+  AND ("assigned_qa" = '' OR "assigned_qa" IS NULL) 
+  AND ("HAPPIO_Status" = '' OR "HAPPIO_Status" IS NULL)
+  AND "Year" >= '{{txtyyyy.text}}' 
+  AND "Year" <= '{{txtyyyyTo.text}}'
+  AND "Month" >= '{{txtmm.text}}' 
+  AND "Month" <= '{{txtmmTo.text}}'
+  AND "Day" >= '{{txtdd.text}}' 
+  AND "Day" <= '{{txtddTo.text}}'

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MX Social Media Scorecard</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="global-theme.css">
+    <style>
+        .page-content { padding: 24px; }
+        .scorecard-header {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .scorecard-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .field label { color: var(--text-primary); font-weight: 600; }
+        .field input, .field select, .field textarea {
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .radio-pill {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-nav-item);
+            cursor: pointer;
+        }
+        .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; }
+        .notice {
+            margin-top: 6px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 153, 0, 0.3);
+            background: rgba(255, 153, 0, 0.08);
+            color: #f59e0b;
+            display: none;
+        }
+        /* Attributes Scoring */
+        .attributes-card { margin-top: 16px; }
+        .attributes-header { display: flex; align-items: center; justify-content: space-between; }
+        .attributes-subtitle { color: var(--text-secondary); }
+        .attributes-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+        .pane { border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); padding: 12px; }
+        .pane-scroll { height: 520px; overflow: auto; }
+        .attributes-groups { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .attributes-title { font-weight: 700; color: var(--text-primary); margin-top: 8px; }
+        .attributes-list { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
+        .attr-row { display: grid; grid-template-columns: 1fr auto 80px; gap: 12px; align-items: start; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; background: var(--bg-card); }
+        .attr-comment { grid-column: 1 / -1; margin-top: 8px; }
+        .attr-comment textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text-primary);
+            resize: vertical;
+        }
+        .attr-comment textarea::placeholder { color: var(--text-secondary); }
+        .attr-comment label { font-weight: 600; color: var(--text-primary); }
+        .attr-score.zero { color: var(--danger-color); font-weight: 700; }
+        .sme-title { font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .sme-list { 
+            display: grid; 
+            grid-template-columns: repeat(2, minmax(240px, 1fr)); 
+            align-items: start; 
+            width: 100%; 
+            column-gap: 24px; 
+            row-gap: 12px; 
+        }
+        .sme-list .full-span { grid-column: 1 / -1; }
+        .sme-list .field { display: inline-flex; flex-direction: column; align-items: flex-start; width: 100%; }
+        .sme-list .field label { white-space: nowrap; }
+        .sme-list .field select,
+        .sme-list .field input { width: 100%; min-width: 0; max-width: none; }
+        .sme-list .field.align-right { justify-self: end; grid-column: 2; }
+        .sme-list .field select:has(option:checked[value=""]) { color: var(--text-secondary); }
+        .sme-list .field select { color: var(--text-primary); }
+        .sme-list .full-span textarea { width: 100%; }
+        #interactionDropdownRoot { width: 100%; min-width: 240px; max-width: none; }
+        #smeName { min-width: 240px; }
+        #interactionRelatedTo { max-width: none; }
+        #interactionDropdownInput::placeholder { color: var(--text-secondary); }
+        @media (max-width: 900px) {
+          .sme-list { grid-template-columns: 1fr; }
+          .sme-list .field { width: 100%; }
+        }
+        .sme-radio-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .sme-radio-group label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; }
+        .sme-radio-group input { accent-color: var(--primary-color); }
+        .sme-radio-group label:has(input:checked),
+        .sme-radio-group label.checked { border-color: var(--primary-color); background: var(--bg-nav-item-active); }
+        .attr-title { display: grid; grid-template-rows: auto auto; gap: 6px; }
+        .attr-name { font-weight: 600; color: var(--text-primary); }
+        .attr-desc { white-space: pre-line; color: var(--text-secondary); font-size: 13px; }
+        .attr-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .attr-controls label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; }
+        .attr-controls input { accent-color: var(--primary-color); }
+        .attr-controls label:has(input:checked),
+        .attr-controls label.checked { border-color: var(--primary-color); background: var(--bg-nav-item-active); }
+        .attr-score { font-weight: 700; color: var(--primary-color); align-self: center; text-align: right; }
+        .attr-score.zero { color: #ef4444; }
+        .attr-subtotal { margin-top: 8px; font-weight: 600; color: var(--text-primary); }
+        .recent-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .recent-table th, .recent-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            text-align: left;
+        }
+        .compact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; align-items: center; justify-items: start; }
+        .compact-grid .field { align-items: flex-start; width: 100%; }
+        .compact-grid .field label { text-align: left; }
+        
+        .compact-form .field input,
+        .compact-form .field select {
+            max-width: 320px;
+            width: 100%;
+            padding: 8px 10px;
+        }
+        .compact-form .radio-group { gap: 6px; }
+        .compact-form .radio-pill { padding: 6px 10px; font-size: 12px; border-radius: 10px; }
+        
+        /* Agent dropdown embedded list */
+        .agent-dropdown { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; max-width: 320px; z-index: 9999; }
+        .agent-dropdown input { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-primary); }
+        .agent-dropdown-toggle { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
+        .agent-dropdown-panel { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: var(--shadow); z-index: 10000; }
+        .agent-dropdown-filter { width: calc(100% - 16px); margin: 8px; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 10px; }
+        .agent-dropdown-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; }
+        .agent-dropdown-list li { padding: 10px 12px; cursor: pointer; }
+        .agent-dropdown-list li:hover { background: var(--bg-nav-item-hover); }
+        
+        .select-criteria-card { position: relative; z-index: 9000; }
+        .details-card { position: relative; z-index: 1; }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            align-items: start;
+        }
+        .details-two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+        .details-grid .field input,
+        .details-grid .field select {
+            width: 100%;
+            max-width: 100%;
+            padding: 8px 10px;
+        }
+
+        #agentDropdownInput::placeholder { color: var(--text-secondary); }
+
+        .details-grid .radio-pill { padding: 6px 10px; }
+        .agent-dropdown-panel { background: #0f172a; }
+        .agent-dropdown-filter { background: #1e293b; color: var(--text-primary); }
+        select option { background: #0f172a; color: #f8fafc; }
+
+        [data-theme="light"] .agent-dropdown-panel { background: #ffffff; }
+        [data-theme="light"] .agent-dropdown-filter { background: #f1f5f9; color: var(--text-primary); }
+        [data-theme="light"] select option { background: #ffffff; color: #1e293b; }
+
+         /* RTE Styles */
+        .rte-container {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-input);
+            overflow: hidden;
+            margin-top: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+         .rte-toolbar {
+             display: flex;
+             gap: 4px;
+             padding: 6px;
+             border-bottom: 1px solid var(--border-color);
+             background: var(--bg-card);
+         }
+         .rte-btn {
+             background: transparent;
+             border: 1px solid transparent;
+             border-radius: 4px;
+             padding: 4px 8px;
+             cursor: pointer;
+             color: var(--text-primary);
+             font-size: 14px;
+             display: flex;
+             align-items: center;
+             gap: 4px;
+         }
+         .rte-btn:hover {
+             background: var(--hover-bg);
+         }
+         .rte-editor {
+             min-height: 80px;
+             padding: 8px;
+             outline: none;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 14px;
+         }
+         .rte-editor ul, .rte-editor ol {
+             padding-left: 20px;
+             margin: 4px 0;
+         }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation will be inserted by global-navigation.js -->
+
+    <div class="page-content">
+        <div class="global-card">
+                <div class="scorecard-header">MX Social Media Scorecard</div>
+
+            <!-- Conversation Details -->
+            <div class="global-card details-card" style="margin-top: 8px;">
+                <div class="details-grid compact-form">
+                    <div class="field">
+                        <label for="postUrlInput">Post URL</label>
+                        <input id="postUrlInput" type="text" placeholder="Post URL" style="width:100%;" />
+                        <!-- Hidden field for compatibility with duplicate check if needed -->
+                        <input id="freshworksRowId" type="hidden" />
+                        <div id="duplicateNotice" class="notice">Duplicate found for this URL. Review before submitting.</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="agentNameSelect">Agent Name</label>
+                        <select id="agentNameSelect">
+                            <option value="">Select agent</option>
+                        </select>
+                        <!-- Hidden elements to prevent JS errors if referenced -->
+                        <div style="display:none;">
+                            <input id="agentDropdownInput" />
+                            <div id="agentDropdownPanel">
+                                <input id="agentDropdownFilter" />
+                                <ul id="agentDropdownList"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="agentEmailInput">Agent Email</label>
+                        <input id="agentEmailInput" type="email" placeholder="agent@example.com" disabled />
+                    </div>
+
+                    <div class="field" style="display:flex; flex-direction:column; min-height:120px;">
+                        <label for="takerNameInput">Taker Name</label>
+                        <input id="takerNameInput" type="text" placeholder="Auto-filled from your profile" disabled style="margin-bottom:8px;" />
+                    </div>
+
+                    <div class="details-two-up">
+                        <div class="field">
+                            <label>Certification</label>
+                            <div class="sme-radio-group" data-group="certification">
+                                <label><input type="radio" name="certification" value="Yes"> Yes</label>
+                                <label><input type="radio" name="certification" value="No" checked> No</label>
+                            </div>
+                        </div>
+                        <!-- Calibration removed per request? User said "remove ... calibration button and logic" but in the example data there is "Calibration":"No". I will keep the field but remove the button. -->
+                        <div class="field">
+                            <label>Calibration</label>
+                            <div class="sme-radio-group" data-group="calibration">
+                                <label><input type="radio" name="calibration" value="Yes"> Yes</label>
+                                <label><input type="radio" name="calibration" value="No" checked> No</label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Attributes Scoring (Yes/No-based) -->
+            <div class="global-card attributes-card">
+
+                <div class="attributes-split">
+                  <!-- SME panel on the left -->
+                  <div class="pane pane-scroll" id="smePane">
+                    <div class="sme-list">
+                      
+                      <!-- Row: Fitness Fluency + Channel -->
+                      <div class="field">
+                          <label>Fitness Fluency</label>
+                          <div class="sme-radio-group" data-group="fitnessFluency">
+                              <label><input type="radio" name="fitnessFluency" value="Yes"> Yes</label>
+                              <label><input type="radio" name="fitnessFluency" value="No" checked> No</label>
+                          </div>
+                      </div>
+                      
+                      <div class="field align-right">
+                        <label for="channelSelect">Channel</label>
+                        <select id="channelSelect">
+                            <option value="">Select channel</option>
+                            <option value="Facebook_Post">Facebook Post</option>
+                            <option value="Facebook_DM">Facebook DM</option>
+                            <option value="Reddit">Reddit</option>
+                            <option value="IOS_Review">IOS Review</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="Google Play">Google Play</option>
+                            <option value="Review">Review</option>
+                            <option value="Facebook">Facebook</option>
+                        </select>
+                      </div>
+
+                      <div class="field">
+                          <label for="interactionRelatedTo">Interaction related to</label>
+                          <div class="agent-dropdown" id="interactionDropdownRoot">
+                            <input id="interactionDropdownInput" type="text" placeholder="Select topic..." />
+                            <button id="interactionDropdownToggle" class="agent-dropdown-toggle" type="button">▾</button>
+                            <div id="interactionDropdownPanel" class="agent-dropdown-panel" hidden>
+                              <input id="interactionDropdownFilter" class="agent-dropdown-filter" type="text" placeholder="Filter..." />
+                              <ul id="interactionDropdownList" class="agent-dropdown-list"></ul>
+                            </div>
+                          </div>
+                          <!-- Hidden select for compatibility -->
+                          <select id="interactionRelatedTo" style="display:none;">
+                            <option value="">Select option</option>
+                            <!-- Interaction options will be populated or static list -->
+                            <option>Tempo Studio - Pre-Sales</option>
+                            <option>Tempo Move - Pre-Sales</option>
+                            <option>Accessories - Pre-Sales</option>
+                            <option>Tempo Studio ETA</option>
+                            <option>Tempo Move ETA</option>
+                            <option>Accessories ETA</option>
+                            <option>Tempo Studio - Specifications/Compatibility</option>
+                            <option>Tempo Move- Specifications/Compatibility</option>
+                            <option>Accessories - Specifications/Compatibility</option>
+                            <option>Tempo Studio - Delivery Issues</option>
+                            <option>Tempo Move - Delivery Issues</option>
+                            <option>Accessories - Delivery Issues</option>
+                            <option>Tempo Studio - Cancellation</option>
+                            <option>Tempo Move - Cancellation</option>
+                            <option>Accessories - Cancellation</option>
+                            <option>Tempo Studio - Return</option>
+                            <option>Tempo Move - Return</option>
+                            <option>Accessories - Return</option>
+                            <option>Tempo Studio - Churn</option>
+                            <option>Studio - Classes/Programs/Content - Missing/Feedback</option>
+                            <option>Move - Classes/Programs/Content - Missing/Feedback</option>
+                            <option>Tempo Studio - Membership/Billing inquiry/Refund</option>
+                            <option>Tempo Move - Membership/Billing inquiry/Refund</option>
+                            <option>Tempo Studio - Subscription issue</option>
+                            <option>Tempo Move - Subscription issue</option>
+                            <option>Membership pause</option>
+                            <option>Membership cancellation</option>
+                            <option>Transfer of ownership</option>
+                            <option>Modify/Update information (Credit Card - Color - Address)</option>
+                            <option>Tempo Studio - 3D sensor issue</option>
+                            <option>Tempo Studio - Network issue</option>
+                            <option>Tempo Studio - Display issue</option>
+                            <option>Tempo Studio - Bluetooth issue</option>
+                            <option>Tempo Studio - Audio issue</option>
+                            <option>Tempo Studio - Motherboard issue</option>
+                            <option>Tempo Studio - Calories/Program issue</option>
+                            <option>Tempo Move - Core issue (HDMI, USB, Connection, etc.)</option>
+                            <option>Tempo Move - Cabinet issue (Magnetic Door, Wooden Hinge, Rubber Dumbbell Holder)</option>
+                            <option>Apple Watch issue</option>
+                            <option>HRM issue</option>
+                            <option>Mobile App issue (Android/IOS)</option>
+                            <option>Accessories issue/malfunction</option>
+                            <option>Tempo Studio - Delayed Bundle Accessories</option>
+                            <option>Tempo Move - Delayed Bundle Accessories</option>
+                            <option>Tempo Studio - Missing Accessories</option>
+                            <option>Tempo Move - Missing Accessories</option>
+                            <option>Tempo Studio - Promotions</option>
+                            <option>Tempo Move - Promotions</option>
+                            <option>Tempo Studio - Warranty</option>
+                            <option>Tempo Move - Warranty</option>
+                            <option>Tempo Studio - Physical Damage</option>
+                            <option>Tempo Move - Physical Damage</option>
+                            <option>Tempo Studio - Software</option>
+                            <option>Tempo Move - Software</option>
+                            <option>Challenges</option>
+                            <option>Join Program</option>
+                            <option>Coach Availability</option>
+                            <option>Live Class Schedule</option>
+                            <option>Account Access</option>
+                            <option>Add/Remove Profile</option>
+                            <option>Tempo Leased - Buyout</option>
+                            <option>Tempo Leased - Membership Inquiry</option>
+                            <option>Tempo Move - Churn</option>
+                            <option>Tempo Leased - Churn</option>
+                            <option>Accessories Inquiry</option>
+                            <option>Referral Program</option>
+                            <option>Membership Requirements</option>
+                            <option>Order Confirmation/Receipt</option>
+                            <option>Membership Reactivation</option>
+                            <option>Bundled Membership Request</option>
+                            <option>Bundled Membership Inquiry</option>
+                            <option>Bundled Membership Cancellation</option>
+                            <option>Apparel Promotions</option>
+                            <option>Training Plan FAQs</option>
+                            <option>Training Plan Enrollment</option>
+                            <option>Training Plan Issue</option>
+                            <option>Add/Remove Family member</option>
+                            <option>Core modification</option>
+                            <option>Upgrade/Downgrade</option>
+                          </select>
+                      </div>
+
+                      <div class="field align-right">
+                          <label for="monitoringLevel">Monitoring Level</label>
+                          <select id="monitoringLevel">
+                            <option value="">Select level</option>
+                            <option value="Quality">Quality Team</option>
+                            <option value="Team Leader">Team Leader</option>
+                          </select>
+                      </div>
+
+                    </div>
+                  </div>
+                  <!-- Attributes pane on the right -->
+                  <div class="pane pane-scroll">
+                    <div class="attributes-groups">
+                      <div id="attributesContainer">
+                          <!-- Attributes will be loaded here dynamically -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px;">
+                  <div id="attrSubtotal" class="attr-subtotal">Final Score: 0%</div>
+                  <div class="actions" style="margin-top:0;">
+                    <button id="resetBtn" type="button" class="global-btn btn-slim">Reset</button>
+                    <!-- selectAllBtn might be useful still -->
+                    <button id="selectAllBtn" type="button" class="global-btn btn-slim">Select All</button>
+                    <button id="previewEmailBtn" type="button" class="global-btn btn-slim">Preview Email</button>
+                    <button id="submitBtn" type="button" class="global-btn">Submit</button>
+                  </div>
+                </div>
+            </div>
+
+            <div class="global-card" style="margin-top:16px;">
+                <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px;">
+                    <div class="scorecard-header" style="margin-bottom: 0; text-align: left; font-size: 20px;">Recent Submissions</div>
+                    <div style="color: var(--text-secondary); font-size: 14px;">Latest 10 scorecards</div>
+                </div>
+                <table class="recent-table" id="recentTable">
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>Post URL</th>
+                            <th>Agent</th>
+                            <th>Total</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Email Preview Modal -->
+    <div id="emailPreviewOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); width:95%; max-width:1200px; height:90vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+            <div style="padding:16px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:18px; font-weight:600; color:var(--text-primary);">Email Preview</h3>
+                <div style="display:flex; gap:8px;">
+                    <button id="emailCopyBtn" type="button" class="global-btn btn-slim">Copy HTML</button>
+                    <button id="emailSendBtn" type="button" class="global-btn btn-slim">Send Email</button>
+                    <button id="emailCloseBtn" type="button" class="global-btn btn-slim" style="background:transparent; border:1px solid var(--border-color); color:var(--text-primary);">Close</button>
+                </div>
+            </div>
+            <div style="flex:1; overflow:hidden; background:#f9fafb;">
+                <iframe id="emailPreviewIframe" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+        </div>
+    </div>
+    <script src="global-navigation.js"></script>
+    <script src="mx-social-media-scorecard.js?v=4"></script>
+</body>
+</html>
