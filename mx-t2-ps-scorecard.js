@@ -248,22 +248,10 @@ function showAlert(msg, opts = {}) {
 async function sendEmailSMTP({ html, to, cc = [], bcc = [], subject }) {
   const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
   const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
-  const payload = {
-    smtp: {
-      host: 'smtp.gmail.com',
-      port: 587,
-      user: 'happio.softs@gmail.com',
-      pass: 'yinyeqhnfihainsi'
-    },
-    to,
-    cc,
-    bcc,
-    subject,
-    html
-  };
   try {
-    const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!res.ok) throw new Error(await res.text());
+    const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to, cc, bcc, subject, html }) });
+    const raw = await res.text();
+    if (!res.ok) throw new Error(raw || `HTTP ${res.status}`);
     return true;
   } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
 }
@@ -1680,8 +1668,15 @@ function bindEvents() {
             monitoringType: 'SBS'
           })
         });
-        const json = await res.json();
-        console.log('SBS Slack Notification:', json);
+        const raw = await res.text();
+        if (!res.ok) {
+          console.warn('SBS Slack failed:', res.status, raw);
+          showAlert(`SBS Slack failed (${res.status}). ${raw || ''}`.trim(), { type: 'warning' });
+          return;
+        }
+        let json = null;
+        try { json = raw ? JSON.parse(raw) : null; } catch (_) {}
+        console.log('SBS Slack Notification:', json || raw);
 
         // Disable Monitoring Type after successful Slack notification
         if (monSelect) {
