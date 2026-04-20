@@ -374,6 +374,88 @@
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
 
+        .role-multi {
+            position: relative;
+            display: inline-block;
+            min-width: 220px;
+        }
+
+        .role-multi-btn {
+            width: 100%;
+            text-align: left;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-popup);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .role-multi-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .role-multi-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 50;
+            width: 100%;
+            max-height: 240px;
+            overflow: auto;
+            background: var(--bg-popup);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 10px;
+        }
+
+        .role-multi-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .role-multi-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .role-multi-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-light);
+            margin-top: 8px;
+        }
+
+        .role-multi-actions button {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .role-multi-actions button.primary {
+            border-color: transparent;
+            background: #10b981;
+            color: #fff;
+        }
+
+        .role-multi-actions button.primary:hover {
+            background: #059669;
+        }
+
         .save-btn {
             background: #10b981;
             color: white;
@@ -633,6 +715,52 @@
         // Global variables
         let allUsers = [];
         let filteredUsers = [];
+        let openRoleMenuUserId = null;
+
+        const ROLE_OPTIONS = [
+            'Administrator',
+            'QA Coach',
+            'Team Leader',
+            'Trainer',
+            'MX-T1 User',
+            'MX-T2 OS User',
+            'MX-T2 PS User',
+            'MX-SM User'
+        ];
+
+        function normalizeRoles(value) {
+            if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+            if (typeof value !== 'string') return [];
+            const s = value.trim();
+            if (!s) return [];
+            try {
+                const parsed = JSON.parse(s);
+                if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+            } catch (_) {}
+            return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
+        }
+
+        function serializeRoles(roles) {
+            const cleaned = Array.from(new Set((roles || []).map(r => String(r).trim()).filter(Boolean)));
+            cleaned.sort((a, b) => a.localeCompare(b));
+            return JSON.stringify(cleaned);
+        }
+
+        function hasRole(userRoleValue, role) {
+            const roles = normalizeRoles(userRoleValue).map(r => r.toLowerCase());
+            return roles.includes(String(role).toLowerCase());
+        }
+
+        function formatRolesLabel(userRoleValue) {
+            const roles = normalizeRoles(userRoleValue);
+            if (!roles.length) return 'Select roles';
+            if (roles.length <= 2) return roles.join(', ');
+            return `${roles.slice(0, 2).join(', ')} +${roles.length - 2}`;
+        }
+
+        function safeDomId(value) {
+            return String(value).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
 
         // Generate user avatar HTML
         function generateUserAvatar(user) {
@@ -722,14 +850,44 @@
         // Update statistics
         function updateStatistics() {
             const totalUsers = allUsers.length;
-            const adminCount = allUsers.filter(user => user.user_role === 'Administrator').length;
-            const coachCount = allUsers.filter(user => user.user_role === 'QA Coach').length;
-            const leaderCount = allUsers.filter(user => user.user_role === 'Team Leader').length;
+            const adminCount = allUsers.filter(user => hasRole(user.user_role, 'Administrator')).length;
+            const coachCount = allUsers.filter(user => hasRole(user.user_role, 'QA Coach')).length;
+            const leaderCount = allUsers.filter(user => hasRole(user.user_role, 'Team Leader')).length;
 
             document.getElementById('totalUsers').textContent = totalUsers;
             document.getElementById('adminCount').textContent = adminCount;
             document.getElementById('coachCount').textContent = coachCount;
             document.getElementById('leaderCount').textContent = leaderCount;
+        }
+
+        function buildRolePicker(user) {
+            const uid = safeDomId(user.id);
+            const current = normalizeRoles(user.user_role);
+            const menuId = `role-menu-${uid}`;
+            const buttonId = `role-btn-${uid}`;
+            const items = ROLE_OPTIONS.map(role => {
+                const checked = current.map(r => r.toLowerCase()).includes(role.toLowerCase()) ? 'checked' : '';
+                const inputId = `role-${uid}-${safeDomId(role)}`;
+                return `
+                    <label class="role-multi-item" for="${inputId}">
+                        <input id="${inputId}" type="checkbox" value="${role}" ${checked} onchange="onRoleSelectionChanged('${user.id}')">
+                        <span>${role}</span>
+                    </label>
+                `;
+            }).join('');
+
+            return `
+                <div class="role-multi" data-user-id="${user.id}">
+                    <button id="${buttonId}" class="role-multi-btn" type="button" onclick="toggleRoleMenu('${user.id}')">${formatRolesLabel(user.user_role)}</button>
+                    <div id="${menuId}" class="role-multi-menu" hidden>
+                        ${items}
+                        <div class="role-multi-actions">
+                            <button type="button" onclick="closeRoleMenu('${user.id}')">Cancel</button>
+                            <button type="button" class="primary" onclick="saveUserRoles('${user.id}')">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Render users table
@@ -767,16 +925,7 @@
                     </td>
                     <td>${user.email || 'N/A'}</td>
                     <td id="role-cell-${user.id}">
-                        <select class="role-dropdown" onchange="updateUserRole('${user.id}', this.value)" data-original-role="${user.user_role || ''}">
-                            <option value="Administrator" ${user.user_role === 'Administrator' ? 'selected' : ''}>Administrator</option>
-                            <option value="QA Coach" ${user.user_role === 'QA Coach' ? 'selected' : ''}>QA Coach</option>
-                            <option value="Team Leader" ${user.user_role === 'Team Leader' ? 'selected' : ''}>Team Leader</option>
-                            <option value="Trainer" ${user.user_role === 'Trainer' ? 'selected' : ''}>Trainer</option>
-                            <option value="MX-T1 User" ${user.user_role === 'MX-T1 User' ? 'selected' : ''}>MX-T1 User</option>
-                            <option value="MX-T2 OS User" ${user.user_role === 'MX-T2 OS User' ? 'selected' : ''}>MX-T2 OS User</option>
-                            <option value="MX-T2 PS User" ${user.user_role === 'MX-T2 PS User' ? 'selected' : ''}>MX-T2 PS User</option>
-                            <option value="MX-SM User" ${user.user_role === 'MX-SM User' ? 'selected' : ''}>MX-SM User</option>
-                        </select>
+                        ${buildRolePicker(user)}
                     </td>
                     <td>${user.qa_coach || 'N/A'}</td>
                     <td>${user.team_leader || 'N/A'}</td>
@@ -815,7 +964,7 @@
                     (user.email && user.email.toLowerCase().includes(searchTerm)) ||
                     (user.user_role && user.user_role.toLowerCase().includes(searchTerm));
 
-                const matchesRole = !roleFilter || user.user_role === roleFilter;
+                const matchesRole = !roleFilter || hasRole(user.user_role, roleFilter);
 
                 return matchesSearch && matchesRole;
             });
@@ -823,10 +972,37 @@
             renderUsersTable();
         }
 
-        // Update user role
-        async function updateUserRole(userId, newRole) {
+        function toggleRoleMenu(userId) {
+            const uid = safeDomId(userId);
+            const menu = document.getElementById(`role-menu-${uid}`);
+            if (!menu) return;
+            const isOpen = !menu.hidden;
+            if (openRoleMenuUserId && openRoleMenuUserId !== userId) {
+                closeRoleMenu(openRoleMenuUserId);
+            }
+            menu.hidden = isOpen;
+            openRoleMenuUserId = menu.hidden ? null : userId;
+        }
+
+        function closeRoleMenu(userId) {
+            const uid = safeDomId(userId);
+            const menu = document.getElementById(`role-menu-${uid}`);
+            if (menu) menu.hidden = true;
+            if (openRoleMenuUserId === userId) openRoleMenuUserId = null;
+        }
+
+        function onRoleSelectionChanged(userId) {
+            const uid = safeDomId(userId);
+            const btn = document.getElementById(`role-btn-${uid}`);
+            const menu = document.getElementById(`role-menu-${uid}`);
+            if (!btn || !menu) return;
+            const selected = Array.from(menu.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+            btn.textContent = formatRolesLabel(serializeRoles(selected));
+        }
+
+        async function saveUserRoles(userId) {
+            let originalContent = '';
             try {
-                console.log('Updating user role:', { userId, newRole });
                 const user = allUsers.find(u => u.id === userId);
                 
                 if (!user) {
@@ -834,15 +1010,22 @@
                     return;
                 }
 
-                console.log('User found:', user);
+                const uid = safeDomId(userId);
+                const menu = document.getElementById(`role-menu-${uid}`);
+                const selectedRoles = menu ? Array.from(menu.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value) : [];
+                const newRoleValue = serializeRoles(selectedRoles);
 
                 // Show loading state
                 const roleCell = document.getElementById(`role-cell-${userId}`);
-                const originalContent = roleCell.innerHTML;
+                if (!roleCell) {
+                    showError('Role cell not found');
+                    return;
+                }
+                originalContent = roleCell ? roleCell.innerHTML : '';
                 roleCell.innerHTML = '<span style="color: var(--text-secondary);">Updating...</span>';
 
                 const requestBody = {
-                    user_role: newRole
+                    user_role: newRoleValue
                 };
                 console.log('Request body:', requestBody);
 
@@ -875,7 +1058,7 @@
                 }
 
                 // Update local data
-                user.user_role = newRole;
+                user.user_role = newRoleValue;
                 console.log('Updated user in local data:', user);
                 updateStatistics();
                 
@@ -883,18 +1066,28 @@
                 console.log('Refreshing table to show updated role...');
                 renderUsersTable();
 
-                showSuccess(`User role updated to ${newRole}`);
-
+                showSuccess(`User roles updated`);
             } catch (error) {
                 console.error('Error updating user role:', error);
                 showError('Failed to update user role. Please try again.');
                 
                 // Restore original content and refresh table
                 const roleCell = document.getElementById(`role-cell-${userId}`);
-                roleCell.innerHTML = originalContent;
+                if (roleCell) roleCell.innerHTML = originalContent;
                 renderUsersTable();
             }
         }
+
+
+        document.addEventListener('click', (e) => {
+            if (!openRoleMenuUserId) return;
+            const uid = safeDomId(openRoleMenuUserId);
+            const menu = document.getElementById(`role-menu-${uid}`);
+            const btn = document.getElementById(`role-btn-${uid}`);
+            if (!menu || !btn) return;
+            const root = btn.closest('.role-multi');
+            if (root && !root.contains(e.target)) closeRoleMenu(openRoleMenuUserId);
+        });
 
         // Add new user
         function addNewUser() {
@@ -1262,16 +1455,7 @@ Passwords cannot contain commas. Use a different password.`);
                         </div>
                         <div style="margin-bottom: 20px;">
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary); font-size: 14px;">User Role:</label>
-                            <select id="editRole" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); font-size: 14px; box-sizing: border-box;">
-                                <option value="Administrator" ${user.user_role === 'Administrator' ? 'selected' : ''}>Administrator</option>
-                                <option value="QA Coach" ${user.user_role === 'QA Coach' ? 'selected' : ''}>QA Coach</option>
-                                <option value="Team Leader" ${user.user_role === 'Team Leader' ? 'selected' : ''}>Team Leader</option>
-                                <option value="Trainer" ${user.user_role === 'Trainer' ? 'selected' : ''}>Trainer</option>
-                                <option value="MX-T1 User" ${user.user_role === 'MX-T1 User' ? 'selected' : ''}>MX-T1 User</option>
-                                <option value="MX-T2 OS User" ${user.user_role === 'MX-T2 OS User' ? 'selected' : ''}>MX-T2 OS User</option>
-                                <option value="MX-T2 PS User" ${user.user_role === 'MX-T2 PS User' ? 'selected' : ''}>MX-T2 PS User</option>
-                                <option value="MX-SM User" ${user.user_role === 'MX-SM User' ? 'selected' : ''}>MX-SM User</option>
-                            </select>
+                            <div id="editRolesContainer" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; background: var(--bg-card);"></div>
                         </div>
                         <div style="margin-bottom: 20px;">
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary); font-size: 14px;">QA Coach:</label>
@@ -1325,6 +1509,21 @@ Passwords cannot contain commas. Use a different password.`);
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
 
+            const editRolesContainer = document.getElementById('editRolesContainer');
+            if (editRolesContainer) {
+                const selected = normalizeRoles(user.user_role).map(r => r.toLowerCase());
+                editRolesContainer.innerHTML = ROLE_OPTIONS.map(role => {
+                    const checked = selected.includes(role.toLowerCase()) ? 'checked' : '';
+                    const inputId = `edit-role-${safeDomId(userId)}-${safeDomId(role)}`;
+                    return `
+                        <label class="role-multi-item" for="${inputId}">
+                            <input id="${inputId}" type="checkbox" value="${role}" ${checked}>
+                            <span>${role}</span>
+                        </label>
+                    `;
+                }).join('');
+            }
+
             // Close modal when clicking outside
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -1353,7 +1552,8 @@ Passwords cannot contain commas. Use a different password.`);
             try {
                 const name = document.getElementById('editName').value.trim();
                 const email = document.getElementById('editEmail').value.trim();
-                const role = document.getElementById('editRole').value;
+                const roleContainer = document.getElementById('editRolesContainer');
+                const roles = roleContainer ? Array.from(roleContainer.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value) : [];
                 const qaCoach = document.getElementById('editQaCoach').value.trim();
                 const teamLeader = document.getElementById('editTeamLeader').value.trim();
                 const phone = document.getElementById('editPhone').value.trim();
@@ -1369,7 +1569,7 @@ Passwords cannot contain commas. Use a different password.`);
                     return;
                 }
 
-                updateUser(userId, name, email, role, qaCoach, teamLeader, phone, profilePhoto);
+                updateUser(userId, name, email, serializeRoles(roles), qaCoach, teamLeader, phone, profilePhoto);
                 closeEditModal();
 
             } catch (error) {

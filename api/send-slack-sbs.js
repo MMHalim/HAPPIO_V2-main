@@ -13,7 +13,21 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const { conversationId, takerName, agentName, scorecardType, monitoringType } = req.body;
+  const readJsonBody = async () => {
+    if (req.method === 'GET') return req.query || {};
+    if (req.body && typeof req.body === 'object') return req.body;
+    if (typeof req.body === 'string') {
+      try { return JSON.parse(req.body); } catch (_) { return {}; }
+    }
+    const chunks = [];
+    for await (const chunk of req) chunks.push(Buffer.from(chunk));
+    const raw = Buffer.concat(chunks).toString('utf8').trim();
+    if (!raw) return {};
+    try { return JSON.parse(raw); } catch (_) { return {}; }
+  };
+
+  const body = await readJsonBody();
+  const { conversationId, takerName, agentName, scorecardType } = body || {};
 
   if (!conversationId) {
     return res.status(400).json({ error: 'Missing conversationId' });
@@ -42,12 +56,13 @@ module.exports = async (req, res) => {
     if (!slackRes.ok) {
       const errText = await slackRes.text();
       console.error('Slack API error:', errText);
-      return res.status(500).json({ error: 'Failed to send to Slack' });
+      return res.status(502).json({ error: 'Failed to send to Slack', details: errText });
     }
 
-    return res.status(200).json({ status: 'sent' });
+    const okText = await slackRes.text().catch(() => '');
+    return res.status(200).json({ status: 'sent', slack: okText || 'ok' });
   } catch (error) {
     console.error('Slack execution error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error', details: error?.message || String(error) });
   }
 };

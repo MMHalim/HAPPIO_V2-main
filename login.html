@@ -679,7 +679,11 @@
                 });
                 console.log('Login recorded successfully');
             } catch (error) {
-                console.error('Error recording login:', error);
+                const msg = (error && error.message) ? error.message : String(error || '');
+                const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
+                if (!abortLike) {
+                    console.warn('Login record skipped:', error);
+                }
             }
         }
 

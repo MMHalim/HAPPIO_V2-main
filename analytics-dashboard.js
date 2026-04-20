@@ -158,6 +158,24 @@
     return typeof value === 'string' && value.split('.').length === 3;
   }
 
+  function parseRoleList(value) {
+    if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+    if (typeof value !== 'string') return [];
+    const s = value.trim();
+    if (!s) return [];
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+    } catch (_) {}
+    return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
+  }
+
+  function userHasRole(role) {
+    const raw = localStorage.getItem('user_role') || localStorage.getItem('role') || localStorage.getItem('UserRole') || '';
+    const roles = parseRoleList(raw).map(r => r.toLowerCase());
+    return roles.includes(String(role).toLowerCase());
+  }
+
   function authHeaders(opts = {}) {
     const useServiceKey = opts.useServiceKey === true;
     const loginToken = localStorage.getItem('login_token');
@@ -363,8 +381,7 @@
 
     // Limit to 100 for performance
     const displayData = data.slice(0, 100); 
-    const userRole = localStorage.getItem('user_role') || localStorage.getItem('role') || localStorage.getItem('UserRole');
-    const isAdmin = userRole === 'Administrator';
+    const isAdmin = userHasRole('Administrator');
 
     displayData.forEach(row => {
       const tr = document.createElement('tr');
@@ -858,8 +875,7 @@
     
     body.innerHTML = ''; // Clear loading
 
-    const userRole = localStorage.getItem('user_role') || localStorage.getItem('role') || localStorage.getItem('UserRole');
-    const isAdmin = userRole === 'Administrator';
+    const isAdmin = userHasRole('Administrator');
 
     // Container for editable mode state
     let isEditing = false;

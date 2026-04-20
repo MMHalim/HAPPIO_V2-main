@@ -936,12 +936,18 @@ const MXT1Scorecard = (function() {
             if (!patchRes.ok) console.warn('Failed to mark QAED/assign (service):', await patchRes.text());
           }
         } catch(pErr) {
-          console.warn('Patch error (mark QAED/assign):', pErr);
+          const msg = (pErr && pErr.message) ? pErr.message : String(pErr || '');
+          const abortLike = (pErr && pErr.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
+          if (!abortLike) console.warn('Patch error (mark QAED/assign):', pErr);
         }
       }
     } catch (error) {
-      console.error('An error occurred during execution:', error);
-      showAlert('Error while fetching case. Please try again.');
+      const msg = (error && error.message) ? error.message : String(error || '');
+      const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
+      if (!abortLike) {
+        console.error('An error occurred during execution:', error);
+        showAlert('Error while fetching case. Please try again.');
+      }
     }
   }
 

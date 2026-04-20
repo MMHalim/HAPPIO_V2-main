@@ -251,48 +251,69 @@ class GlobalNavigation {
     // Filter navigation items by user role using optional 'level' column
     filterNavigationByRole(items, userRole) {
         try {
+            const parseRoleList = (value) => {
+                if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+                if (typeof value !== 'string') return [];
+                const s = value.trim();
+                if (!s) return [];
+                try {
+                    const parsed = JSON.parse(s);
+                    if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+                } catch (_) {}
+                return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
+            };
             const norm = (s) => (s ?? '')
                 .toString()
                 .toLowerCase()
-                // normalize common separators and collapse whitespace
                 .replace(/[\-_]+/g, ' ')
                 .trim()
                 .replace(/\s+/g, ' ');
-            const role = norm(userRole);
+
+            const userRoles = parseRoleList(userRole).map(norm).filter(Boolean);
+            const isAdmin = userRoles.includes('administrator');
+            if (isAdmin) return items || [];
+
+            const hasAnyRole = (requiredRoles) => {
+                if (!userRoles.length) return true;
+                const required = (requiredRoles || []).map(norm).filter(Boolean);
+                if (!required.length) return true;
+                return required.some(r => userRoles.includes(r));
+            };
+
+            const inferRequiredRolesForItem = (item) => {
+                const title = String(item?.title || '').toLowerCase();
+                const page = String(item?.page_name || '').toLowerCase();
+                const route = String(item?.route || '').toLowerCase();
+
+                const isMyPerformance = title.includes('my performance') || page.includes('my performance') || route.includes('my performance');
+                if (!isMyPerformance) return null;
+
+                const isMx = title.includes('[mx]') || title.includes(' mx') || title.includes('t1') || page.includes('t1') || route.includes('t1');
+                const isOs = title.includes('[os]') || title.includes(' os') || title.includes('t2 os') || page.includes('t2 os') || route.includes('t2 os') || page.includes('t2_os') || route.includes('t2_os');
+                const isPs = title.includes('[ps]') || title.includes(' ps') || title.includes('t2 ps') || page.includes('t2 ps') || route.includes('t2 ps') || page.includes('t2_ps') || route.includes('t2_ps');
+                const isSm = title.includes('[sm]') || title.includes('social') || title.includes('sm') || page.includes('social') || route.includes('social');
+
+                if (isMx) return ['MX-T1 User', 'Administrator'];
+                if (isOs) return ['MX-T2 OS User', 'MX T2 OS User', 'MX-T2 User', 'MX T2 User', 'Administrator'];
+                if (isPs) return ['MX-T2 PS User', 'MX T2 PS User', 'MX-T2 User', 'MX T2 User', 'Administrator'];
+                if (isSm) return ['MX-SM User', 'Administrator'];
+
+                return null;
+            };
+
             return (items || []).filter(item => {
+                const forced = inferRequiredRolesForItem(item);
+                if (forced) return hasAnyRole(forced);
                 const level = item && item.level;
                 // If no level is specified, item is visible to all
                 if (level === undefined || level === null || (typeof level === 'string' && level.trim() === '')) {
                     return true;
                 }
                 if (Array.isArray(level)) {
-                    const normalized = level
-                        .map(v => norm(v))
-                        .filter(Boolean);
-                    return role ? normalized.includes(role) : true;
+                    return hasAnyRole(level);
                 }
                 if (typeof level === 'string') {
-                    // If a JSON array string was stored, parse and treat as array
-                    const rawStr = level.trim();
-                    if (/^\[.*\]$/.test(rawStr)) {
-                        try {
-                            const arr = JSON.parse(rawStr);
-                            if (Array.isArray(arr)) {
-                                const normalized = arr.map(v => norm(v)).filter(Boolean);
-                                return role ? normalized.includes(role) : true;
-                            }
-                        } catch(_) { /* fall through to string parsing */ }
-                    }
-                    const raw = (level || '').toString();
-                    const hasSeparators = raw.includes(',') || raw.includes(';');
-                    const parts = hasSeparators
-                        ? raw.split(/[;,]+/)
-                        : [raw];
-                    const normalized = parts
-                        .map(v => norm(v))
-                        .filter(Boolean);
-                    // Exact match against full role, without splitting on spaces
-                    return role ? normalized.includes(role) : true;
+                    return hasAnyRole(parseRoleList(level));
                 }
                 // Unknown format: do not restrict
                 return true;
@@ -713,6 +734,7 @@ class GlobalNavigation {
                 
                 // Handle navigation items (from Supabase table)
                 if (page && href && href !== '#') {
+                    e.preventDefault();
                     console.log('Navigating to page:', page, 'URL:', href);
                     window.location.href = href;
                     userDropdown.classList.remove('show');
@@ -811,14 +833,18 @@ class GlobalNavigation {
             });
             console.log('Logout recorded successfully');
         } catch (error) {
-            console.error('Error recording logout:', error);
+            const msg = (error && error.message) ? error.message : String(error || '');
+            const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
+            if (!abortLike) {
+                console.warn('Logout record skipped:', error);
+            }
         }
     }
 
     // Handle logout
     async handleLogout() {
         // Record logout first while we still have the token
-        await this.recordLogout();
+        this.recordLogout();
 
         try {
             const token = localStorage.getItem('login_token');
@@ -834,7 +860,11 @@ class GlobalNavigation {
                 });
             }
         } catch (error) {
-            console.log('Supabase logout API error:', error);
+            const msg = (error && error.message) ? error.message : String(error || '');
+            const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
+            if (!abortLike) {
+                console.warn('Supabase logout API error:', error);
+            }
         }
         
         // Clear localStorage
