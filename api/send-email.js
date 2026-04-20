@@ -5,13 +5,35 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
   try {
-    const { to, cc, bcc, subject, html, text, smtp } = req.body || {};
+    const readJsonBody = async () => {
+      if (req.body && typeof req.body === 'object') return req.body;
+      if (typeof req.body === 'string') {
+        try { return JSON.parse(req.body); } catch (_) { return {}; }
+      }
+      const chunks = [];
+      for await (const chunk of req) chunks.push(Buffer.from(chunk));
+      const raw = Buffer.concat(chunks).toString('utf8').trim();
+      if (!raw) return {};
+      try { return JSON.parse(raw); } catch (_) { return {}; }
+    };
+
+    const body = await readJsonBody();
+    const { to, cc, bcc, subject, html, text, smtp } = body || {};
     if (!to || !subject || (!html && !text)) {
       res.status(400).json({ error: 'Missing required fields: to, subject, html|text' });
       return;
@@ -38,6 +60,7 @@ module.exports = async (req, res) => {
     res.status(200).json({ ok: true, messageId: info.messageId });
   } catch (err) {
     console.error('send-email error:', err);
-    res.status(500).json({ error: err && err.message ? err.message : 'Unknown error' });
+    const code = err && (err.code || err.name) ? String(err.code || err.name) : '';
+    res.status(502).json({ error: err && err.message ? err.message : 'Unknown error', code });
   }
 };
