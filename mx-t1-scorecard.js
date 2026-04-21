@@ -548,10 +548,10 @@ const MXT1Scorecard = (function() {
     const ms = document.getElementById('monitoringType');
     const agent = document.getElementById('agentNameSelect');
     
-    const isSbs = ms && ms.value === 'SBS';
+    const isSbs = ms && (ms.value === 'SBS' || ms.value === 'Selected');
     const hasAgent = agent && agent.value;
     
-    // Rule: Conversation ID is not editable unless (Agent selected AND Monitoring Type is SBS)
+    // Rule: Conversation ID is not editable unless (Agent selected AND Monitoring Type is SBS/Selected)
     if (isSbs && hasAgent) {
       input.disabled = false;
       // Lock Monitoring Type once condition is met
@@ -628,11 +628,11 @@ const MXT1Scorecard = (function() {
         const isPasteLocked = monSelect.dataset.pasteLocked === 'true';
         
         if (!effectiveDisabled) {
-           if (monSelect.value !== 'SBS') monSelect.value = 'SBS';
+           if (!monSelect.value) monSelect.value = 'SBS';
            // monSelect.disabled = true;
         } else {
            if (isPasteLocked) {
-             if (monSelect.value !== 'SBS') monSelect.value = 'SBS';
+             if (!monSelect.value) monSelect.value = 'SBS';
              // monSelect.disabled = true;
            } else {
              monSelect.disabled = false;
@@ -2156,7 +2156,7 @@ const MXT1Scorecard = (function() {
       let sbsDebounceTimer = null;
       const triggerSbsSlack = async () => {
         const monSelect = document.getElementById('monitoringType');
-        if (!monSelect || monSelect.value !== 'SBS') return;
+        if (!monSelect || (monSelect.value !== 'SBS' && monSelect.value !== 'Selected')) return;
         
         const val = conv.value.trim();
         if (!val) return;
@@ -2189,7 +2189,8 @@ const MXT1Scorecard = (function() {
               takerName: takerName,
               agentName: agentName,
               scorecardType: 'MX T1 Scorecard',
-              monitoringType: 'SBS'
+              monitoringType: monSelect.value,
+              title: (monSelect.value === 'Selected') ? 'Membership Cancellation Started' : 'SBS Started'
             })
           });
           const raw = await res.text();
@@ -2206,8 +2207,7 @@ const MXT1Scorecard = (function() {
         if (monSelect) {
              monSelect.disabled = true;
              monSelect.setAttribute('data-sbs-locked', 'true');
-             monSelect.title = "Monitoring Type is locked after sending SBS notification. Refresh page to reset.";
-             console.log('Monitoring Type locked to SBS');
+             monSelect.title = "Monitoring Type is locked after sending Slack notification. Refresh page to reset.";
           }
         } catch (e) {
         console.warn('Failed to send SBS Slack notification:', e);
@@ -2219,7 +2219,7 @@ const MXT1Scorecard = (function() {
       const monSelect = document.getElementById('monitoringType');
       if (monSelect) {
         monSelect.addEventListener('change', () => {
-          if (monSelect.value === 'SBS') {
+          if (monSelect.value === 'SBS' || monSelect.value === 'Selected') {
              const agent = document.getElementById('agentNameSelect');
              if (!agent || !agent.value) {
                  showAlert('Please select an agent first', { type: 'warning' });
@@ -2241,9 +2241,9 @@ const MXT1Scorecard = (function() {
       }
 
       conv.addEventListener('input', () => {
-        // Only trigger if SBS
+        // Only trigger if SBS/Selected
         const ms = document.getElementById('monitoringType');
-        if (ms && ms.value === 'SBS') {
+        if (ms && (ms.value === 'SBS' || ms.value === 'Selected')) {
           clearTimeout(sbsDebounceTimer);
           sbsDebounceTimer = setTimeout(triggerSbsSlack, 1500);
         }
@@ -2266,9 +2266,10 @@ const MXT1Scorecard = (function() {
 
         const monSelect = document.getElementById('monitoringType');
         if (monSelect) {
-          monSelect.value = 'SBS';
-          // monSelect.disabled = true; // Removed per user request
-          monSelect.dataset.pasteLocked = 'true';
+          if (!monSelect.value) {
+            monSelect.value = 'SBS';
+            monSelect.dataset.pasteLocked = 'true';
+          }
         }
       });
 
@@ -2278,8 +2279,8 @@ const MXT1Scorecard = (function() {
         msLock.addEventListener('change', () => {
           msLock.dataset.pasteLocked = 'false';
           
-          // Validate Agent Selection for SBS
-          if (msLock.value === 'SBS') {
+          // Validate Agent Selection for SBS/Selected
+          if (msLock.value === 'SBS' || msLock.value === 'Selected') {
              const agentSel = document.getElementById('agentNameSelect');
              if (agentSel && !agentSel.value) {
                  showAlert('Please select an agent first', { type: 'warning' });

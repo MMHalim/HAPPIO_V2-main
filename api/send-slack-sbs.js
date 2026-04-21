@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
   };
 
   const body = await readJsonBody();
-  const { conversationId, takerName, agentName, scorecardType } = body || {};
+  const { conversationId, takerName, agentName, scorecardType, monitoringType, title } = body || {};
 
   if (!conversationId) {
     return res.status(400).json({ error: 'Missing conversationId' });
@@ -48,7 +48,9 @@ module.exports = async (req, res) => {
 
   // Construct the message
   // "send message in a slack DM contains the Conversation Id, Taker_Name or logged in user name, and agent name if available."
-  const text = `*SBS Started*\n*Conversation ID:* ${conversationId}\n*Taker:* ${takerName || 'Unknown'}\n*Agent:* ${agentName || 'Unknown'}\n*Type:* ${scorecardType || 'Scorecard'}`;
+  const resolvedTitle =
+    title || (monitoringType === 'Selected' ? 'Membership Cancellation Started' : 'SBS Started');
+  const text = `*${resolvedTitle}*\n*Conversation ID:* ${conversationId}\n*Taker:* ${takerName || 'Unknown'}\n*Agent:* ${agentName || 'Unknown'}\n*Type:* ${scorecardType || 'Scorecard'}`;
 
   const postJson = async (url, payload) => {
     if (typeof fetch === 'function') {

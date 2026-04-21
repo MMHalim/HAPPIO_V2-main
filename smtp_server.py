@@ -46,7 +46,8 @@ class EmailHandler(BaseHTTPRequestHandler):
                 slack_url = "https://hooks.slack.com/services/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"
                 
                 # Construct Slack payload
-                text = f"*SBS Started*\n*Conversation ID:* {payload.get('conversationId')}\n*Taker:* {payload.get('takerName') or 'Unknown'}\n*Agent:* {payload.get('agentName') or 'Unknown'}\n*Type:* {payload.get('scorecardType') or 'Scorecard'}"
+                resolved_title = payload.get('title') or ('Membership Cancellation Started' if payload.get('monitoringType') == 'Selected' else 'SBS Started')
+                text = f"*{resolved_title}*\n*Conversation ID:* {payload.get('conversationId')}\n*Taker:* {payload.get('takerName') or 'Unknown'}\n*Agent:* {payload.get('agentName') or 'Unknown'}\n*Type:* {payload.get('scorecardType') or 'Scorecard'}"
                 
                 slack_data = json.dumps({"text": text}).encode('utf-8')
                 req = urllib.request.Request(slack_url, data=slack_data, headers={'Content-Type': 'application/json'})

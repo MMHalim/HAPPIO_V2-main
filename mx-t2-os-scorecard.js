@@ -874,10 +874,10 @@ async function loadAgents() {
     const ms = document.getElementById('monitoringType');
     const agent = document.getElementById('agentNameSelect');
     
-    const isSbs = ms && ms.value === 'SBS';
+    const isSbs = ms && (ms.value === 'SBS' || ms.value === 'Selected');
     const hasAgent = agent && agent.value;
     
-    // Rule: Conversation ID is not editable unless (Agent selected AND Monitoring Type is SBS)
+    // Rule: Conversation ID is not editable unless (Agent selected AND Monitoring Type is SBS/Selected)
     if (isSbs && hasAgent) {
       input.disabled = false;
       // Lock Monitoring Type once condition is met
@@ -954,11 +954,11 @@ async function loadAgents() {
         const isPasteLocked = monSelect.dataset.pasteLocked === 'true';
         
         if (!effectiveDisabled) {
-           if (monSelect.value !== 'SBS') monSelect.value = 'SBS';
+           if (!monSelect.value) monSelect.value = 'SBS';
            // monSelect.disabled = true;
         } else {
            if (isPasteLocked) {
-             if (monSelect.value !== 'SBS') monSelect.value = 'SBS';
+             if (!monSelect.value) monSelect.value = 'SBS';
              // monSelect.disabled = true;
            } else {
              monSelect.disabled = false;
@@ -1731,7 +1731,7 @@ function bindEvents() {
     let sbsDebounceTimer = null;
     const triggerSbsSlack = async () => {
       const monSelect = document.getElementById('monitoringType');
-      if (!monSelect || monSelect.value !== 'SBS') return;
+      if (!monSelect || (monSelect.value !== 'SBS' && monSelect.value !== 'Selected')) return;
       
       const val = conv.value.trim();
       if (!val) return;
@@ -1760,7 +1760,8 @@ function bindEvents() {
             takerName: takerName,
             agentName: agentName,
             scorecardType: 'MX T2 OS Scorecard',
-            monitoringType: 'SBS'
+            monitoringType: monSelect.value,
+            title: (monSelect.value === 'Selected') ? 'Membership Cancellation Started' : 'SBS Started'
           })
         });
         const raw = await res.text();
@@ -1777,7 +1778,7 @@ function bindEvents() {
         if (monSelect) {
            monSelect.disabled = true;
            monSelect.setAttribute('data-sbs-locked', 'true');
-           monSelect.title = "Monitoring Type is locked after sending SBS notification. Refresh page to reset.";
+           monSelect.title = "Monitoring Type is locked after sending Slack notification. Refresh page to reset.";
         }
       } catch (e) {
         console.warn('Failed to send SBS Slack notification:', e);
@@ -1789,7 +1790,7 @@ function bindEvents() {
     const monSelect = document.getElementById('monitoringType');
     if (monSelect) {
       monSelect.addEventListener('change', () => {
-        if (monSelect.value === 'SBS') {
+        if (monSelect.value === 'SBS' || monSelect.value === 'Selected') {
            const agent = document.getElementById('agentNameSelect');
            if (!agent || !agent.value) {
                showAlert('Please select an agent first', { type: 'warning' });
@@ -1808,7 +1809,7 @@ function bindEvents() {
 
     conv.addEventListener('input', () => {
       const ms = document.getElementById('monitoringType');
-      if (ms && ms.value === 'SBS') {
+      if (ms && (ms.value === 'SBS' || ms.value === 'Selected')) {
         clearTimeout(sbsDebounceTimer);
         sbsDebounceTimer = setTimeout(triggerSbsSlack, 1500);
       }
@@ -1825,9 +1826,10 @@ function bindEvents() {
 
       const monSelect = document.getElementById('monitoringType');
       if (monSelect) {
-        monSelect.value = 'SBS';
-        // monSelect.disabled = true; // Removed per user request
-        monSelect.dataset.pasteLocked = 'true';
+        if (!monSelect.value) {
+          monSelect.value = 'SBS';
+          monSelect.dataset.pasteLocked = 'true';
+        }
       }
     });
 
