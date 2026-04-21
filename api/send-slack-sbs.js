@@ -13,6 +13,10 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && req.query && req.query.ping === '1') {
+    return res.status(200).json({ ok: true, configured: Boolean(process.env.SLACK_WEBHOOK_URL) });
+  }
+
   const readJsonBody = async () => {
     if (req.method === 'GET') return req.query || {};
     if (req.body && typeof req.body === 'object') return req.body;
@@ -46,21 +50,47 @@ module.exports = async (req, res) => {
   // "send message in a slack DM contains the Conversation Id, Taker_Name or logged in user name, and agent name if available."
   const text = `*SBS Started*\n*Conversation ID:* ${conversationId}\n*Taker:* ${takerName || 'Unknown'}\n*Agent:* ${agentName || 'Unknown'}\n*Type:* ${scorecardType || 'Scorecard'}`;
 
-  try {
-    const slackRes = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
-    });
-
-    if (!slackRes.ok) {
-      const errText = await slackRes.text();
-      console.error('Slack API error:', errText);
-      return res.status(502).json({ error: 'Failed to send to Slack', details: errText });
+  const postJson = async (url, payload) => {
+    if (typeof fetch === 'function') {
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const t = await r.text().catch(() => '');
+      return { ok: r.ok, status: r.status, text: t };
     }
+    const https = require('https');
+    return await new Promise((resolve, reject) => {
+      const u = new URL(url);
+      const body = Buffer.from(JSON.stringify(payload));
+      const options = {
+        method: 'POST',
+        hostname: u.hostname,
+        path: u.pathname + u.search,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': body.length
+        }
+      };
+      const request = https.request(options, (response) => {
+        const chunks = [];
+        response.on('data', (c) => chunks.push(Buffer.from(c)));
+        response.on('end', () => {
+          const raw = Buffer.concat(chunks).toString('utf8');
+          const status = response.statusCode || 0;
+          resolve({ ok: status >= 200 && status < 300, status, text: raw });
+        });
+      });
+      request.on('error', reject);
+      request.write(body);
+      request.end();
+    });
+  };
 
-    const okText = await slackRes.text().catch(() => '');
-    return res.status(200).json({ status: 'sent', slack: okText || 'ok' });
+  try {
+    const result = await postJson(webhookUrl, { text });
+    if (!result.ok) {
+      console.error('Slack API error:', result.text);
+      return res.status(502).json({ error: 'Failed to send to Slack', details: result.text || `HTTP ${result.status}` });
+    }
+    return res.status(200).json({ status: 'sent', slack: result.text || 'ok' });
   } catch (error) {
     console.error('Slack execution error:', error);
     return res.status(500).json({ error: 'Internal Server Error', details: error?.message || String(error) });

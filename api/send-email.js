@@ -20,6 +20,23 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (req.method === 'GET') {
+    const resendConfigured = Boolean(process.env.RESEND_API_KEY);
+    const smtpConfigured =
+      Boolean(process.env.SMTP_HOST) &&
+      Boolean(process.env.SMTP_PORT) &&
+      Boolean(process.env.SMTP_USER) &&
+      Boolean(process.env.SMTP_PASS);
+    res.status(200).json({
+      ok: true,
+      resendConfigured,
+      smtpConfigured,
+      nodemailerAvailable: Boolean(nodemailer),
+      preferredProvider: resendConfigured ? 'resend' : (smtpConfigured ? 'smtp' : null)
+    });
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -45,6 +62,41 @@ module.exports = async (req, res) => {
       return;
     }
 
+    const postJson = async (url, payload, headers = {}) => {
+      if (typeof fetch === 'function') {
+        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(payload) });
+        const t = await r.text().catch(() => '');
+        return { ok: r.ok, status: r.status, text: t };
+      }
+      const https = require('https');
+      return await new Promise((resolve, reject) => {
+        const u = new URL(url);
+        const body = Buffer.from(JSON.stringify(payload));
+        const options = {
+          method: 'POST',
+          hostname: u.hostname,
+          path: u.pathname + u.search,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': body.length,
+            ...headers
+          }
+        };
+        const request = https.request(options, (response) => {
+          const chunks = [];
+          response.on('data', (c) => chunks.push(Buffer.from(c)));
+          response.on('end', () => {
+            const raw = Buffer.concat(chunks).toString('utf8');
+            const status = response.statusCode || 0;
+            resolve({ ok: status >= 200 && status < 300, status, text: raw });
+          });
+        });
+        request.on('error', reject);
+        request.write(body);
+        request.end();
+      });
+    };
+
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {
       const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'Happio QA <no-reply@happio.local>';
@@ -53,15 +105,9 @@ module.exports = async (req, res) => {
       if (text) payload.text = text;
       if (cc) payload.cc = cc;
       if (bcc) payload.bcc = bcc;
-      const resendRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const raw = await resendRes.text();
-      if (!resendRes.ok) {
-        return res.status(502).json({ error: 'Email provider error', provider: 'resend', details: raw });
-      }
+      const result = await postJson('https://api.resend.com/emails', payload, { Authorization: `Bearer ${resendKey}` });
+      const raw = result.text || '';
+      if (!result.ok) return res.status(502).json({ error: 'Email provider error', provider: 'resend', details: raw || `HTTP ${result.status}` });
       let parsed = null;
       try { parsed = raw ? JSON.parse(raw) : null; } catch (_) {}
       return res.status(200).json({ ok: true, provider: 'resend', result: parsed || raw });
@@ -70,7 +116,8 @@ module.exports = async (req, res) => {
     const host = (smtp && smtp.host) || process.env.SMTP_HOST;
     const port = Number((smtp && smtp.port) || process.env.SMTP_PORT || 587);
     const user = (smtp && smtp.user) || process.env.SMTP_USER;
-    const pass = (smtp && smtp.pass) || process.env.SMTP_PASS;
+    const passRaw = (smtp && smtp.pass) || process.env.SMTP_PASS;
+    const pass = typeof passRaw === 'string' ? passRaw.replace(/\s+/g, '') : passRaw;
     const from = process.env.SMTP_FROM || `Happio QA <${user || 'no-reply@local'}>`;
     const secure =
       (smtp && typeof smtp.secure === 'boolean' && smtp.secure) ||
