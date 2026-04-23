@@ -10,9 +10,17 @@ module.exports = async (req, res) => {
 
   const baseUrl = (process.env.ETL_BACKUP_RUNNER_URL || '').trim().replace(/\/+$/, '');
   const token = (process.env.ETL_BACKUP_RUNNER_TOKEN || '').trim();
+  const runUrl = baseUrl ? `${baseUrl}/run` : '';
+  const healthUrl = baseUrl ? `${baseUrl}/health` : '';
 
   if (req.method === 'GET') {
-    res.status(200).json({ ok: true, configured: Boolean(baseUrl), baseUrl: baseUrl || null });
+    res.status(200).json({
+      ok: true,
+      configured: Boolean(baseUrl),
+      baseUrl: baseUrl || null,
+      runUrl: runUrl || null,
+      healthUrl: healthUrl || null
+    });
     return;
   }
 
@@ -23,6 +31,10 @@ module.exports = async (req, res) => {
 
   if (!baseUrl) {
     res.status(500).json({ error: 'Backup runner is not configured on the server (missing ETL_BACKUP_RUNNER_URL).' });
+    return;
+  }
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    res.status(500).json({ error: 'Invalid ETL_BACKUP_RUNNER_URL. It must start with http:// or https://.' });
     return;
   }
 
@@ -52,7 +64,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const targetUrl = `${baseUrl}/run`;
+    const targetUrl = runUrl;
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -64,7 +76,7 @@ module.exports = async (req, res) => {
 
     const text = await runnerRes.text().catch(() => '');
     if (!runnerRes.ok) {
-      res.status(502).json({ error: `Backup runner error: ${runnerRes.status} ${text || runnerRes.statusText}` });
+      res.status(502).json({ error: `Backup runner error: ${runnerRes.status} ${text || runnerRes.statusText}`, runUrl: targetUrl });
       return;
     }
 
