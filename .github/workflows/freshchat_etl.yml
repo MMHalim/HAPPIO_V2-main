@@ -3,10 +3,6 @@ name: Freshchat Hourly ETL
 on:
   workflow_dispatch:
     inputs:
-      mode:
-        description: "Run mode: etl (default) or test (10s)"
-        required: false
-        default: "etl"
       from_cairo:
         description: "From (Africa/Cairo) - YYYY-MM-DDTHH:MM"
         required: false
@@ -15,18 +11,7 @@ on:
         required: false
 
 jobs:
-  minutes-test:
-    if: ${{ github.event.inputs.mode == 'test' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Quick test
-        run: |
-          echo "Actions test started"
-          sleep 10
-          echo "Actions test done"
-
   run-etl:
-    if: ${{ github.event.inputs.mode != 'test' }}
     concurrency:
       group: freshchat-hourly-etl
       cancel-in-progress: false
