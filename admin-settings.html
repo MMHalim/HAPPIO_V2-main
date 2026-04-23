@@ -7,7 +7,7 @@
   <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="global-theme.css" />
   <script src="global-navigation.js?v=2" defer></script>
-  <script src="admin-settings-v2.js?v=20260423-03" defer></script>
+  <script src="admin-settings-v2.js?v=20260309-04" defer></script>
   <style>
     .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
     .page-header { 
@@ -558,12 +558,15 @@
       </div>
       
       <div id="etl-config-form" style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 6px; border: 1px solid var(--border-color);">
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">Run Using</label>
-          <select id="etl-run-mode" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
-            <option value="backup">Backup Runner (no GitHub minutes)</option>
-            <option value="github">GitHub Actions (uses minutes)</option>
-          </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">GitHub Repo (Owner/Repo)</label>
+            <input type="text" id="gh-repo" value="MMHalim/HAPPIO_V2" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">Branch</label>
+            <input type="text" id="gh-branch" value="main" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
@@ -575,7 +578,15 @@
             <input type="datetime-local" id="gh-to-cairo" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
           </div>
         </div>
-        <button class="global-btn" onclick="AdminSettings.triggerEtlAction()" style="width: 100%;">Run Now</button>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; margin-bottom: 4px; font-weight: 500;">
+            GitHub Personal Access Token (PAT) 
+            <a href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=HAPPIO%20ETL%20Run%20Token" target="_blank" style="float: right; color: #3b82f6; text-decoration: none;">Generate New Token &nearr;</a>
+          </label>
+          <input type="password" id="gh-token" placeholder="ghp_..." style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+          <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Token must have 'repo' and 'workflow' scopes. Saved locally.</p>
+        </div>
+        <button class="global-btn" onclick="AdminSettings.triggerEtlAction()" style="width: 100%;">Start ETL Workflow</button>
       </div>
 
       <div id="etl-run-console" class="etl-run-console"></div>

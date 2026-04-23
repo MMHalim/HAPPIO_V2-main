@@ -264,19 +264,26 @@ const AdminSettings = (function() {
         return { fromValue: formatDatetimeLocalFromUtcDate(from), toValue: formatDatetimeLocalFromUtcDate(to) };
     }
 
-    function isLocalStaticHost() {
-        const h = (window.location && window.location.hostname) ? window.location.hostname : '';
-        return h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0';
-    }
-
     function runEtlNow() {
         openEtlRunModal();
-        const savedFromCairo = localStorage.getItem('etl_from_cairo') || localStorage.getItem('github_from_cairo');
-        const savedToCairo = localStorage.getItem('etl_to_cairo') || localStorage.getItem('github_to_cairo');
-        const savedMode = localStorage.getItem('etl_run_mode') || 'backup';
-
-        const modeSelect = document.getElementById('etl-run-mode');
-        if (modeSelect) modeSelect.value = savedMode;
+        const savedToken = localStorage.getItem('github_actions_pat');
+        const savedRepo = localStorage.getItem('github_repo');
+        const savedBranch = localStorage.getItem('github_branch');
+        const savedFromCairo = localStorage.getItem('github_from_cairo');
+        const savedToCairo = localStorage.getItem('github_to_cairo');
+        
+        if (savedToken) {
+            const tokenInput = document.getElementById('gh-token');
+            if (tokenInput) tokenInput.value = savedToken;
+        }
+        if (savedRepo) {
+            const repoInput = document.getElementById('gh-repo');
+            if (repoInput) repoInput.value = savedRepo;
+        }
+        if (savedBranch) {
+            const branchInput = document.getElementById('gh-branch');
+            if (branchInput) branchInput.value = savedBranch;
+        }
 
         const fromInput = document.getElementById('gh-from-cairo');
         const toInput = document.getElementById('gh-to-cairo');
@@ -290,14 +297,26 @@ const AdminSettings = (function() {
     }
 
     async function triggerEtlAction() {
-        const modeSelect = document.getElementById('etl-run-mode');
+        const tokenInput = document.getElementById('gh-token');
+        const repoInput = document.getElementById('gh-repo');
+        const branchInput = document.getElementById('gh-branch');
         const fromInput = document.getElementById('gh-from-cairo');
         const toInput = document.getElementById('gh-to-cairo');
         
-        const mode = modeSelect ? modeSelect.value : 'backup';
+        const token = tokenInput ? tokenInput.value.trim() : '';
+        const repoStr = repoInput ? repoInput.value.trim() : '';
+        const branch = branchInput ? branchInput.value.trim() : 'main';
         const fromCairo = fromInput ? fromInput.value.trim() : '';
         const toCairo = toInput ? toInput.value.trim() : '';
         
+        if (!token) {
+            showToast('GitHub Token is required', 'error');
+            return;
+        }
+        if (!repoStr || !repoStr.includes('/')) {
+            showToast('Invalid Repo format (Owner/Repo)', 'error');
+            return;
+        }
         if (!fromCairo || !toCairo) {
             showToast('From/To is required (Egypt/Cairo)', 'error');
             return;
@@ -307,44 +326,51 @@ const AdminSettings = (function() {
             return;
         }
 
-        localStorage.setItem('etl_run_mode', mode);
-        localStorage.setItem('etl_from_cairo', fromCairo);
-        localStorage.setItem('etl_to_cairo', toCairo);
+        localStorage.setItem('github_actions_pat', token);
+        localStorage.setItem('github_repo', repoStr);
+        localStorage.setItem('github_branch', branch);
+        localStorage.setItem('github_from_cairo', fromCairo);
+        localStorage.setItem('github_to_cairo', toCairo);
+
+        const [owner, repo] = repoStr.split('/');
+        const workflowFile = 'freshchat_etl.yml';
         
         // Reset state
         etlLiveState.seenKeys = new Set();
         etlLiveState.sinceIso = new Date(Date.now() - 10000).toISOString(); // 10s buffer
         etlLiveState.isRunning = true;
         
-        appendEtlRunLine(`[${new Date().toLocaleString()}] Starting manual ETL run...`);
+        appendEtlRunLine(`[${new Date().toLocaleString()}] Starting workflow trigger...`);
         appendEtlRunLine(`[${new Date().toLocaleString()}] Cairo range: ${fromCairo} to ${toCairo}`);
-        setEtlRunSubtitle('Starting ETL...');
+        setEtlRunSubtitle('Triggering workflow...');
         
         try {
-            if (isLocalStaticHost()) {
-                throw new Error('This button calls /api/* endpoints which do not work when the site is served by python http.server. Use the deployed Vercel site (or run vercel dev locally).');
-            }
-            const endpoint = mode === 'github' ? '/api/run-etl-manual' : '/api/run-etl-backup';
-            const res = await fetch(endpoint, {
+            const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`;
+            const payload = {
+                ref: branch,
+                inputs: {
+                    from_cairo: fromCairo,
+                    to_cairo: toCairo
+                }
+            };
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
+                    'Accept': 'application/vnd.github+json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-GitHub-Api-Version': '2022-11-28',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ from_cairo: fromCairo, to_cairo: toCairo })
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
-                const raw = await res.text().catch(() => '');
-                let msg = raw || res.statusText;
-                try {
-                    const parsed = raw ? JSON.parse(raw) : null;
-                    if (parsed && parsed.error) msg = parsed.error;
-                } catch (_) {}
-                throw new Error(`ETL start failed: ${res.status} ${msg}`);
+                const text = await res.text().catch(() => '');
+                throw new Error(`GitHub dispatch failed: ${res.status} ${text || res.statusText}`);
             }
             
-            appendEtlRunLine(`[${new Date().toLocaleString()}] ETL started successfully!`);
-            showToast('ETL started', 'success');
+            appendEtlRunLine(`[${new Date().toLocaleString()}] Workflow dispatched successfully!`);
+            showToast('Workflow triggered', 'success');
             setEtlRunSubtitle('Watching logs (it may take a moment to start)...');
             
             // Start polling
