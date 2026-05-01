@@ -9,6 +9,9 @@ on:
       to_cairo:
         description: "To (Africa/Cairo) - YYYY-MM-DDTHH:MM"
         required: false
+      window_slot:
+        description: "Optional Cairo slot key: 1705,1805,1905,2005,2105,2205,2305,0005,0105,0205"
+        required: false
 
 jobs:
   run-etl:
@@ -41,14 +44,78 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests pandas gspread google-auth
 
+      - name: Resolve Cairo Time Window
+        id: resolve_window
+        env:
+          INPUT_FROM_CAIRO: ${{ github.event.inputs.from_cairo }}
+          INPUT_TO_CAIRO: ${{ github.event.inputs.to_cairo }}
+          INPUT_WINDOW_SLOT: ${{ github.event.inputs.window_slot }}
+        run: |
+          python <<'PY'
+          import os
+          from datetime import datetime, timedelta
+          from zoneinfo import ZoneInfo
+
+          tz = ZoneInfo("Africa/Cairo")
+          from_input = (os.getenv("INPUT_FROM_CAIRO") or "").strip()
+          to_input = (os.getenv("INPUT_TO_CAIRO") or "").strip()
+          slot = (os.getenv("INPUT_WINDOW_SLOT") or "").strip()
+
+          slot_map = {
+              "1705": ((0, 2, 0), (0, 17, 0)),
+              "1805": ((0, 17, 0), (0, 18, 0)),
+              "1905": ((0, 18, 0), (0, 19, 0)),
+              "2005": ((0, 19, 0), (0, 20, 0)),
+              "2105": ((0, 20, 0), (0, 21, 0)),
+              "2205": ((0, 21, 0), (0, 22, 0)),
+              "2305": ((0, 22, 0), (0, 23, 0)),
+              "0005": ((-1, 23, 0), (0, 0, 0)),
+              "0105": ((0, 0, 0), (0, 1, 0)),
+              "0205": ((0, 1, 0), (0, 2, 0)),
+          }
+
+          def fmt(dt):
+              return dt.strftime("%Y-%m-%dT%H:%M")
+
+          if from_input and to_input:
+              resolved_from = from_input
+              resolved_to = to_input
+              reason = "explicit inputs"
+          elif slot:
+              if slot not in slot_map:
+                  raise SystemExit(
+                      "Unsupported window_slot. Use one of: "
+                      + ",".join(slot_map.keys())
+                  )
+              now_cairo = datetime.now(tz)
+              today = now_cairo.date()
+              (from_day_offset, from_hour, from_minute), (to_day_offset, to_hour, to_minute) = slot_map[slot]
+              from_dt = datetime.combine(today + timedelta(days=from_day_offset), datetime.min.time(), tz) \
+                  .replace(hour=from_hour, minute=from_minute)
+              to_dt = datetime.combine(today + timedelta(days=to_day_offset), datetime.min.time(), tz) \
+                  .replace(hour=to_hour, minute=to_minute)
+              resolved_from = fmt(from_dt)
+              resolved_to = fmt(to_dt)
+              reason = f"window_slot={slot}"
+          else:
+              raise SystemExit("Provide either from_cairo/to_cairo or window_slot.")
+
+          github_output = os.environ["GITHUB_OUTPUT"]
+          with open(github_output, "a", encoding="utf-8") as fh:
+              fh.write(f"from_cairo={resolved_from}\n")
+              fh.write(f"to_cairo={resolved_to}\n")
+
+          print(f"Resolved Cairo window ({reason}): {resolved_from} -> {resolved_to}")
+          PY
+
       - name: Run ETL Script
         env:
           FRESHCHAT_TOKEN: ${{ secrets.FRESHCHAT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-          FROM_CAIRO: ${{ github.event.inputs.from_cairo }}
-          TO_CAIRO: ${{ github.event.inputs.to_cairo }}
+          FROM_CAIRO: ${{ steps.resolve_window.outputs.from_cairo }}
+          TO_CAIRO: ${{ steps.resolve_window.outputs.to_cairo }}
           ETL_RUN_MODE: once
           ETL_ENFORCE_CAIRO_MINUTE: "0"
           ETL_CAIRO_MINUTE: "1"
