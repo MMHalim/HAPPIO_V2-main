@@ -1274,7 +1274,7 @@ async function completeCalibration() {
     noItems,
     takerNames,
     toRecipients,
-    ccDefaults: ['halim@tempo.fit', 'nancy@temp.fit', 'khaledsabban@tempo.fit']
+    ccDefaults: ['halim@tempo.fit', 'nancy@tempo.fit', 'khaledsabban@tempo.fit']
   });
 }
 
