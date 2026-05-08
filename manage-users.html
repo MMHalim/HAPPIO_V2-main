@@ -1190,18 +1190,52 @@
                 return;
             }
             try {
+                let invited = 0;
+                let upsertOnly = 0;
+                let failed = 0;
+                const failures = [];
+                let rateLimited = false;
+
                 for (const item of items) {
-                    await inviteAndUpsertUser(item);
+                    if (rateLimited) {
+                        try {
+                            await upsertUserRowOnly(item);
+                            upsertOnly++;
+                        } catch (e) {
+                            failed++;
+                            failures.push(`${item.email}: ${e && e.message ? e.message : 'Failed'}`);
+                        }
+                        continue;
+                    }
+
+                    try {
+                        const result = await inviteAndUpsertUser(item);
+                        if (result && result.rateLimited) {
+                            rateLimited = true;
+                            upsertOnly++;
+                        } else {
+                            invited++;
+                        }
+                    } catch (e) {
+                        failed++;
+                        failures.push(`${item.email}: ${e && e.message ? e.message : 'Failed'}`);
+                    }
                 }
                 closeBulkInviteModal();
-                showSuccess(`Invited ${items.length} users`);
+                if (failed === 0 && upsertOnly === 0) {
+                    showSuccess(`Invited ${invited} users`);
+                } else if (failed === 0 && upsertOnly > 0) {
+                    showSuccess(`Invited ${invited} users. Added ${upsertOnly} users to the table (invite emails rate-limited).`);
+                } else {
+                    showError(`Invited ${invited} users. Added ${upsertOnly} users to the table. Failed ${failed}.\n\n${failures.slice(0, 12).join('\n')}${failures.length > 12 ? '\n...' : ''}`);
+                }
                 loadUsers();
             } catch (e) {
                 showError(e.message || 'Bulk invite failed');
             }
         }
 
-        async function inviteAndUpsertUser(item) {
+        async function upsertUserRowOnly(item) {
             const serviceKey = await loadSupabaseServiceKey();
             if (!serviceKey) throw new Error('Supabase service key is missing in database_config.json (supabase.service_key)');
             const email = String(item.email || '').trim();
@@ -1209,24 +1243,6 @@
             const roles = Array.isArray(item.roles) ? item.roles : [];
             const qaCoach = String(item.qaCoach || '').trim();
             const teamLeader = String(item.teamLeader || '').trim();
-
-            const inviteRes = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
-                method: 'POST',
-                headers: {
-                    apikey: serviceKey,
-                    Authorization: `Bearer ${serviceKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email,
-                    redirectTo: `${window.location.origin}/login.html`,
-                    data: name ? { name } : {}
-                })
-            });
-            if (!inviteRes.ok) {
-                const text = await inviteRes.text().catch(() => '');
-                throw new Error(`Invite failed for ${email}: ${inviteRes.status} ${text || inviteRes.statusText}`);
-            }
 
             const desiredRow = {
                 email,
@@ -1266,7 +1282,7 @@
                 });
                 if (!patchRes.ok) {
                     const text = await patchRes.text().catch(() => '');
-                    throw new Error(`User update failed for ${email}: ${patchRes.status} ${text || patchRes.statusText}`);
+                    throw new Error(`User update failed: ${patchRes.status} ${text || patchRes.statusText}`);
                 }
             } else {
                 const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
@@ -1281,9 +1297,43 @@
                 });
                 if (!insertRes.ok) {
                     const text = await insertRes.text().catch(() => '');
-                    throw new Error(`User insert failed for ${email}: ${insertRes.status} ${text || insertRes.statusText}`);
+                    throw new Error(`User insert failed: ${insertRes.status} ${text || insertRes.statusText}`);
                 }
             }
+        }
+
+        async function inviteAndUpsertUser(item) {
+            const serviceKey = await loadSupabaseServiceKey();
+            if (!serviceKey) throw new Error('Supabase service key is missing in database_config.json (supabase.service_key)');
+            const email = String(item.email || '').trim();
+            const name = String(item.name || '').trim();
+            const roles = Array.isArray(item.roles) ? item.roles : [];
+            const qaCoach = String(item.qaCoach || '').trim();
+            const teamLeader = String(item.teamLeader || '').trim();
+
+            await upsertUserRowOnly(item);
+
+            const inviteRes = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
+                method: 'POST',
+                headers: {
+                    apikey: serviceKey,
+                    Authorization: `Bearer ${serviceKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    redirectTo: `${window.location.origin}/login.html`,
+                    data: name ? { name } : {}
+                })
+            });
+            if (!inviteRes.ok) {
+                const text = await inviteRes.text().catch(() => '');
+                if (inviteRes.status === 429 && String(text || '').includes('over_email_send_rate_limit')) {
+                    return { ok: true, invited: false, rateLimited: true };
+                }
+                throw new Error(`Invite failed for ${email}: ${inviteRes.status} ${text || inviteRes.statusText}`);
+            }
+            return { ok: true, invited: true, rateLimited: false };
         }
 
         // Get role CSS class
