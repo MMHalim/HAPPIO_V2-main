@@ -857,7 +857,21 @@ async function loadResults() {
       updateCompleteButtonState(null);
       return;
     }
-    renderTable(data, container);
+    const takerNames = Array.from(new Set((data || []).map(r => (r.Taker_Name || '').toString().trim()).filter(Boolean)));
+    const emailMap = new Map();
+    if (takerNames.length > 0) {
+      try {
+        const users = await fetchUserEmailsByNames(takerNames);
+        (users || []).forEach(u => {
+          const name = (u.Name || '').toString().trim().toLowerCase();
+          const email = (u.email || '').toString().trim();
+          if (name && email) emailMap.set(name, email);
+        });
+      } catch (e) {
+        console.warn('Failed to fetch user emails for rendering', e);
+      }
+    }
+    renderTable(data, container, emailMap);
     await syncCalibrationCompletedState(convId, queue, true);
   } catch (err) {
     console.error(err);
@@ -932,7 +946,7 @@ async function fetchCalibrationData(convId, queue) {
   return await res.json();
 }
 
-function renderTable(data, container) {
+function renderTable(data, container, emailMap) {
   // Pivot data: Columns = Takers
   lastResults = Array.isArray(data) ? data.slice() : [];
 
@@ -983,7 +997,9 @@ function renderTable(data, container) {
     const name = row.Taker_Name || 'Unknown';
     const scoreLabel = takerScores.get(name);
     const headerText = scoreLabel ? `${name} : ${scoreLabel}` : name;
-    html += `<th class="taker-header">${headerText}</th>`;
+    const email = emailMap ? emailMap.get((name || '').toString().trim().toLowerCase()) : '';
+    const emailLine = email ? `<div class="taker-email">${email}</div>` : '';
+    html += `<th class="taker-header"><div>${headerText}</div>${emailLine}</th>`;
   });
   html += '<th style="min-width: 80px; max-width: 80px;">Score</th>'; // New Score Column at the end
   html += '</tr></thead>';
