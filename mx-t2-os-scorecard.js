@@ -1585,7 +1585,7 @@ async function submit() {
   const dup = await checkDuplicate(convId);
   const notice = document.getElementById('duplicateNotice');
   if (notice) notice.style.display = dup ? 'block' : 'none';
-  if (dup) { if (typeof showAlert === 'function') showAlert('Duplicate Conversation ID found. Please review.', { title: 'Duplicate detected', type: 'warning' }); return; }
+  if (dup) { if (typeof showAlert === 'function') showAlert('Duplicate Conversation ID found. Submitting anyway.', { title: 'Duplicate detected', type: 'warning' }); }
   const getSelectVal = (id) => ((document.getElementById(id) || {}).value || '').trim();
   const getRadioVal = (name) => { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; };
   const calibVal = getRadioVal('calibration');
@@ -1749,7 +1749,8 @@ function bindEvents() {
       const agentName = agentNameSelect.selectedOptions[0].textContent.trim();
 
       try {
-        const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+        const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::' || host === '::1';
         const endpoint = isLocal ? 'http://127.0.0.1:8025/send-slack-sbs' : '/api/send-slack-sbs';
 
         const res = await fetch(endpoint, {
@@ -1767,7 +1768,16 @@ function bindEvents() {
         const raw = await res.text();
         if (!res.ok) {
           console.warn('SBS Slack failed:', res.status, raw);
-          showAlert(`SBS Slack failed (${res.status}). ${raw || ''}`.trim(), { type: 'warning' });
+          const looksLikeHtml = /^\s*</.test(raw || '');
+          const lower = String(raw || '').toLowerCase();
+          const isPythonHttpServer501 = res.status === 501 && (lower.includes("unsupported method ('post')") || lower.includes('unsupported method'));
+          if (isPythonHttpServer501) {
+            showAlert('SBS Slack failed (501). You are running the site using python http.server which cannot handle POST requests. Run the local backend (smtp_server.py on port 8025) and open the site via http://localhost:8020, or use the deployed Vercel app.', { type: 'warning' });
+          } else if (looksLikeHtml) {
+            showAlert(`SBS Slack failed (${res.status}). Server returned HTML instead of JSON.`, { type: 'warning' });
+          } else {
+            showAlert(`SBS Slack failed (${res.status}). ${raw || ''}`.trim(), { type: 'warning' });
+          }
           return;
         }
         let json = null;
