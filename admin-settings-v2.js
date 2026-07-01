@@ -12,6 +12,7 @@ const AdminSettings = (function() {
         t1: [],
         t2os: [],
         t2ps: [],
+        t2osnew: [],
         sms: [],
         social: [],
         intRel: [],
@@ -23,6 +24,7 @@ const AdminSettings = (function() {
         t1: [],
         t2os: [],
         t2ps: [],
+        t2osnew: [],
         sms: [],
         social: [],
         intRel: []
@@ -136,6 +138,7 @@ const AdminSettings = (function() {
             case 't1': fetchAttributes('T1_SC_Att', 't1'); break;
             case 't2os': fetchAttributes('New_SC_Attributes', 't2os'); break;
             case 't2ps': fetchAttributes('ps_attributes', 't2ps'); break;
+            case 't2osnew': fetchAttributes('sales_ret_att', 't2osnew'); break;
             case 'sms': fetchAttributes('sms_Attributes', 'sms'); break;
             case 'social': fetchAttributes('social_attributes', 'social'); break;
             case 'intRel': fetchIntRel(); break;
@@ -556,11 +559,12 @@ const AdminSettings = (function() {
     // --- Attributes Logic ---
     function getAttributesConfig(tabKey) {
         const map = {
-            t1: { tableName: 'T1_SC_Att', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true },
-            t2os: { tableName: 'New_SC_Attributes', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true },
-            t2ps: { tableName: 'ps_attributes', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true },
-            sms: { tableName: 'sms_Attributes', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true },
-            social: { tableName: 'social_attributes', idField: 'id', categoryField: 'category', criteriaField: 'subCategory', scoreField: 'score', categoryLabel: 'Category', criteriaLabel: 'Description', omitIdOnInsert: false }
+            t1: { tableName: 'T1_SC_Att', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true, scoreInputType: 'number' },
+            t2os: { tableName: 'New_SC_Attributes', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true, scoreInputType: 'number' },
+            t2ps: { tableName: 'ps_attributes', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true, scoreInputType: 'number' },
+            t2osnew: { tableName: 'sales_ret_att', idField: 'id', categoryField: 'subcategory', criteriaField: 'criteria', scoreField: 'score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true, scoreInputType: 'text' },
+            sms: { tableName: 'sms_Attributes', idField: 'ID', categoryField: 'Subcategory', criteriaField: 'Criteria', scoreField: 'Score', categoryLabel: 'Subcategory', criteriaLabel: 'Criteria', omitIdOnInsert: true, scoreInputType: 'number' },
+            social: { tableName: 'social_attributes', idField: 'id', categoryField: 'category', criteriaField: 'subCategory', scoreField: 'score', categoryLabel: 'Category', criteriaLabel: 'Description', omitIdOnInsert: false, scoreInputType: 'number' }
         };
         return map[tabKey] || null;
     }
@@ -623,7 +627,7 @@ const AdminSettings = (function() {
                     <td>${idVal != null ? idVal : ''}</td>
                     <td><input type="text" value="${rawCategory || ''}" onchange="AdminSettings.updateAttribute('${tabKey}', ${index}, '${tabCfg.categoryField}', this.value)"></td>
                     <td><textarea rows="2" style="width:100%" onchange="AdminSettings.updateAttribute('${tabKey}', ${index}, '${tabCfg.criteriaField}', this.value)">${rawCriteria || ''}</textarea></td>
-                    <td><input type="number" value="${rawScore != null ? rawScore : 0}" style="width: 60px" onchange="AdminSettings.updateAttribute('${tabKey}', ${index}, '${tabCfg.scoreField}', this.value)"></td>
+                    <td><input type="${tabCfg.scoreInputType || 'number'}" value="${rawScore != null ? rawScore : 0}" style="width: 80px" onchange="AdminSettings.updateAttribute('${tabKey}', ${index}, '${tabCfg.scoreField}', this.value)"></td>
                     <td>
                         <button class="global-btn btn-secondary" style="padding: 4px 8px; font-size: 12px; background: #ef4444; color: white; border: none;" onclick="AdminSettings.deleteAttribute('${tabKey}', ${index})">Delete</button>
                     </td>

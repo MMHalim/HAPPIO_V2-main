@@ -7,7 +7,7 @@
   <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="global-theme.css" />
   <script src="global-navigation.js?v=2" defer></script>
-  <script src="admin-settings-v2.js?v=20260309-04" defer></script>
+  <script src="admin-settings-v2.js?v=20260701-01" defer></script>
   <style>
     .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
     .page-header { 
@@ -342,6 +342,7 @@
         <button class="tab-btn active" data-tab="t1">T1 Attributes</button>
         <button class="tab-btn" data-tab="t2os">T2 OS Attributes</button>
         <button class="tab-btn" data-tab="t2ps">T2 PS Attributes</button>
+        <button class="tab-btn" data-tab="t2osnew">T2 OS New Attributes</button>
         <button class="tab-btn" data-tab="sms">SMS Attributes</button>
         <button class="tab-btn" data-tab="social">Social Attributes</button>
         <button class="tab-btn" data-tab="intRel">Interaction Related To</button>
@@ -391,6 +392,20 @@
           </div>
         </div>
         <div id="t2psTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- T2 OS New Attributes -->
+    <div id="t2osnew" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>T2 OS New Attributes</h3>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardChanges('t2osnew')">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveChanges('t2osnew')">Save Changes</button>
+          </div>
+        </div>
+        <div id="t2osnewTableContainer">Loading...</div>
       </div>
     </div>
 
