@@ -15,12 +15,13 @@
     startISO: null, 
     endISO: null,
     configLoaded: false,
-    data: { t1: [], sms: [], social: [], t2ps: [], t2os: [] },
-    filters: { t1: [], sms: [], social: [], t2ps: [], t2os: [] },
+    data: { t1: [], sms: [], social: [], t2ps: [], t2os: [], salesret: [] },
+    filters: { t1: [], sms: [], social: [], t2ps: [], t2os: [], salesret: [] },
     smsAttributes: [],
     socialAttributes: [],
     psAttributes: [],
-    t2osAttributes: []
+    t2osAttributes: [],
+    salesRetAttributes: []
   };
 
   // --- 1. Config Loading ---
@@ -40,6 +41,7 @@
       fetchSocialAttributes();
       fetchPsAttributes();
       fetchNewScAttributes();
+      fetchSalesRetAttributes();
 
       initRangePicker();
       initTableControls();
@@ -98,6 +100,50 @@
       state.t2osAttributes = await res.json();
     } catch (e) {
       console.warn('Failed to fetch New SC attributes', e);
+    }
+  }
+
+  function parseAttributeScoreValue(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    const text = String(value == null ? '' : value).trim();
+    const match = text.match(/-?\d+(?:\.\d+)?/);
+    if (!match) return 0;
+    const parsed = Number(match[0]);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function pickMappedRowValue(row, candidates, fallback = '') {
+    const keys = Object.keys(row || {});
+    const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const candidate of candidates) {
+      const exact = keys.find((key) => key === candidate);
+      if (exact && row[exact] != null) return row[exact];
+      const normalized = normalize(candidate);
+      const fuzzy = keys.find((key) => normalize(key) === normalized);
+      if (fuzzy && row[fuzzy] != null) return row[fuzzy];
+    }
+    return fallback;
+  }
+
+  async function fetchSalesRetAttributes() {
+    try {
+      const url = `${config.restUrl}/sales_ret_att?select=*&order=id.asc`;
+      let res = await fetch(url, { headers: authHeaders() });
+      if (!res.ok) {
+        res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
+      }
+      if (!res.ok) throw new Error(await res.text());
+      const rows = await res.json();
+      state.salesRetAttributes = Array.isArray(rows) ? rows.map((row, idx) => ({
+        ...row,
+        ID: pickMappedRowValue(row, ['ID', 'id'], idx + 1),
+        Subcategory: String(pickMappedRowValue(row, ['Subcategory', 'subcategory', 'subcategor'], '') || '').trim(),
+        Criteria: String(pickMappedRowValue(row, ['Criteria', 'criteria', 'description'], '') || '').trim(),
+        Score: parseAttributeScoreValue(pickMappedRowValue(row, ['Score', 'score'], 0))
+      })) : [];
+    } catch (e) {
+      console.warn('Failed to fetch sales retention attributes', e);
+      state.salesRetAttributes = [];
     }
   }
 
@@ -268,6 +314,55 @@
     container.appendChild(toast);
   }
 
+  function showConfirmDialog(message, opts = {}) {
+    const overlay = document.getElementById('confirmModal');
+    const titleEl = document.getElementById('confirmModalTitle');
+    const messageEl = document.getElementById('confirmModalMessage');
+    const confirmBtn = document.getElementById('confirmModalConfirm');
+    const cancelBtn = document.getElementById('confirmModalCancel');
+
+    if (!overlay || !titleEl || !messageEl || !confirmBtn || !cancelBtn) {
+      return Promise.resolve(window.confirm(message));
+    }
+
+    titleEl.textContent = opts.title || 'Confirm Delete';
+    messageEl.textContent = message || 'Are you sure?';
+    confirmBtn.textContent = opts.confirmText || 'Delete';
+    cancelBtn.textContent = opts.cancelText || 'Cancel';
+    confirmBtn.style.background = 'var(--danger-color)';
+    confirmBtn.style.color = '#fff';
+
+    overlay.style.display = 'flex';
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        overlay.style.display = 'none';
+        overlay.removeEventListener('click', onOverlayClick);
+        document.removeEventListener('keydown', onKeyDown);
+        confirmBtn.removeEventListener('click', onConfirm);
+        cancelBtn.removeEventListener('click', onCancel);
+        resolve(value);
+      };
+
+      const onConfirm = () => finish(true);
+      const onCancel = () => finish(false);
+      const onOverlayClick = (e) => {
+        if (e.target === overlay) finish(false);
+      };
+      const onKeyDown = (e) => {
+        if (e.key === 'Escape') finish(false);
+      };
+
+      confirmBtn.addEventListener('click', onConfirm);
+      cancelBtn.addEventListener('click', onCancel);
+      overlay.addEventListener('click', onOverlayClick);
+      document.addEventListener('keydown', onKeyDown);
+    });
+  }
+
   // --- 2. Data Fetching ---
   
   // Table Configs
@@ -301,6 +396,12 @@
       scoreCol: 'Final_Score',
       cols: ['created_at', 'agent_name', 'conversation_id', 'Final_Score', 'id', 'Channel', 'Taker_Name'],
       label: 'T2 OS Audit'
+    },
+    salesret: {
+      name: 'sales_ret_audits',
+      scoreCol: 'Final_Score',
+      cols: ['created_at', 'Agent_Name', 'agent_name', 'Conversation_ID', 'conversation_id', 'Final_Score', 'id', 'Channel', 'Taker_Name'],
+      label: 'T2 OS New Scorecard Audit'
     }
   };
 
@@ -320,7 +421,8 @@
       processScorecard('sms'),
       processScorecard('social'),
       processScorecard('t2ps'),
-      processScorecard('t2os')
+      processScorecard('t2os'),
+      processScorecard('salesret')
     ]);
   }
 
@@ -488,9 +590,14 @@
       if (isAdmin) {
         const delBtn = tr.querySelector('.delete-btn');
         if (delBtn) {
-          delBtn.addEventListener('click', (e) => {
+          delBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm('Are you sure you want to delete this record? This cannot be undone.')) {
+            const confirmed = await showConfirmDialog('Are you sure you want to delete this record? This cannot be undone.', {
+              title: 'Delete Record',
+              confirmText: 'Delete',
+              cancelText: 'Cancel'
+            });
+            if (confirmed) {
               deleteRecord(key, row.id);
             }
           });
@@ -1037,6 +1144,38 @@
              ticketHtml += renderMetaCard(f.label, row[f.key], f.key, 'color:var(--text-primary);', true);
          }
       });
+
+      ticketSection.innerHTML += ticketHtml;
+      body.appendChild(ticketSection);
+    } else if (key === 'salesret') {
+      const ticketSection = document.createElement('div');
+      ticketSection.className = 'detail-section';
+      ticketSection.innerHTML = `<h3>Ticket Details</h3>`;
+
+      let ticketHtml = '';
+      const fields = [
+        { label: 'Monitoring Type', key: 'Monitoring_Type' },
+        { label: 'Ticket Status', key: 'ticket_status' },
+        { label: 'Interaction Related To', key: 'Interaction_Related_To' },
+        { label: 'Customer Retained', key: 'customer_retained' },
+        { label: 'Coaching Delivered', key: 'coaching_delivered' },
+        { label: 'Fitness Fluency', key: 'fitness_fluency' },
+        { label: 'Queue', key: 'queue' },
+        { label: 'Certification', key: 'Certification' },
+        { label: 'Agent Acknowledge', key: 'Agent_Acknowledge' },
+        { label: 'Appealed', key: 'appealed' }
+      ];
+
+      fields.forEach(f => {
+        if (row[f.key] !== undefined && row[f.key] !== null) {
+          ticketHtml += renderMetaCard(f.label, row[f.key], f.key, 'color:var(--text-primary);', true);
+        }
+      });
+
+      if (row.URL) {
+        const safeUrl = String(row.URL).replace(/"/g, '&quot;');
+        ticketHtml += renderMetaCard('Ticket URL', `<a href="${safeUrl}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">Open</a>`);
+      }
 
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
@@ -1612,6 +1751,123 @@
            if (commentKey) usedKeys.add(commentKey);
        });
 
+    } else if (key === 'salesret') {
+      const apiAttrs = state.salesRetAttributes || [];
+      const sortedApiAttrs = [...apiAttrs].sort((a, b) => Number(a.ID || a.id || 0) - Number(b.ID || b.id || 0));
+
+      const SALES_RET_DB_MAPPING = {
+        'Interaction Protocols': 'interaction_protocols',
+        'Understanding': 'understanding',
+        'Effectiveness & FCR': 'effectiveness_&_FCR',
+        'Engagement & Langauge': 'engagement_&_Langauge',
+        'Engagement & Language': 'engagement_&_Langauge',
+        'Retention Skills/Sales Skills': 'retention_skills',
+        'Retention / Sales Skills': 'retention_skills',
+        'Offering Alternatives/Options': 'offering_alternatives',
+        'Offering Alternatives / Options': 'offering_alternatives',
+        'Product Awareness': 'product_awareness',
+        'Process Awareness': 'process_awareness',
+        'Tempo Values': 'tempo_values',
+        'Verification': 'verfication',
+        'Verfication': 'verfication',
+        'Documentation & CRM Updates': 'documentation_crm',
+        'Documentation / CRM Updates': 'documentation_crm',
+        'Documentation': 'documentation_crm',
+        'CRM Updates': 'documentation_crm',
+        'Workflow': 'workflow',
+        'Ownership': 'ownership'
+      };
+
+      const SALES_RET_COMMENT_MAPPING = {
+        'interaction_protocols': 'comment_interaction_protocols',
+        'understanding': 'comment_Understanding',
+        'effectiveness_&_FCR': 'comment_Effectiveness_&_FCR',
+        'engagement_&_Langauge': 'comment_Engagement_&_Langauge',
+        'retention_skills': 'comment_Retention_Skills',
+        'offering_alternatives': 'comment_Offering_Alternatives',
+        'product_awareness': 'comment_Product_Awareness',
+        'process_awareness': 'comment_Process_Awareness',
+        'tempo_values': 'comment_Tempo_Values',
+        'verfication': 'comment_Verification',
+        'documentation_crm': 'comment_Documentation_crm',
+        'workflow': 'comment_Workflow',
+        'ownership': 'comment_ownership'
+      };
+
+      sortedApiAttrs.forEach(attrItem => {
+        let attrName = String(attrItem.Subcategory || attrItem.subcategory || attrItem.subcategor || '').trim();
+        if (!attrName) return;
+        attrName = attrName.replace(/\s+/g, ' ');
+
+        const description = String(attrItem.Criteria || attrItem.criteria || attrItem.description || '').trim();
+        let maxScore = attrItem.Score ?? attrItem.score ?? null;
+        if (maxScore !== null && maxScore !== undefined && maxScore !== '') {
+          maxScore = parseAttributeScoreValue(maxScore);
+        } else {
+          maxScore = null;
+        }
+
+        const dbColName = SALES_RET_DB_MAPPING[attrName];
+        let scoreKey = null;
+        let scoreVal = undefined;
+
+        if (dbColName && row[dbColName] !== undefined) {
+          scoreKey = dbColName;
+          scoreVal = row[dbColName];
+        }
+
+        if (scoreVal === undefined) {
+          scoreKey = pickRowKey(row, [
+            dbColName,
+            attrName,
+            attrName.replace(/\s+/g, '_'),
+            normalizeToken(attrName),
+            'retention_skills',
+            'offering_alternatives',
+            'documentation_crm',
+            'verfication'
+          ].filter(Boolean));
+          scoreVal = scoreKey ? row[scoreKey] : undefined;
+        }
+
+        let commentKey = null;
+        let commentVal = '';
+
+        if (dbColName && SALES_RET_COMMENT_MAPPING[dbColName] && row[SALES_RET_COMMENT_MAPPING[dbColName]] !== undefined) {
+          commentKey = SALES_RET_COMMENT_MAPPING[dbColName];
+          commentVal = row[commentKey];
+        }
+
+        if (!commentKey) {
+          commentKey = pickRowKey(row, [
+            dbColName ? SALES_RET_COMMENT_MAPPING[dbColName] : null,
+            dbColName ? `comment_${dbColName}` : null,
+            dbColName ? `comments_${dbColName}` : null,
+            dbColName ? `com_${dbColName}` : null,
+            `comment_${attrName}`,
+            `comments_${attrName}`,
+            `comment_${attrName.replace(/\s+/g, '_')}`,
+            `comments_${attrName.replace(/\s+/g, '_')}`,
+            `comment_${normalizeToken(attrName)}`,
+            `comments_${normalizeToken(attrName)}`
+          ].filter(Boolean));
+          commentVal = commentKey ? row[commentKey] : '';
+        }
+
+        attributes.push({
+          label: attrName,
+          description,
+          score: scoreVal,
+          scoreKey,
+          comment: commentVal,
+          commentKey,
+          maxScore
+        });
+
+        if (scoreKey) usedKeys.add(scoreKey);
+        if (commentKey) usedKeys.add(commentKey);
+      });
+
     } else {
       // GENERIC LOGIC (T1, T2PS, T2OS)
       const keys = Object.keys(row).sort();
@@ -2006,7 +2262,7 @@
     processedAttributes = Array.from(uniqueAttrs.values());
 
     // 2. Sort by FULL_DISPLAY_ORDER (Skip for SMS and T2 PS as they are already ordered)
-    if (key !== 'sms' && key !== 't2ps' && key !== 't2os') {
+    if (key !== 'sms' && key !== 't2ps' && key !== 't2os' && key !== 'salesret') {
         processedAttributes.sort((a, b) => {
             const idxA = FULL_DISPLAY_ORDER.indexOf(a.label);
             const idxB = FULL_DISPLAY_ORDER.indexOf(b.label);
@@ -2022,7 +2278,7 @@
     const group1 = [];
     const group2 = [];
 
-    if (key === 'sms' || key === 't2ps' || key === 't2os') {
+    if (key === 'sms' || key === 't2ps' || key === 't2os' || key === 'salesret') {
         group2.push(...processedAttributes);
     } else {
         processedAttributes.forEach(attr => {
@@ -2107,7 +2363,7 @@
             let commentHtml = '';
             // For T2 OS, show comments for all attributes as requested
             // For others, respect the NO_COMMENT_LABELS exclusion list
-            if (key === 't2os' || !NO_COMMENT_LABELS.has(attr.label)) {
+            if (key === 't2os' || key === 'salesret' || !NO_COMMENT_LABELS.has(attr.label)) {
                 // Escape comment text but allow links
                 const safeComment = escapeHtml(attr.comment || '');
                 if (attr.commentKey) {
@@ -2260,7 +2516,7 @@
             'channel': ['Chat', 'Email', 'Phone'],
             'ticket_status': ['Open', 'Snoozed', 'Done'],
             'status': ['Open', 'Snoozed', 'Done'],
-            'monitoring_type': ['SBS', 'Remote'],
+            'monitoring_type': ['SBS', 'Remote', 'Selected'],
             'interaction_related_to': intRltdToOpts,
             'fitness_fluency': ['Yes', 'No']
         };
@@ -2439,7 +2695,7 @@
         if (!isNaN(computedScore)) {
           // SMS scorecard and T1/T2 PS scorecard convention is to store score as string with % (e.g. "85%")
           // Updated: T2 OS (T2_OS_NEW_2025) also requires % format as per user request
-           if (def.name === 'sms_scorecard' || def.name === 'T1_QA_New_Scorecards' || def.name === 't2_ps_scorecards' || def.name === 'T2_OS_NEW_2025' || def.name === 'MX_Social_Media_Scorecard') {
+           if (def.name === 'sms_scorecard' || def.name === 'T1_QA_New_Scorecards' || def.name === 't2_ps_scorecards' || def.name === 'T2_OS_NEW_2025' || def.name === 'MX_Social_Media_Scorecard' || def.name === 'sales_ret_audits') {
              updates[def.scoreCol] = `${computedScore}%`;
            } else {
             updates[def.scoreCol] = computedScore;

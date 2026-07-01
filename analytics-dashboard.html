@@ -7,7 +7,7 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="stylesheet" href="global-theme.css" />
   <script src="global-navigation.js?v=2" defer></script>
-  <script src="analytics-dashboard.js?v=3" defer></script>
+  <script src="analytics-dashboard.js?v=5" defer></script>
   <style>
     .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
     .scorecard-header { 
@@ -164,6 +164,32 @@
     .detail-row:last-child { border-bottom: none; }
     .detail-label { font-weight: 600; color: var(--text-primary); }
     .detail-value { color: var(--text-secondary); text-align: right; }
+
+    .confirm-modal-content {
+      background: var(--bg-card);
+      width: min(92vw, 520px);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 10px 10px -5px rgba(0, 0, 0, 0.25);
+      padding: 22px;
+    }
+    .confirm-modal-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+    .confirm-modal-message {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .confirm-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
     
     /* Range Picker Modal (copied from agent-mx-audits) */
     .range-picker-modal { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; z-index:100004; }
@@ -293,6 +319,16 @@
           <div class="stat-sub">Audits</div>
         </div>
         <div class="stat-label">Avg Score: <strong id="t2osAvg">—%</strong></div>
+      </div>
+
+      <!-- T2 OS New Stats -->
+      <div class="stat-card">
+        <div class="stat-title">T2 OS New</div>
+        <div class="stat-value-group">
+          <div class="stat-main" id="salesretCount">—</div>
+          <div class="stat-sub">Audits</div>
+        </div>
+        <div class="stat-label">Avg Score: <strong id="salesretAvg">—%</strong></div>
       </div>
     </div>
 
@@ -451,6 +487,44 @@
         </div>
       </div>
 
+      <!-- T2 OS New Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div class="table-title">T2 OS New Audits</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="position:relative;">
+               <input type="text" id="salesretSearch" placeholder="Search..." class="search-box" style="padding:6px 30px 6px 6px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+               <span id="salesretClear" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; color:#888;">✕</span>
+             </div>
+             <button id="salesretFilterToggle" class="global-btn btn-slim">Filter</button>
+             <button id="salesretExport" class="global-btn btn-slim">Export CSV</button>
+          </div>
+        </div>
+        <div id="salesretFilterPanel" class="filter-panel" style="display:none;">
+          <div id="salesretFilterRows"></div>
+          <div class="filter-actions">
+            <button id="salesretAddFilterBtn" class="global-btn btn-slim btn-secondary">+ Add Filter</button>
+            <button id="salesretClearFilterBtn" class="global-btn btn-slim btn-secondary" style="display:none;">Clear All</button>
+          </div>
+        </div>
+        <div class="table-scroll-area">
+          <table class="analytics-table" id="salesretTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Agent</th>
+                <th>Taker Name</th>
+                <th>Conversation ID</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="7" style="text-align:center;">Select date range to load data</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Social Media Table -->
       <div class="table-section">
         <div class="table-header">
@@ -535,6 +609,17 @@
       </div>
       <div class="modal-body" id="auditModalBody">
         <!-- Content injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal-overlay">
+    <div class="confirm-modal-content">
+      <div id="confirmModalTitle" class="confirm-modal-title">Confirm Delete</div>
+      <div id="confirmModalMessage" class="confirm-modal-message">Are you sure?</div>
+      <div class="confirm-modal-actions">
+        <button id="confirmModalCancel" class="global-btn">Cancel</button>
+        <button id="confirmModalConfirm" class="global-btn">Delete</button>
       </div>
     </div>
   </div>
