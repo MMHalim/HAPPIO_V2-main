@@ -271,7 +271,7 @@
 
                 const categories = [
                     { name: 'MX T1', table: 'T1_QA_New_Scorecards', icon: '📞' },
-                    { name: 'Order Support', table: 'T2_OS_NEW_2025', icon: '🚚' },
+                    { name: 'Order Support', table: 'sales_ret_audits', icon: '🚚' },
                     { name: 'Product Support', table: 't2_ps_scorecards', icon: '🛠️' },
                     { name: 'Social Media', table: 'MX_Social_Media_Scorecard', icon: '📱' },
                     { name: 'MX T1 SMS', table: 'sms_scorecard', icon: '✉️' }
@@ -318,6 +318,7 @@
             // Handle Product Support table which uses lowercase field names
             if (tableName === 't2_ps_scorecards') { nameField = 'agent_name'; scoreField = 'final_score'; emailField = 'agent_email'; }
             if (tableName === 'sms_scorecard') { nameField = 'agent_name'; scoreField = 'final_score'; emailField = 'agent_email'; }
+            if (tableName === 'sales_ret_audits') { emailField = 'agent_email'; }
 
             function parseSupabaseDate(d) {
                 if (!d) return null;

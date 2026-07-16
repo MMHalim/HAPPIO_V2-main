@@ -3,6 +3,16 @@
 
 let supabaseConfig = null;
 let allData = [];
+const ACTIVITY_TIME_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+function parseActivityTimestamp(dateString) {
+    const raw = String(dateString || '').trim();
+    if (!raw) return null;
+    const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(raw);
+    const normalized = hasTimezone ? raw : `${raw}Z`;
+    const date = new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -130,14 +140,12 @@ function renderTable(data) {
 
 function formatDate(dateString) {
     if (!dateString) return '-';
-    // The database is currently storing timestamps with a +2 hour offset but labeling them as UTC.
-    // E.g., 4:58 AM Egypt Time is stored as 04:58:00+00 (UTC), instead of 02:58:00+00.
-    // If we convert 04:58 UTC to Africa/Cairo (UTC+2), we get 06:58, which is wrong.
-    // Solution: Display the raw UTC time component, which matches the actual Egypt wall-clock time.
-    const date = new Date(dateString);
+    const date = parseActivityTimestamp(dateString);
+    if (!date) return escapeHtml(String(dateString));
+    const adjustedDate = new Date(date.getTime() + ACTIVITY_TIME_OFFSET_MS);
     
     return new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'UTC', // Treat the stored value as the final display time
+        timeZone: 'UTC',
         year: 'numeric',
         month: 'numeric',
         day: 'numeric',
@@ -145,7 +153,7 @@ function formatDate(dateString) {
         minute: 'numeric',
         second: 'numeric',
         hour12: true
-    }).format(date);
+    }).format(adjustedDate);
 }
 
 function getStatusClass(status) {

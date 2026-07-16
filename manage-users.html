@@ -1047,9 +1047,13 @@
             const checked = Array.from(document.querySelectorAll('#inviteUserModal input[type="checkbox"]:checked')).map(i => i.value);
             const roles = checked.length ? checked : ['Administrator'];
             try {
-                await inviteAndUpsertUser({ email, name, roles });
+                const result = await inviteAndUpsertUser({ email, name, roles });
                 closeInviteUserModal();
-                showSuccess(`Invite sent to ${email}`);
+                if (result && result.tableOnly) {
+                    showSuccess(`User added for ${email}. Invite email was rate-limited, so the auth user and table row were created without sending the invite email.`);
+                } else {
+                    showSuccess(`Invite sent to ${email}`);
+                }
                 loadUsers();
             } catch (e) {
                 showError(e.message || 'Failed to invite user');
@@ -1199,7 +1203,11 @@
                 for (const item of items) {
                     if (rateLimited) {
                         try {
-                            await upsertUserRowOnly(item);
+                            const serviceKey = await loadSupabaseServiceKey();
+                            if (!serviceKey) throw new Error('Supabase service key is missing in database_config.json (supabase.service_key)');
+                            const authUserId = await ensureAuthUserIdForTableOnly(item, serviceKey);
+                            if (!authUserId) throw new Error('User insert failed: missing auth user id for foreign key users.id_fkey');
+                            await upsertUserRowOnly({ ...item, id: authUserId });
                             upsertOnly++;
                         } catch (e) {
                             failed++;
@@ -1210,7 +1218,10 @@
 
                     try {
                         const result = await inviteAndUpsertUser(item);
-                        if (result && result.rateLimited) {
+                        if (result && result.skipped) {
+                            failed++;
+                            failures.push(`${item.email}: ${result.reason || 'Invite rate-limited and auth user was not created yet'}`);
+                        } else if (result && result.rateLimited) {
                             rateLimited = true;
                             upsertOnly++;
                         } else {
@@ -1235,6 +1246,43 @@
             }
         }
 
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function isUuidLike(value) {
+            return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+        }
+
+        async function fetchAuthUserIdByEmail(email, serviceKey, opts = {}) {
+            const targetEmail = String(email || '').trim().toLowerCase();
+            if (!targetEmail) return '';
+            const attempts = Number(opts.attempts || 1);
+            const delayMs = Number(opts.delayMs || 0);
+
+            for (let attempt = 0; attempt < attempts; attempt++) {
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1000`, {
+                        headers: {
+                            apikey: serviceKey,
+                            Authorization: `Bearer ${serviceKey}`
+                        }
+                    });
+                    if (res.ok) {
+                        const payload = await res.json().catch(() => null);
+                        const users = Array.isArray(payload && payload.users) ? payload.users : [];
+                        const match = users.find((user) => String(user && user.email || '').trim().toLowerCase() === targetEmail);
+                        if (match && match.id) return String(match.id);
+                    }
+                } catch (_) {}
+
+                if (attempt < attempts - 1 && delayMs > 0) {
+                    await sleep(delayMs);
+                }
+            }
+            return '';
+        }
+
         async function upsertUserRowOnly(item) {
             const serviceKey = await loadSupabaseServiceKey();
             if (!serviceKey) throw new Error('Supabase service key is missing in database_config.json (supabase.service_key)');
@@ -1243,6 +1291,7 @@
             const roles = Array.isArray(item.roles) ? item.roles : [];
             const qaCoach = String(item.qaCoach || '').trim();
             const teamLeader = String(item.teamLeader || '').trim();
+            const providedId = String(item.id || '').trim();
 
             const desiredRow = {
                 email,
@@ -1285,6 +1334,10 @@
                     throw new Error(`User update failed: ${patchRes.status} ${text || patchRes.statusText}`);
                 }
             } else {
+                if (!isUuidLike(providedId)) {
+                    throw new Error('User insert failed: missing auth user id for foreign key users.id_fkey');
+                }
+                desiredRow.id = providedId;
                 const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
                     method: 'POST',
                     headers: {
@@ -1302,17 +1355,66 @@
             }
         }
 
+        function extractInviteUserId(payload) {
+            if (!payload || typeof payload !== 'object') return '';
+            if (payload.id) return String(payload.id);
+            if (payload.user && payload.user.id) return String(payload.user.id);
+            if (payload.invited_user && payload.invited_user.id) return String(payload.invited_user.id);
+            return '';
+        }
+
+        async function createAuthUserForTableOnly(item, serviceKey) {
+            const email = String(item.email || '').trim();
+            const name = String(item.name || '').trim();
+            const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+                method: 'POST',
+                headers: {
+                    apikey: serviceKey,
+                    Authorization: `Bearer ${serviceKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    email_confirm: true,
+                    user_metadata: name ? { name } : {}
+                })
+            });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`Auth user create failed: ${res.status} ${text || res.statusText}`);
+            }
+            const payload = await res.json().catch(() => null);
+            return extractInviteUserId(payload);
+        }
+
+        async function ensureAuthUserIdForTableOnly(item, serviceKey) {
+            const email = String(item.email || '').trim();
+            let authUserId = await fetchAuthUserIdByEmail(email, serviceKey, { attempts: 2, delayMs: 300 });
+            if (authUserId) return authUserId;
+            authUserId = await createAuthUserForTableOnly(item, serviceKey);
+            if (authUserId) return authUserId;
+            authUserId = await fetchAuthUserIdByEmail(email, serviceKey, { attempts: 5, delayMs: 400 });
+            return authUserId || '';
+        }
+
         async function inviteAndUpsertUser(item) {
             const serviceKey = await loadSupabaseServiceKey();
             if (!serviceKey) throw new Error('Supabase service key is missing in database_config.json (supabase.service_key)');
             const email = String(item.email || '').trim();
             const name = String(item.name || '').trim();
-            const roles = Array.isArray(item.roles) ? item.roles : [];
-            const qaCoach = String(item.qaCoach || '').trim();
-            const teamLeader = String(item.teamLeader || '').trim();
-
-            await upsertUserRowOnly(item);
-
+            const existingRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=id&email=eq.${encodeURIComponent(email)}&limit=1`, {
+                headers: {
+                    apikey: serviceKey,
+                    Authorization: `Bearer ${serviceKey}`
+                }
+            });
+            let existingRowId = '';
+            if (existingRes.ok) {
+                try {
+                    const rows = await existingRes.json();
+                    if (Array.isArray(rows) && rows[0] && rows[0].id != null) existingRowId = String(rows[0].id);
+                } catch (_) {}
+            }
             const inviteRes = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
                 method: 'POST',
                 headers: {
@@ -1329,10 +1431,24 @@
             if (!inviteRes.ok) {
                 const text = await inviteRes.text().catch(() => '');
                 if (inviteRes.status === 429 && String(text || '').includes('over_email_send_rate_limit')) {
-                    return { ok: true, invited: false, rateLimited: true };
+                    let authUserId = existingRowId || await ensureAuthUserIdForTableOnly(item, serviceKey);
+                    if (!authUserId) {
+                        return { ok: false, invited: false, rateLimited: true, skipped: true, reason: 'Invite email rate-limited and auth user could not be created' };
+                    }
+                    await upsertUserRowOnly({ ...item, id: authUserId });
+                    return { ok: true, invited: false, rateLimited: true, tableOnly: true };
                 }
                 throw new Error(`Invite failed for ${email}: ${inviteRes.status} ${text || inviteRes.statusText}`);
             }
+            let invitePayload = null;
+            try {
+                invitePayload = await inviteRes.json();
+            } catch (_) {}
+            const invitedUserId = extractInviteUserId(invitePayload) || await fetchAuthUserIdByEmail(email, serviceKey, { attempts: 5, delayMs: 500 });
+            if (!existingRowId && !invitedUserId) {
+                throw new Error(`Invite succeeded for ${email} but no auth user id was returned/found`);
+            }
+            await upsertUserRowOnly({ ...item, id: existingRowId || invitedUserId });
             return { ok: true, invited: true, rateLimited: false };
         }
 
