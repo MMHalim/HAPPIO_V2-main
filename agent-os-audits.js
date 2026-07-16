@@ -24,6 +24,43 @@
     window.showAlert = (msg, opts) => createAppAlert(msg, opts);
   }
   let osAttributes = [];
+  const SALES_RET_DB_MAPPING = {
+    'Interaction Protocols': 'interaction_protocols',
+    'Understanding': 'understanding',
+    'Effectiveness & FCR': 'effectiveness_&_FCR',
+    'Engagement & Langauge': 'engagement_&_Langauge',
+    'Engagement & Language': 'engagement_&_Langauge',
+    'Retention Skills/Sales Skills': 'retention_skills',
+    'Retention / Sales Skills': 'retention_skills',
+    'Offering Alternatives/Options': 'offering_alternatives',
+    'Offering Alternatives / Options': 'offering_alternatives',
+    'Product Awareness': 'product_awareness',
+    'Process Awareness': 'process_awareness',
+    'Tempo Values': 'tempo_values',
+    'Verification': 'verfication',
+    'Verfication': 'verfication',
+    'Documentation & CRM Updates': 'documentation_crm',
+    'Documentation / CRM Updates': 'documentation_crm',
+    'Documentation': 'documentation_crm',
+    'CRM Updates': 'documentation_crm',
+    'Workflow': 'workflow',
+    'Ownership': 'ownership'
+  };
+  const SALES_RET_COMMENT_MAPPING = {
+    interaction_protocols: 'comment_interaction_protocols',
+    understanding: 'comment_Understanding',
+    'effectiveness_&_FCR': 'comment_Effectiveness_&_FCR',
+    'engagement_&_Langauge': 'comment_Engagement_&_Langauge',
+    retention_skills: 'comment_Retention_Skills',
+    offering_alternatives: 'comment_Offering_Alternatives',
+    product_awareness: 'comment_Product_Awareness',
+    process_awareness: 'comment_Process_Awareness',
+    tempo_values: 'comment_Tempo_Values',
+    verfication: 'comment_Verification',
+    documentation_crm: 'comment_Documentation_crm',
+    workflow: 'comment_Workflow',
+    ownership: 'comment_ownership'
+  };
 
   async function loadDatabaseConfig() {
     try {
@@ -120,21 +157,112 @@
     </body></html>`;
   }
 
-  function parseAttributesFromRow(row) {
-    const attrs = [];
+  function normalizeToken(value) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+  }
+
+  function parseAttributeScoreValue(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    const match = String(value == null ? '' : value).trim().match(/-?\d+(?:\.\d+)?/);
+    if (!match) return 0;
+    const parsed = Number(match[0]);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function pickMappedValue(row, candidates, fallback = '') {
     const keys = Object.keys(row || {});
-    keys.forEach(k => {
-      if (/^score_/i.test(k)) {
-        const remainder = k.replace(/^score_/i, '');
-        const label = remainder.replace(/_/g, ' ');
-        const score = row[k];
-        const c1 = 'Comments_' + remainder;
-        const c2 = 'comments_' + remainder;
-        const comment = row[c1] || row[c2] || '';
-        attrs.push({ key: k, label, score, comment, commentKey: c1 });
+    const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const candidate of candidates) {
+      const exact = keys.find((key) => key === candidate);
+      if (exact && row[exact] != null) return row[exact];
+      const normalized = normalize(candidate);
+      const fuzzy = keys.find((key) => normalize(key) === normalized);
+      if (fuzzy && row[fuzzy] != null) return row[fuzzy];
+    }
+    return fallback;
+  }
+
+  function pickRowKey(row, candidates) {
+    const keys = Object.keys(row || {});
+    for (const candidate of (candidates || [])) {
+      if (!candidate) continue;
+      const exact = keys.find((key) => key === candidate);
+      if (exact) return exact;
+      const normCandidate = normalizeToken(candidate);
+      const fuzzy = keys.find((key) => normalizeToken(key) === normCandidate);
+      if (fuzzy) return fuzzy;
+    }
+    return null;
+  }
+
+  function buildSalesRetAttributesFromRow(row) {
+    const attrs = [];
+    const items = (osAttributes || []).slice().sort((a, b) => (Number(a.ID || a.id) || 0) - (Number(b.ID || b.id) || 0));
+    items.forEach((item) => {
+      let label = String(item.Subcategory || item.subcategory || item.subcategor || '').trim();
+      if (!label) return;
+      label = label.replace(/\s+/g, ' ');
+      const description = String(item.Criteria || item.criteria || item.description || '').trim();
+      const maxScore = parseAttributeScoreValue(item.Score ?? item.score ?? 0);
+      const dbColName = SALES_RET_DB_MAPPING[label];
+
+      let valueKey = dbColName && row[dbColName] !== undefined ? dbColName : null;
+      if (!valueKey) {
+        valueKey = pickRowKey(row, [
+          dbColName,
+          label,
+          label.replace(/\s+/g, '_'),
+          normalizeToken(label),
+          'retention_skills',
+          'offering_alternatives',
+          'documentation_crm',
+          'verfication'
+        ].filter(Boolean));
       }
+      const value = valueKey ? row[valueKey] : '';
+
+      let commentKey = dbColName && SALES_RET_COMMENT_MAPPING[dbColName] && row[SALES_RET_COMMENT_MAPPING[dbColName]] !== undefined
+        ? SALES_RET_COMMENT_MAPPING[dbColName]
+        : null;
+      if (!commentKey) {
+        commentKey = pickRowKey(row, [
+          dbColName ? SALES_RET_COMMENT_MAPPING[dbColName] : null,
+          dbColName ? `comment_${dbColName}` : null,
+          dbColName ? `comments_${dbColName}` : null,
+          dbColName ? `com_${dbColName}` : null,
+          `comment_${label}`,
+          `comments_${label}`,
+          `comment_${label.replace(/\s+/g, '_')}`,
+          `comments_${label.replace(/\s+/g, '_')}`,
+          `comment_${normalizeToken(label)}`,
+          `comments_${normalizeToken(label)}`
+        ].filter(Boolean));
+      }
+      const comment = commentKey ? String(row[commentKey] || '') : '';
+
+      attrs.push({
+        id: item.ID || item.id || label,
+        label,
+        description,
+        maxScore,
+        value,
+        valueKey,
+        comment,
+        commentKey
+      });
     });
     return attrs;
+  }
+
+  function isTruthyValue(value) {
+    if (value === true) return true;
+    const s = String(value ?? '').trim().toLowerCase();
+    return s === 'yes' || s === 'true' || s === '1' || s === String(parseAttributeScoreValue(value));
   }
 
   let currentRow = null;
@@ -142,10 +270,17 @@
 
   async function fetchOsAttributes() {
     try {
-      const url = `${config.restUrl}/New_SC_Attributes?select=*&order=ID.asc`;
+      const url = `${config.restUrl}/sales_ret_att?select=*&order=id.asc`;
       let res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (!res.ok) throw new Error(await res.text());
-      osAttributes = await res.json();
+      const rows = await res.json();
+      osAttributes = Array.isArray(rows) ? rows.map((row, idx) => ({
+        ...row,
+        ID: pickMappedValue(row, ['ID', 'id'], idx + 1),
+        Subcategory: String(pickMappedValue(row, ['Subcategory', 'subcategory', 'subcategor'], '') || ''),
+        Criteria: String(pickMappedValue(row, ['Criteria', 'criteria', 'description'], '') || ''),
+        Score: parseAttributeScoreValue(pickMappedValue(row, ['Score', 'score'], 0))
+      })) : [];
     } catch (e) { console.warn('Failed to fetch attributes', e); osAttributes = []; }
   }
 
@@ -153,7 +288,7 @@
     try {
       const userEmail = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('user_email') || localStorage.getItem('email') || '';
       if (!userEmail) { safeAlert('Login required'); window.location.href = '/login.html'; return; }
-      const url = `${config.restUrl}/T2_OS_NEW_2025?select=*&agent_email=eq.${encodeURIComponent(userEmail)}&order=created_at.desc&limit=50`;
+      const url = `${config.restUrl}/sales_ret_audits?select=*&agent_email=eq.${encodeURIComponent(userEmail)}&order=created_at.desc&limit=50`;
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) { res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) }); if (!res.ok) throw new Error(await res.text()); }
       const rows = await res.json();
@@ -165,7 +300,7 @@
     try {
       const userEmail = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('user_email') || localStorage.getItem('email') || '';
       if (!userEmail) { safeAlert('Login required'); window.location.href = '/login.html'; return []; }
-      const url = `${config.restUrl}/T2_OS_NEW_2025?select=*&agent_email=eq.${encodeURIComponent(userEmail)}&created_at=gte.${encodeURIComponent(startISO)}&created_at=lte.${encodeURIComponent(endISO)}&order=created_at.desc`;
+      const url = `${config.restUrl}/sales_ret_audits?select=*&agent_email=eq.${encodeURIComponent(userEmail)}&created_at=gte.${encodeURIComponent(startISO)}&created_at=lte.${encodeURIComponent(endISO)}&order=created_at.desc`;
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) { res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) }); if (!res.ok) throw new Error(await res.text()); }
       const rows = await res.json();
@@ -241,7 +376,7 @@
 
   async function openAuditModal(row) {
     try {
-      const url = `${config.restUrl}/T2_OS_NEW_2025?select=*&id=eq.${encodeURIComponent(row.id)}&limit=1`;
+      const url = `${config.restUrl}/sales_ret_audits?select=*&id=eq.${encodeURIComponent(row.id)}&limit=1`;
       const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (res && res.ok) {
         const arr = await res.json();
@@ -249,7 +384,7 @@
         else { currentRow = row; }
       } else { currentRow = row; }
     } catch (e) { console.warn('Failed to load full audit row, using table row', e); currentRow = row; }
-    currentAttrs = parseAttributesFromRow(currentRow);
+    currentAttrs = buildSalesRetAttributesFromRow(currentRow || {});
     const meta = document.getElementById('agentPsMeta');
     if (meta) {
       const pick = (rw, keys) => { for (const k of keys) { const v = rw && rw[k]; if (v !== undefined && v !== null && String(v).trim() !== '') return v; } return ''; };
@@ -259,10 +394,22 @@
       const appealedVal = pick(currentRow, ['appealed','is_appealed','appeal_started']);
       const isAck = (String(ackVal||'').toLowerCase()==='yes' || String(ackVal||'').toLowerCase()==='true' || ackVal===true);
       const isAppealed = (String(appealedVal||'').toLowerCase()==='yes' || String(appealedVal||'').toLowerCase()==='true' || appealedVal===true);
+      const agentName = pick(currentRow, ['Agent_Name','agent_name','Agent','agent','name']);
+      const takerName = pick(currentRow, ['Taker_Name','taker_name']);
+      const monitoringType = pick(currentRow, ['Monitoring_Type','monitoring_type']);
+      const channel = pick(currentRow, ['Channel','channel']);
+      const queue = pick(currentRow, ['queue','Queue']);
+      const created = pick(currentRow, ['created_at','date_created']);
       meta.innerHTML = `
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
           <div><strong>Conversation:</strong> ${conversationId || ''}</div>
+          <div><strong>Agent:</strong> ${agentName || ''}</div>
+          <div><strong>Taker:</strong> ${takerName || ''}</div>
           <div><strong>Score:</strong> ${finalScore ?? ''}</div>
+          <div><strong>Monitoring:</strong> ${monitoringType || ''}</div>
+          <div><strong>Channel:</strong> ${channel || ''}</div>
+          <div><strong>Queue:</strong> ${queue || ''}</div>
+          <div><strong>Created:</strong> ${String(created || '').replace('T',' ').replace('Z','')}</div>
           <div><strong>Acknowledged:</strong> ${isAck ? 'Yes' : 'No'}</div>
           <div><strong>Appealed:</strong> ${isAppealed ? 'Yes' : 'No'}</div>
         </div>
@@ -270,74 +417,49 @@
     }
     const container = document.getElementById('agentPsAttributes');
     if (container) {
-      const norm = (s) => (s || '').toString().toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-      const rowKeyMap = {}; Object.keys(currentRow || {}).forEach(k => { rowKeyMap[norm(k)] = k; });
-      const mapKeys = {
-        introduction: ['interaction_protocols','introduction'],
-        professionalism: ['professionalism','tempo_values','verification','verfication'],
-        closure: ['closure','effectiveness_and_fcr','effectiveness_&_fcr','retention_skills'],
-        active_listening: ['active_listening','understanding'],
-        empathy_positive_attitude: ['empathy_positive_attitude','engagement_and_language','engagement_&_langauge','language_skills'],
-        friendly_and_engaging: ['friendly_and_engaging','engagement_and_language','engagement_&_langauge'],
-        language_skills: ['language_skills','engagement_and_language','engagement_&_langauge','langauge'],
-        explanation: ['explanation','understanding'],
-        offering_alternatives_options: ['offering_alternatives','offering_Alternatives'],
-        retention_sales_skills: ['retention_skills','retention_Skills'],
-        product_awareness: ['product_awareness'],
-        process_awareness: ['process_awareness'],
-        ownership: ['ownership'],
-        brand_representation: ['brand_representation','tempo_values'],
-        crm_updates: ['crm_updates'],
-        documentation: ['documentation'],
-        workflow: ['workflow']
-      };
-      const toBool = (v) => { const s = String(v ?? '').toLowerCase(); return (v === true) || s === 'yes' || s === 'true' || s === '1'; };
-      const getYesNo = (label) => {
-        const base = norm(label);
-        const candidates = mapKeys[base] || [base];
-        for (const c of candidates) {
-          const key = rowKeyMap[c];
-          if (key) { const val = currentRow[key]; if (val !== undefined && val !== null && String(val).trim() !== '') return toBool(val) ? 'Yes' : 'No'; }
-        }
-        return '';
-      };
-      const getComment = (label) => {
-        const base = norm(label);
-        const candidates = (mapKeys[base] || [base]).map(c => [`comment_${c}`, `comments_${c}`, `comment_${base}`]).flat();
-        for (const c of candidates) { const key = rowKeyMap[norm(c)]; if (key && currentRow[key]) return String(currentRow[key] || ''); }
-        // Try scanning any comment_* that includes the base
-        const matched = Object.keys(rowKeyMap).find(nk => nk.startsWith('comment_') && nk.indexOf(base) !== -1);
-        if (matched) { const orig = rowKeyMap[matched]; return String(currentRow[orig] || ''); }
-        return '';
-      };
-      const items = (osAttributes || []).slice().sort((a,b) => (Number(a.ID)||0) - (Number(b.ID)||0));
-      const rows = items.map(a => {
-        const score = a && a.Score != null ? a.Score : '';
+      const rows = (currentAttrs || []).map(a => {
+        const score = a && a.maxScore != null ? a.maxScore : '';
         const good = Number(score) > 0;
         const scoreClass = good ? 'attr-score score-good' : 'attr-score score-zero';
-        const label = (a.Subcategory||'').toString().trim();
-        const yn = getYesNo(label);
-        const yesChecked = yn === 'Yes' ? 'checked' : '';
-        const noChecked = yn === 'No' ? 'checked' : '';
+        const label = (a.label || '').toString().trim();
+        const rawValue = a.value == null ? '' : String(a.value).trim();
+        const yesChecked = isTruthyValue(rawValue) ? 'checked' : '';
+        const noChecked = rawValue && !isTruthyValue(rawValue) ? 'checked' : '';
         const yesClass = yesChecked ? 'is-selected' : '';
-        const noClass = noChecked ? 'is-selected' : '';
-        const coachComment = getComment(label);
-        const commentRow = coachComment ? `
-            <div style="margin-top:8px;">
-              <div style="font-weight:700; color: var(--text-primary); margin-bottom:4px;">Coach Comment</div>
+        const noClass = noChecked && (rawValue === 'No' || rawValue === 'false' || rawValue === '0') ? 'is-selected' : '';
+        const showYesNo = /^(yes|no|true|false|0|1)$/i.test(rawValue);
+        const valueHtml = showYesNo ? `
+              <div class="attr-controls" style="margin-top:8px;">
+                <label class="radio-pill ${yesClass}"><input type="radio" name="view_${normalizeToken(label)}_yn" disabled ${yesChecked}/><span>Yes</span></label>
+                <label class="radio-pill ${noClass}"><input type="radio" name="view_${normalizeToken(label)}_yn" disabled ${noChecked}/><span>No</span></label>
+              </div>
+            ` : (rawValue ? `
+              <div style="margin-top:8px;">
+                <div style="font-weight:700; color: var(--text-primary); margin-bottom:4px;">Recorded Value</div>
+                <div class="attr-comment">${rawValue}</div>
+              </div>
+            ` : '');
+        const coachComment = a.comment || '';
+        const commentBlock = coachComment ? `
+            <details class="criteria-details" open style="margin-top:8px; border-top:1px dashed var(--border-color); padding-top:8px;">
+              <summary style="cursor:pointer; font-size:12px; font-weight:700; color:var(--text-primary);">Coach Comment</summary>
               <div class="attr-comment">${coachComment}</div>
-            </div>
+            </details>
           ` : '';
+        const descOpen = coachComment ? 'open' : '';
+        const descBlock = a.description ? `
+              <details class="criteria-details" ${descOpen} style="margin-top:8px; border-top:1px dashed var(--border-color); padding-top:8px;">
+                <summary style="cursor:pointer; font-size:12px; font-weight:700; color:var(--text-primary);">Description</summary>
+                <div class="attr-desc">${a.description}</div>
+              </details>
+            ` : '';
         return `
           <div class="attr-row">
             <div>
               <div class="attr-name">${label}</div>
-              <div class="attr-desc">${a.Criteria || ''}</div>
-              <div class="attr-controls" style="margin-top:8px;">
-                <label class="radio-pill ${yesClass}"><input type="radio" name="view_${norm(label)}_yn" disabled ${yesChecked}/><span>Yes</span></label>
-                <label class="radio-pill ${noClass}"><input type="radio" name="view_${norm(label)}_yn" disabled ${noChecked}/><span>No</span></label>
-              </div>
-              ${commentRow}
+              ${descBlock}
+              ${valueHtml}
+              ${commentBlock}
             </div>
             <div class="${scoreClass}">${score}</div>
           </div>
@@ -370,7 +492,7 @@
   async function acknowledgeAudit() {
     try {
       if (!currentRow || !currentRow.id) return;
-      const url = `${config.restUrl}/T2_OS_NEW_2025?id=eq.${encodeURIComponent(currentRow.id)}`;
+      const url = `${config.restUrl}/sales_ret_audits?id=eq.${encodeURIComponent(currentRow.id)}`;
       const body = { Agent_Acknowledge: true };
       const headers = Object.assign({ 'Content-Type': 'application/json' }, authHeaders({ useServiceKey: true }));
       const res = await fetch(url, { method: 'PATCH', headers, body: JSON.stringify(body) });
@@ -396,13 +518,13 @@
     const list = document.getElementById('agentPsAppealList');
     if (form) form.style.display = 'block';
     if (list) {
-      const items = (osAttributes || []).slice().sort((a,b) => (Number(a.ID)||0) - (Number(b.ID)||0));
+      const items = (currentAttrs && currentAttrs.length ? currentAttrs : buildSalesRetAttributesFromRow(currentRow || {}));
       const rows = items.map(a => {
-        const label = (a.Subcategory||'').toString().trim();
-        const score = a && a.Score != null ? a.Score : '';
+        const label = (a.label || a.Subcategory || '').toString().trim();
+        const score = a && a.maxScore != null ? a.maxScore : (a.Score != null ? a.Score : '');
         const good = Number(score) > 0;
         const scoreClass = good ? 'score-badge score-good' : 'score-badge score-zero';
-        const key = `attr_${a.ID ?? label.replace(/\s+/g,'_')}`;
+        const key = `attr_${a.id ?? a.ID ?? label.replace(/\s+/g,'_')}`;
         return `
           <div class="appeal-item">
             <div>
@@ -447,7 +569,7 @@
       if (ok) { showAlert('Appeal email sent successfully', { title:'Appeal sent', type:'success' }); }
       else { showAlert('Failed to send appeal email', { title:'Email failed', type:'error' }); }
       try {
-        const patchUrl = `${config.restUrl}/T2_OS_NEW_2025?id=eq.${encodeURIComponent(currentRow.id)}`;
+        const patchUrl = `${config.restUrl}/sales_ret_audits?id=eq.${encodeURIComponent(currentRow.id)}`;
         const body = { appealed: true, Agent_Acknowledge: true };
         const headersService = Object.assign({ 'Content-Type': 'application/json' }, authHeaders({ useServiceKey: true }));
         let pRes = await fetch(patchUrl, { method: 'PATCH', headers: headersService, body: JSON.stringify(body) });
