@@ -214,16 +214,52 @@ const CertificationScorecard = (function() {
     }
   }
 
+  const CERTIFICATION_ATTRIBUTE_COLUMN_MAP = [
+    {
+      label: 'Understanding & Effectiveness',
+      valueKey: 'Understanding_And_Effectiveness',
+      commentKey: 'Comments_Understanding_And_Effectiveness'
+    },
+    {
+      label: 'Communication',
+      valueKey: 'Communication',
+      commentKey: 'Comments_Communication'
+    },
+    {
+      label: 'Issue Resolution (Product, Process, and FCR)',
+      valueKey: 'Issue_Resolution_Product_Process_And_FCR',
+      commentKey: 'Comments_Issue_Resolution_Product_Process_And_FCR'
+    },
+    {
+      label: 'Brand Representation and Ownership',
+      valueKey: 'Brand_Representation_And_Ownership',
+      commentKey: 'Comments_Brand_Representation_And_Ownership'
+    },
+    {
+      label: 'Internal Process',
+      valueKey: 'Internal_Process',
+      commentKey: 'Comments_Internal_Process'
+    }
+  ];
+
+  function isLocalEmailHost() {
+    if (typeof location === 'undefined') return false;
+    const host = String(location.hostname || '').toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]' || host === '::' || host === '[::]';
+  }
+
   // SMTP email sender, mirrors appeal implementation
   async function sendEmailSMTP({ html, to, cc = [], bcc = [], subject }) {
-    const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    const isLocal = isLocalEmailHost();
     const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
     try {
       const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to, cc, bcc, subject, html }) });
       const raw = await res.text();
       if (!res.ok) throw new Error(raw || `HTTP ${res.status}`);
       return true;
-    } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
+    } catch (e) {
+      console.warn('sendEmailSMTP error:', e); return false;
+    }
   }
 
   // --- Attributes Scoring (Pass/Fail-based) ---
@@ -931,24 +967,27 @@ const CertificationScorecard = (function() {
   async function fetchRecent() {
     try {
       let rows = null;
+      const isLocal = isLocalEmailHost();
 
       if (!config.restUrl) {
         await loadConfig();
       }
 
-      try {
-        const apiRes = await fetch('/api/recent-certification-submissions?limit=10', {
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const apiText = await apiRes.text();
-        if (!apiRes.ok) {
-          console.warn('Recent submissions API error:', apiText);
-        } else {
-          const apiJson = apiText ? JSON.parse(apiText) : {};
-          rows = Array.isArray(apiJson?.rows) ? apiJson.rows : [];
+      if (!isLocal) {
+        try {
+          const apiRes = await fetch('/api/recent-certification-submissions?limit=10', {
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const apiText = await apiRes.text();
+          if (!apiRes.ok) {
+            console.warn('Recent submissions API error:', apiText);
+          } else {
+            const apiJson = apiText ? JSON.parse(apiText) : {};
+            rows = Array.isArray(apiJson?.rows) ? apiJson.rows : [];
+          }
+        } catch (apiErr) {
+          console.warn('Recent submissions API fetch failed:', apiErr);
         }
-      } catch (apiErr) {
-        console.warn('Recent submissions API fetch failed:', apiErr);
       }
 
       if (!rows) {
@@ -2001,34 +2040,6 @@ const CertificationScorecard = (function() {
       } catch (e) { return 0; }
     };
 
-    const attributeColumnMap = [
-      {
-        label: 'Understanding & Effectiveness',
-        valueKey: 'Understanding_And_Effectiveness',
-        commentKey: 'Comments_Understanding_And_Effectiveness'
-      },
-      {
-        label: 'Communication',
-        valueKey: 'Communication',
-        commentKey: 'Comments_Communication'
-      },
-      {
-        label: 'Issue Resolution (Product, Process, and FCR)',
-        valueKey: 'Issue_Resolution_Product_Process_And_FCR',
-        commentKey: 'Comments_Issue_Resolution_Product_Process_And_FCR'
-      },
-      {
-        label: 'Brand Representation and Ownership',
-        valueKey: 'Brand_Representation_And_Ownership',
-        commentKey: 'Comments_Brand_Representation_And_Ownership'
-      },
-      {
-        label: 'Internal Process',
-        valueKey: 'Internal_Process',
-        commentKey: 'Comments_Internal_Process'
-      }
-    ];
-
     const payload = {
       Conversation_ID: convId,
       Agent_Name: selectedAgentLabel,
@@ -2051,7 +2062,7 @@ const CertificationScorecard = (function() {
       fitness_fluency: getRadioVal('fitnessFluency')
     };
 
-    attributeColumnMap.forEach(({ label, valueKey, commentKey }) => {
+    CERTIFICATION_ATTRIBUTE_COLUMN_MAP.forEach(({ label, valueKey, commentKey }) => {
       payload[valueKey] = getAttrValue(label);
       payload[commentKey] = getAttrComment(label);
     });
@@ -2109,7 +2120,16 @@ const CertificationScorecard = (function() {
       const logoDataUri = logoUrl ? null : await fetchLogoAsDataURI();
       const emailHtml = buildEmailHTML(payload, { logoDataUri, logoUrl });
       const status = String(payload.Final_Score || '').trim().toUpperCase() || 'FAIL';
-      try { await sendEmailSMTP({ html: emailHtml, to: payload.agent_email, cc: payload.loggedInEmail ? [payload.loggedInEmail] : [], subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}` }); } catch (mailErr) { console.warn('Email send failed or not configured:', mailErr); try { showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); } catch(_) {} }
+      const emailSent = await sendEmailSMTP({
+        html: emailHtml,
+        to: payload.agent_email,
+        cc: payload.loggedInEmail ? [payload.loggedInEmail] : [],
+        subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}`
+      });
+      if (!emailSent) {
+        console.warn('Email send failed or is not configured for the current environment.');
+        try { showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); } catch(_) {}
+      }
 
       upsertRecentSubmissionRow({
         Conversation_ID: payload.Conversation_ID,
@@ -2138,51 +2158,19 @@ const CertificationScorecard = (function() {
         <span style="color:#6b7280;">${label}:</span>
         <span style="font-weight:600;">${(value || '').toString()}</span>
       </div>`;
-    // Prefer provided score; otherwise fall back to attributes-derived score by label
-    const scoreByLabel = (lbl) => {
-      try {
-        const arr = (typeof attributes !== 'undefined' && attributes) ? attributes : [];
-        const item = arr.find(a => ((a.Subcategory || '').trim().toLowerCase() === (lbl || '').trim().toLowerCase()));
-        const s = item ? item.Score : 0;
-        return Number.isFinite(Number(s)) ? Number(s) : 0;
-      } catch (_) {
-        return 0;
-      }
-    };
-    const row = (label, value, score, comment) => {
+    const row = (label, value, comment) => {
       const safeVal = (value || '').toString();
-      let sc = Number.isFinite(Number(score)) ? Number(score) : null;
-      if (sc === null) sc = scoreByLabel(label);
-      const safeScore = Number.isFinite(Number(sc)) ? Number(sc) : 0;
       const safeComment = (comment || '').toString();
-      const displayVal = (safeVal === 'Pass')
-        ? (safeScore > 0 ? `Pass / ${safeScore}` : 'Pass')
-        : (safeVal === 'Fail' ? 'Fail' : safeVal);
-      console.log('email row', { label, value: safeVal, scoreUsed: safeScore });
       return `
         <tr>
           <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; font-weight:600; color:#111827;">${label}</td>
-          <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#111827;">${displayVal}</td>
+          <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#111827;">${safeVal}</td>
           <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#6b7280; white-space: pre-wrap;">${safeComment ? safeComment : ''}</td>
         </tr>`;
     };
-    const attrs = [
-      ['Interaction Protocols', p.Interaction_Protocols, p.Score_Interaction_Protocols, p.Comments_Interaction_Protocols],
-      ['Understanding', p.Correctly_Diagnose, p.Score_Correctly_Diagnose, p.Comments_Correctly_Diagnose],
-      ['Responsiveness', p.responsiveness, p.Score_Responsiveness, p.Comments_Responsiveness],
-      ['Effectiveness', p.effectiveness, p.Score_Effectiveness, p.Comments_Effectiveness],
-      ['Soft Skills', p.soft_Skills, p.Score_Soft_Skills, p.Comments_Soft_Skills],
-      ['Language', p.language, p.Score_Language, p.Comments_Language],
-      ['FCR', p.FCR, p.Score_FCR, p.Comments_FCR],
-      ['Brand Representation Ownership', p.Brand_Representation_Ownership, p.Score_Brand_Representation_Ownership, p.comm_Brand_Representation_Ownership],
-      ['Product Awareness', p.product_Awareness, p.Score_Product_Awareness, p.Comments_Product_Awareness],
-      ['Process Awareness', p.process_Awareness, p.Score_Process_Awareness, p.Comments_Process_Awareness],
-      ['Verification', p.verification, p.Score_Verification, p.Comments_Verification],
-      ['Documentation', p.documentations, p.Score_Documentation, p.Comments_Documentation],
-      ['CRM Updates', p.crm_update, p.Score_CRM_Updates, p.Comments_CRM_Updates],
-      ['Workflow', p.workflow, p.Score_Workflow, p.Comments_Workflow],
-    ];
-    const attrRows = attrs.map(([label, val, score, com]) => row(label, val, score, com)).join('');
+    const attrRows = CERTIFICATION_ATTRIBUTE_COLUMN_MAP
+      .map(({ label, valueKey, commentKey }) => row(label, p[valueKey], p[commentKey]))
+      .join('');
     const logoHtml = (() => {
       const src = opts.logoUrl || opts.logoDataUri || '';
       if (!src) return '';
@@ -2196,7 +2184,7 @@ const CertificationScorecard = (function() {
     const header = `
       ${logoHtml}
       <div style="background:#4f46e5; background-image:linear-gradient(135deg,#6366f1,#8b5cf6); padding:22px; border-radius:16px 16px 0 0; color:#fff; text-align:center;">
-        <div style="font-size:18px; font-weight:800;">QA Summary</div>
+        <div style="font-size:18px; font-weight:800;">Certification QA Summary</div>
         <div style="margin-top:6px; font-size:14px; opacity:0.95;">Conversation ${p.Conversation_ID} • Score ${p.Final_Score}</div>
       </div>`;
     const ticketUrl = p.URL || '';
@@ -2206,6 +2194,7 @@ const CertificationScorecard = (function() {
         ${pill('Agent', p.Agent_Name)}
         ${pill('Coach Name', p.Taker_Name || '')}
         ${pill('Channel', p.Channel)}
+        ${pill('Phase', p.Phase || '')}
         ${pill('Monitoring', p.Monitoring_Type)}
         ${pill('Final Score', p.Final_Score)}
         ${pill('Status', statusLabel)}
@@ -2228,7 +2217,7 @@ const CertificationScorecard = (function() {
       <table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden;">
         <thead><tr>
           <th style="text-align:left; padding:12px 14px; background:#f9fafb; color:#374151; border-bottom:1px solid #e5e7eb; font-size:12px; text-transform:uppercase; letter-spacing:0.04em;">Attribute</th>
-          <th style="text-align:left; padding:12px 14px; background:#f9fafb; color:#374151; border-bottom:1px solid #e5e7eb; font-size:12px; text-transform:uppercase; letter-spacing:0.04em;">Score</th>
+          <th style="text-align:left; padding:12px 14px; background:#f9fafb; color:#374151; border-bottom:1px solid #e5e7eb; font-size:12px; text-transform:uppercase; letter-spacing:0.04em;">Result</th>
           <th style="text-align:left; padding:12px 14px; background:#f9fafb; color:#374151; border-bottom:1px solid #e5e7eb; font-size:12px; text-transform:uppercase; letter-spacing:0.04em;">Comment</th>
         </tr></thead>
         <tbody>${attrRows}</tbody>
@@ -2281,7 +2270,7 @@ const CertificationScorecard = (function() {
 
   async function sendEmail({ html, to, subject, cc, bcc }) {
     // Use local relay in dev; Vercel Serverless route in production
-    const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    const isLocal = isLocalEmailHost();
     const endpoint = isLocal ? 'http://localhost:8025/send-email' : '/api/send-email';
     try {
       const res = await fetch(endpoint, {
@@ -2300,7 +2289,6 @@ const CertificationScorecard = (function() {
 
   async function previewEmail() {
     try {
-      console.log('attributes loaded', (attributes || []).length);
       // Build payload from current form values (no validation)
       const getSelectVal = (id) => { const el = document.getElementById(id); return el ? (el.value || '') : ''; };
       const getRadioVal = (name) => { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; };
@@ -2316,29 +2304,6 @@ const CertificationScorecard = (function() {
       };
       const getAttrValue = (label) => { const row = findAttrRowByLabel(label); const chk = row ? row.querySelector('input[type="radio"]:checked') : null; return chk ? chk.value : ''; };
       const getAttrComment = (label) => { const row = findAttrRowByLabel(label); const ta = row ? row.querySelector('textarea') : null; return ta ? (ta.value || '').trim() : ''; };
-      const getAttrScore = (label) => {
-        // Try UI first
-        const rows = document.querySelectorAll('.attr-row');
-        for (const row of rows) {
-          const nameEl = row.querySelector('.attr-name');
-          const displayText = nameEl ? (nameEl.textContent || '').trim() : '';
-          const dataText = (row.dataset && row.dataset.subcategory ? row.dataset.subcategory : '').trim();
-          if (displayText === label || dataText === label) {
-            const s = row.querySelector('.attr-score');
-            const n = s ? parseInt((s.textContent || '').trim(), 10) : NaN;
-            if (Number.isFinite(n)) { console.log('getAttrScore UI', label, n); return n; }
-            break;
-          }
-        }
-        // Fallback to attributes dataset
-        try {
-          const item = (attributes || []).find(a => (a.Subcategory || '').trim() === label);
-          const v = item && (item.Score != null ? item.Score : 0);
-          const n = parseInt(String(v), 10);
-          console.log('getAttrScore fallback', label, n);
-          return Number.isFinite(n) ? n : 0;
-        } catch (e) { return 0; }
-      };
       const convId = (document.getElementById('conversationIdInput') || { value: '' }).value.trim();
       const selectedAgentLabel = (function(){ const s = document.getElementById('agentNameSelect'); return s && s.value ? s.selectedOptions[0].textContent.trim() : ''; })();
       const ticketUrl = convId ? `https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/27/0/conversation/${encodeURIComponent(convId)}` : '';
@@ -2356,56 +2321,10 @@ const CertificationScorecard = (function() {
         Final_Score: totalFromRadios(),
         agent_email: ((document.getElementById('agentEmailInput') || {}).value || '').trim(),
         Phase: getRadioVal('phase'),
-        Interaction_Protocols: getAttrValue('Interaction Protocols'),
-        Correctly_Diagnose: getAttrValue('Understanding'),
-        responsiveness: getAttrValue('Responsiveness'),
-        effectiveness: getAttrValue('Effectiveness'),
-        soft_Skills: getAttrValue('Soft Skills'),
-        language: getAttrValue('Language'),
-        FCR: getAttrValue('FCR'),
-        Brand_Representation_Ownership: (function(){ const r = document.querySelector('input[name="attr_16"]:checked'); return r ? r.value : ''; })(),
-        product_Awareness: getAttrValue('Product Awareness'),
-        process_Awareness: getAttrValue('Process Awareness'),
-        verification: getAttrValue('Verification'),
-        documentations: getAttrValue('Documentation'),
-        crm_update: getAttrValue('CRM Updates'),
-        workflow: getAttrValue('Workflow'),
-        // Per-attribute numeric scores
-        Score_Interaction_Protocols: getAttrScore('Interaction Protocols'),
-        Score_Correctly_Diagnose: getAttrScore('Understanding'),
-        Score_Responsiveness: getAttrScore('Responsiveness'),
-        Score_Effectiveness: getAttrScore('Effectiveness'),
-        Score_Soft_Skills: getAttrScore('Soft Skills'),
-        Score_Language: getAttrScore('Language'),
-        Score_FCR: getAttrScore('FCR'),
-        Score_Brand_Representation_Ownership: (function(){ const item = (attributes||[]).find(a=>a.ID==16); return item?(item.Score||0):0; })(),
-        Score_Product_Awareness: getAttrScore('Product Awareness'),
-        Score_Process_Awareness: getAttrScore('Process Awareness'),
-        Score_Verification: getAttrScore('Verification'),
-        Score_Documentation: getAttrScore('Documentation'),
-        Score_CRM_Updates: getAttrScore('CRM Updates'),
-        Score_Workflow: getAttrScore('Workflow'),
-        // Comments
-        Comments_Interaction_Protocols: getAttrComment('Interaction Protocols'),
-        Comments_Correctly_Diagnose: getAttrComment('Understanding'),
-        Comments_Responsiveness: getAttrComment('Responsiveness'),
-        Comments_Effectiveness: getAttrComment('Effectiveness'),
-        Comments_Soft_Skills: getAttrComment('Soft Skills'),
-        Comments_Language: getAttrComment('Language'),
-        Comments_FCR: getAttrComment('FCR'),
-        comm_Brand_Representation_Ownership: (function(){ const t = document.getElementById('attr_comment_16'); return t ? t.value.trim() : ''; })(),
-        Comments_Product_Awareness: getAttrComment('Product Awareness'),
-        Comments_Process_Awareness: getAttrComment('Process Awareness'),
-        Comments_Verification: getAttrComment('Verification'),
-        Comments_Documentation: getAttrComment('Documentation'),
-        Comments_CRM_Updates: getAttrComment('CRM Updates'),
-        Comments_Workflow: getAttrComment('Workflow'),
       };
-      console.log('Email payload scores', {
-        Interaction_Protocols: payload.Score_Interaction_Protocols,
-        Correctly_Diagnose: payload.Score_Correctly_Diagnose,
-        Responsiveness: payload.Score_Responsiveness,
-        Effectiveness: payload.Score_Effectiveness,
+      CERTIFICATION_ATTRIBUTE_COLUMN_MAP.forEach(({ label, valueKey, commentKey }) => {
+        payload[valueKey] = getAttrValue(label);
+        payload[commentKey] = getAttrComment(label);
       });
       const logoUrl = getLogoUrl();
       const logoDataUri = logoUrl ? null : await fetchLogoAsDataURI();
