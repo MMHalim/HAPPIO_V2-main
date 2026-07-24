@@ -2114,21 +2114,23 @@ const CertificationScorecard = (function() {
         }
       }
 
-      // Compose and attempt to send email summary (best-effort)
-      payload.loggedInEmail = localStorage.getItem('loggedInUserEmail');
-      const logoUrl = getLogoUrl();
-      const logoDataUri = logoUrl ? null : await fetchLogoAsDataURI();
-      const emailHtml = buildEmailHTML(payload, { logoDataUri, logoUrl });
-      const status = String(payload.Final_Score || '').trim().toUpperCase() || 'FAIL';
-      const emailSent = await sendEmailSMTP({
-        html: emailHtml,
-        to: payload.agent_email,
-        cc: payload.loggedInEmail ? [payload.loggedInEmail] : [],
-        subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}`
-      });
-      if (!emailSent) {
-        console.warn('Email send failed or is not configured for the current environment.');
-        try { showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); } catch(_) {}
+      // Only Certification submissions send the QA summary email.
+      if (String(payload.Phase || '').trim().toLowerCase() === 'certification') {
+        payload.loggedInEmail = localStorage.getItem('loggedInUserEmail');
+        const logoUrl = getLogoUrl();
+        const logoDataUri = logoUrl ? null : await fetchLogoAsDataURI();
+        const emailHtml = buildEmailHTML(payload, { logoDataUri, logoUrl });
+        const status = String(payload.Final_Score || '').trim().toUpperCase() || 'FAIL';
+        const emailSent = await sendEmailSMTP({
+          html: emailHtml,
+          to: payload.agent_email,
+          cc: payload.loggedInEmail ? [payload.loggedInEmail] : [],
+          subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}`
+        });
+        if (!emailSent) {
+          console.warn('Email send failed or is not configured for the current environment.');
+          try { showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); } catch(_) {}
+        }
       }
 
       upsertRecentSubmissionRow({
