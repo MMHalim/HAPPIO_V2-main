@@ -15,13 +15,14 @@
     startISO: null, 
     endISO: null,
     configLoaded: false,
-    data: { t1: [], sms: [], social: [], t2ps: [], t2os: [], salesret: [] },
-    filters: { t1: [], sms: [], social: [], t2ps: [], t2os: [], salesret: [] },
+    data: { t1: [], sms: [], social: [], t2ps: [], t2os: [], salesret: [], certification: [] },
+    filters: { t1: [], sms: [], social: [], t2ps: [], t2os: [], salesret: [], certification: [] },
     smsAttributes: [],
     socialAttributes: [],
     psAttributes: [],
     t2osAttributes: [],
-    salesRetAttributes: []
+    salesRetAttributes: [],
+    certificationAttributes: []
   };
 
   // --- 1. Config Loading ---
@@ -42,6 +43,7 @@
       fetchPsAttributes();
       fetchNewScAttributes();
       fetchSalesRetAttributes();
+      fetchCertificationAttributes();
 
       initRangePicker();
       initTableControls();
@@ -144,6 +146,28 @@
     } catch (e) {
       console.warn('Failed to fetch sales retention attributes', e);
       state.salesRetAttributes = [];
+    }
+  }
+
+  async function fetchCertificationAttributes() {
+    try {
+      const url = `${config.restUrl}/cert_attr?select=*&order=id.asc`;
+      let res = await fetch(url, { headers: authHeaders() });
+      if (!res.ok) {
+        res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
+      }
+      if (!res.ok) throw new Error(await res.text());
+      const rows = await res.json();
+      state.certificationAttributes = Array.isArray(rows) ? rows.map((row, idx) => ({
+        ...row,
+        ID: pickMappedRowValue(row, ['ID', 'id'], idx + 1),
+        Subcategory: String(pickMappedRowValue(row, ['Attribute', 'attribute', 'Subcategory', 'subcategory', 'subcategor'], '') || '').trim(),
+        Criteria: String(pickMappedRowValue(row, ['Criteria', 'criteria', 'description'], '') || '').trim(),
+        Score: parseAttributeScoreValue(pickMappedRowValue(row, ['Score', 'score'], 0))
+      })) : [];
+    } catch (e) {
+      console.warn('Failed to fetch certification attributes', e);
+      state.certificationAttributes = [];
     }
   }
 
@@ -402,6 +426,12 @@
       scoreCol: 'Final_Score',
       cols: ['created_at', 'Agent_Name', 'agent_name', 'Conversation_ID', 'conversation_id', 'Final_Score', 'id', 'Channel', 'Taker_Name'],
       label: 'T2 OS New Scorecard Audit'
+    },
+    certification: {
+      name: 'certification_audits',
+      scoreCol: 'Final_Score',
+      cols: ['created_at', 'Agent_Name', 'Conversation_ID', 'Final_Score', 'id', 'Channel', 'Taker_Name', 'Phase'],
+      label: 'Certification Audit'
     }
   };
 
@@ -422,7 +452,8 @@
       processScorecard('social'),
       processScorecard('t2ps'),
       processScorecard('t2os'),
-      processScorecard('salesret')
+      processScorecard('salesret'),
+      processScorecard('certification')
     ]);
   }
 
@@ -450,6 +481,16 @@
 
   function updateStats(key, data, scoreCol) {
     const count = data.length;
+    if (key === 'certification') {
+      const passed = data.filter((row) => String(row[scoreCol] || '').trim().toLowerCase() === 'pass').length;
+      const passRate = count > 0 ? ((passed / count) * 100).toFixed(1).replace(/\.0$/, '') : '0';
+      const countEl = document.getElementById(`${key}Count`);
+      const avgEl = document.getElementById(`${key}Avg`);
+      if (countEl) countEl.textContent = count;
+      if (avgEl) avgEl.textContent = `${passRate}%`;
+      return;
+    }
+
     let totalScore = 0;
     let scoredCount = 0;
 
@@ -476,7 +517,7 @@
     tbody.innerHTML = '';
 
     if (!data || data.length === 0) {
-      const colSpan = (key === 't1' || key === 'social') ? 8 : 7;
+      const colSpan = (key === 't1' || key === 'social' || key === 'certification') ? 8 : 7;
       tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">No records found</td></tr>`;
       return;
     }
@@ -503,7 +544,7 @@
       if (score !== null && score !== undefined) {
         score = String(score).replace(/%/g, '');
         const numScore = parseFloat(score);
-        if (!isNaN(numScore)) {
+        if (key !== 'certification' && !isNaN(numScore)) {
           // If integer, show no decimals. If decimal, show up to 2 decimal places but trim trailing zeros
           // standard behavior of parseFloat + string conversion does this automatically for many cases
           // but to be explicit:
@@ -567,6 +608,19 @@
           <td>${channel}</td>
           <td>${postCell}</td>
           <td>${score}%</td>
+          <td>${actionHtml}</td>
+        `;
+      } else if (key === 'certification') {
+        const taker = getVal(['Taker_Name', 'taker_name', 'Taker Name']) || '-';
+        const phase = getVal(['Phase', 'phase']) || '-';
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${dateStr}</td>
+          <td>${agent}</td>
+          <td>${taker}</td>
+          <td>${phase}</td>
+          <td>${convId}</td>
+          <td>${score || '-'}</td>
           <td>${actionHtml}</td>
         `;
       } else {
@@ -979,6 +1033,7 @@
     // We can try fetching; if it fails or table doesn't apply, we get empty list.
     const definitions = await fetchAttributeDefinitions();
     const defMap = new Map(definitions.map(d => [d.Subcategory.trim(), d]));
+    const certificationDefMap = new Map((state.certificationAttributes || []).map((d) => [String(d.Subcategory || '').trim(), d]));
     
     body.innerHTML = ''; // Clear loading
 
@@ -1033,7 +1088,7 @@
     let scoreDisplay = row[def.scoreCol];
     if (scoreDisplay !== null && scoreDisplay !== undefined) {
       scoreDisplay = String(scoreDisplay).trim();
-      if (scoreDisplay && !scoreDisplay.endsWith('%')) scoreDisplay = `${scoreDisplay}%`;
+      if (key !== 'certification' && scoreDisplay && !scoreDisplay.endsWith('%')) scoreDisplay = `${scoreDisplay}%`;
     } else {
       scoreDisplay = '-';
     }
@@ -1075,10 +1130,20 @@
         metaHtml += renderMetaCard('Conversation ID', '-', null, 'color:var(--text-primary);', false);
       }
     }
-     metaHtml += renderMetaCard('Score', scoreDisplay, def.scoreCol, 'color:var(--success-color);', false, 'id="scoreDisplay"');
+    const scoreColor = (key === 'certification' && String(scoreDisplay || '').trim().toLowerCase() === 'fail')
+      ? 'color:var(--danger-color);'
+      : 'color:var(--success-color);';
+    metaHtml += renderMetaCard('Score', scoreDisplay, def.scoreCol, scoreColor, false, 'id="scoreDisplay"');
     
     metaSection.innerHTML += metaHtml;
     body.appendChild(metaSection);
+
+    const attributes = [];
+    const usedKeys = new Set([
+      'id','created_at','Created_At','agent_name','Agent_Name','agent_email',
+      'conversation_id','Conversation_ID','ticket_id', def.scoreCol, 'updated_at',
+      'user_id', 'Taker_Name', 'taker_name', 'Channel', 'channel'
+    ]);
 
     // Ticket Details Section (SMS Only)
     if (key === 'sms') {
@@ -1179,6 +1244,58 @@
 
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
+    } else if (key === 'certification') {
+      const ticketSection = document.createElement('div');
+      ticketSection.className = 'detail-section';
+      ticketSection.innerHTML = `<h3>Ticket Details</h3>`;
+
+      let ticketHtml = '';
+      const fields = [
+        { label: 'Phase', key: 'Phase' },
+        { label: 'Monitoring Type', key: 'Monitoring_Type' },
+        { label: 'Ticket Status', key: 'Ticket_Status' },
+        { label: 'Interaction Related To', key: 'Interaction_Related_To' },
+        { label: 'SME Answer', key: 'SME_Answer' },
+        { label: 'SME Name', key: 'SME_Name' },
+        { label: 'SME Following Process', key: 'SME_Following_Process' },
+        { label: 'Sales', key: 'Sales' },
+        { label: 'Fitness Fluency', key: 'fitness_fluency' }
+      ];
+
+      fields.forEach((f) => {
+        if (row[f.key] !== undefined && row[f.key] !== null) {
+          usedKeys.add(f.key);
+          ticketHtml += renderMetaCard(f.label, row[f.key], f.key, 'color:var(--text-primary);', true);
+        }
+      });
+
+      if (row.URL) {
+        const safeUrl = String(row.URL).replace(/"/g, '&quot;').trim();
+        ticketHtml += renderMetaCard('Ticket URL', `<a href="${safeUrl}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">Open</a>`);
+      }
+
+      if (row.Comments_SME_Related !== undefined && row.Comments_SME_Related !== null) {
+        usedKeys.add('Comments_SME_Related');
+        ticketHtml += `
+          <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; background: var(--bg-nav-item);">
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom: 6px;">General SME Comments</div>
+            <div style="color:var(--text-primary); white-space: pre-wrap;" data-key="Comments_SME_Related">${row.Comments_SME_Related || '-'}</div>
+          </div>
+        `;
+      }
+
+      if (row.Sales_Comments !== undefined && row.Sales_Comments !== null) {
+        usedKeys.add('Sales_Comments');
+        ticketHtml += `
+          <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; background: var(--bg-nav-item);">
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom: 6px;">Sales Comments</div>
+            <div style="color:var(--text-primary); white-space: pre-wrap;" data-key="Sales_Comments">${row.Sales_Comments || '-'}</div>
+          </div>
+        `;
+      }
+
+      ticketSection.innerHTML += ticketHtml;
+      body.appendChild(ticketSection);
     }
 
     // Attributes Section (Dynamic Parsing)
@@ -1191,9 +1308,6 @@
       if (typeof text !== 'string') return text;
       return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--primary-color); text-decoration:underline; cursor:pointer;">URL</a>');
     };
-
-    const attributes = [];
-    const usedKeys = new Set(['id','created_at','Created_At','agent_name','Agent_Name','agent_email','conversation_id','Conversation_ID','ticket_id', def.scoreCol, 'updated_at', 'user_id', 'Taker_Name', 'taker_name', 'Channel', 'channel']);
 
     // SMS SPECIFIC LOGIC
     if (key === 'sms') {
@@ -1868,6 +1982,50 @@
         if (commentKey) usedKeys.add(commentKey);
       });
 
+    } else if (key === 'certification') {
+      const certificationAttributes = [
+        {
+          label: 'Understanding & Effectiveness',
+          scoreKey: 'Understanding_And_Effectiveness',
+          commentKey: 'Comments_Understanding_And_Effectiveness'
+        },
+        {
+          label: 'Communication',
+          scoreKey: 'Communication',
+          commentKey: 'Comments_Communication'
+        },
+        {
+          label: 'Issue Resolution (Product, Process, and FCR)',
+          scoreKey: 'Issue_Resolution_Product_Process_And_FCR',
+          commentKey: 'Comments_Issue_Resolution_Product_Process_And_FCR'
+        },
+        {
+          label: 'Brand Representation and Ownership',
+          scoreKey: 'Brand_Representation_And_Ownership',
+          commentKey: 'Comments_Brand_Representation_And_Ownership'
+        },
+        {
+          label: 'Internal Process',
+          scoreKey: 'Internal_Process',
+          commentKey: 'Comments_Internal_Process'
+        }
+      ];
+
+      certificationAttributes.forEach((attr) => {
+        const meta = certificationDefMap.get(attr.label) || {};
+        attributes.push({
+          label: attr.label,
+          description: String(meta.Criteria || meta.description || '').trim(),
+          score: row[attr.scoreKey],
+          scoreKey: attr.scoreKey,
+          comment: row[attr.commentKey] || '',
+          commentKey: attr.commentKey,
+          maxScore: meta.Score ?? null
+        });
+
+        usedKeys.add(attr.scoreKey);
+        usedKeys.add(attr.commentKey);
+      });
     } else {
       // GENERIC LOGIC (T1, T2PS, T2OS)
       const keys = Object.keys(row).sort();
@@ -2262,7 +2420,7 @@
     processedAttributes = Array.from(uniqueAttrs.values());
 
     // 2. Sort by FULL_DISPLAY_ORDER (Skip for SMS and T2 PS as they are already ordered)
-    if (key !== 'sms' && key !== 't2ps' && key !== 't2os' && key !== 'salesret') {
+    if (key !== 'sms' && key !== 't2ps' && key !== 't2os' && key !== 'salesret' && key !== 'certification') {
         processedAttributes.sort((a, b) => {
             const idxA = FULL_DISPLAY_ORDER.indexOf(a.label);
             const idxB = FULL_DISPLAY_ORDER.indexOf(b.label);
@@ -2278,7 +2436,7 @@
     const group1 = [];
     const group2 = [];
 
-    if (key === 'sms' || key === 't2ps' || key === 't2os' || key === 'salesret') {
+    if (key === 'sms' || key === 't2ps' || key === 't2os' || key === 'salesret' || key === 'certification') {
         group2.push(...processedAttributes);
     } else {
         processedAttributes.forEach(attr => {
@@ -2294,6 +2452,23 @@
     }
 
     const recomputeScore = () => {
+      if (key === 'certification') {
+        const passingCount = processedAttributes.reduce((sum, attr) => {
+          const attrKey = attr.scoreKey;
+          if (!attrKey) return sum;
+          const inputEl = body.querySelector(`[data-editing-key="${attrKey}"]`);
+          const val = inputEl ? inputEl.value : row[attrKey];
+          return String(val || '').trim().toLowerCase() === 'pass' ? sum + 1 : sum;
+        }, 0);
+        const newScore = passingCount >= 4 ? 'Pass' : 'Fail';
+        const scoreEl = metaSection.querySelector('#scoreDisplay');
+        if (scoreEl) {
+          scoreEl.textContent = newScore;
+          scoreEl.style.color = newScore === 'Pass' ? 'var(--success-color)' : 'var(--danger-color)';
+        }
+        return newScore;
+      }
+
       let zeroGateFail = false;
       let total = 0;
       processedAttributes.forEach(attr => {
@@ -2352,7 +2527,9 @@
     const renderAttrList = (list) => {
         let html = '';
         list.forEach(attr => {
-            const scoreClass = (String(attr.score).toLowerCase() === 'no' || attr.score === 0 || attr.score === '0') ? 'color:var(--danger-color);' : 'color:var(--success-color);';
+            const scoreText = String(attr.score == null ? '' : attr.score).trim().toLowerCase();
+            const isNegativeScore = scoreText === 'no' || scoreText === 'fail' || attr.score === 0 || attr.score === '0';
+            const scoreClass = isNegativeScore ? 'color:var(--danger-color);' : 'color:var(--success-color);';
             const displayScore = (attr.score === null || attr.score === '') ? '-' : attr.score;
             
             // Only render data-key if scoreKey exists
@@ -2518,7 +2695,11 @@
             'status': ['Open', 'Snoozed', 'Done'],
             'monitoring_type': ['SBS', 'Remote', 'Selected'],
             'interaction_related_to': intRltdToOpts,
-            'fitness_fluency': ['Yes', 'No']
+            'fitness_fluency': ['Yes', 'No'],
+            'sme_answer': ['Yes', 'No', 'N/A'],
+            'sme_following_process': ['Yes', 'No', 'N/A'],
+            'sales': ['Yes', 'No'],
+            'phase': ['Certification', 'OJT']
         };
         
         if (key === 't1') {
@@ -2606,6 +2787,10 @@
 
             // Determine Options
             let options = ['Yes', 'No']; // Default
+
+            if (def.name === 'certification_audits' && processedAttributes.some((attr) => attr.scoreKey === key)) {
+              options = ['Pass', 'Fail'];
+            }
             
             if (DROPDOWN_CONFIG[key]) options = DROPDOWN_CONFIG[key];
             else if (DROPDOWN_CONFIG[lowerKey]) options = DROPDOWN_CONFIG[lowerKey];
@@ -2692,7 +2877,9 @@
         let hasChanges = false;
 
         const computedScore = recomputeScore();
-        if (!isNaN(computedScore)) {
+        if (key === 'certification') {
+          updates[def.scoreCol] = computedScore;
+        } else if (!isNaN(computedScore)) {
           // SMS scorecard and T1/T2 PS scorecard convention is to store score as string with % (e.g. "85%")
           // Updated: T2 OS (T2_OS_NEW_2025) also requires % format as per user request
            if (def.name === 'sms_scorecard' || def.name === 'T1_QA_New_Scorecards' || def.name === 't2_ps_scorecards' || def.name === 'T2_OS_NEW_2025' || def.name === 'MX_Social_Media_Scorecard' || def.name === 'sales_ret_audits') {
