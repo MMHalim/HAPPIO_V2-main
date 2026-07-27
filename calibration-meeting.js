@@ -144,6 +144,22 @@ const DB_ATTRIBUTES_T2 = [
   { label: 'Ownership', key: 'ownership', commentKey: 'comment_ownership' }
 ];
 
+const DB_ATTRIBUTES_SALES_RET_CALIBRATION = [
+  { label: 'Interaction Protocols', key: 'interaction_protocols', commentKey: 'comment_interaction_protocols' },
+  { label: 'Understanding', key: 'understanding', commentKey: 'comment_Understanding' },
+  { label: 'Effectiveness & FCR', key: 'effectiveness_&_FCR', commentKey: 'comment_Effectiveness_&_FCR' },
+  { label: 'Engagement & Language', key: 'engagement_&_Langauge', commentKey: 'comment_Engagement_&_Langauge' },
+  { label: 'Retention / Sales Skills', key: 'retention_skills', commentKey: 'comment_Retention_Skills' },
+  { label: 'Offering Alternatives', key: 'offering_alternatives', commentKey: 'comment_Offering_Alternatives' },
+  { label: 'Product Awareness', key: 'product_awareness', commentKey: 'comment_Product_Awareness' },
+  { label: 'Process Awareness', key: 'process_awareness', commentKey: 'comment_Process_Awareness' },
+  { label: 'Tempo Values', key: 'tempo_values', commentKey: 'comment_Tempo_Values' },
+  { label: 'Verification', key: 'verfication', commentKey: 'comment_Verification' },
+  { label: 'Documentation & CRM Updates', key: 'documentation_crm', commentKey: 'comment_Documentation_crm' },
+  { label: 'Workflow', key: 'workflow', commentKey: 'comment_Workflow' },
+  { label: 'Ownership', key: 'ownership', commentKey: 'comment_ownership' }
+];
+
 const DB_ATTRIBUTES_T1 = [
   { label: 'Interaction Protocols', key: 'Interaction_Protocols', commentKey: 'Comments_Interaction_Protocols' },
   { label: 'Understanding / Diagnose', key: 'Correctly_Diagnose', commentKey: 'Comments_Correctly_Diagnose' },
@@ -844,6 +860,8 @@ async function loadResults() {
     currentAttributes = DB_ATTRIBUTES_SMS;
   } else if (queue === 'MX-T1') {
     currentAttributes = DB_ATTRIBUTES_T1;
+  } else if (queue === 'Order Support') {
+    currentAttributes = DB_ATTRIBUTES_SALES_RET_CALIBRATION;
   } else {
     currentAttributes = DB_ATTRIBUTES_T2;
   }
@@ -906,8 +924,10 @@ async function fetchCalibrationData(convId, queue) {
     tableName = 'calibration_sms';
   } else if (queue === 'MX-T1') {
     tableName = 'Calibration_T1_QA_New_Scorecards';
+  } else if (queue === 'Order Support') {
+    tableName = 'sales_ret_calibration';
   } else {
-    // Default for Sales, Order Support (T2 OS)
+    // Default for Sales (T2 OS)
     tableName = 'calibration_T2_OS_NEW';
   }
 

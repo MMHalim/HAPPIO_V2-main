@@ -1569,10 +1569,10 @@ function validate() {
   return true;
 }
 
-async function checkDuplicate(conversationId) {
+async function checkDuplicate(conversationId, tableName = 'sales_ret_audits') {
   try {
     if (!conversationId) return false;
-    const url = `${config.restUrl}/sales_ret_audits?select=Conversation_ID&Conversation_ID=eq.${encodeURIComponent(conversationId)}&limit=1`;
+    const url = `${config.restUrl}/${tableName}?select=Conversation_ID&Conversation_ID=eq.${encodeURIComponent(conversationId)}&limit=1`;
     let res = await fetch(url, { headers: authHeaders() });
     if (res.status === 401 || res.status === 403) {
       // Retry with service key if available to avoid client token issues
@@ -1592,14 +1592,19 @@ async function submit() {
   const token = localStorage.getItem('login_token');
   if (!token) { if (typeof showAlert === 'function') showAlert('Please log in to submit your scorecard.', { title: 'Login required', type: 'warning' }); return; }
   const convId = (document.getElementById('conversationIdInput') || { value: '' }).value.trim();
-  const dup = await checkDuplicate(convId);
-  const notice = document.getElementById('duplicateNotice');
-  if (notice) notice.style.display = dup ? 'block' : 'none';
-  if (dup) { if (typeof showAlert === 'function') showAlert('Duplicate Conversation ID found. Submitting anyway.', { title: 'Duplicate detected', type: 'warning' }); }
   const getSelectVal = (id) => ((document.getElementById(id) || {}).value || '').trim();
   const getRadioVal = (name) => { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; };
   const calibVal = getRadioVal('calibration');
-  const isCalibration = calibrationOsMode || calibVal === 'Yes';
+  const calibYesInput = document.querySelector('input[name="calibration"][value="Yes"]');
+  const isCalibration = calibrationOsMode || calibVal === 'Yes' || !!(calibYesInput && calibYesInput.checked);
+  const targetTable = isCalibration ? 'sales_ret_calibration' : 'sales_ret_audits';
+  const dup = await checkDuplicate(convId, targetTable);
+  const notice = document.getElementById('duplicateNotice');
+  if (notice) notice.style.display = dup ? 'block' : 'none';
+  if (dup) {
+    const duplicateTargetLabel = isCalibration ? 'calibration table' : 'audit table';
+    if (typeof showAlert === 'function') showAlert(`Duplicate Conversation ID found in the ${duplicateTargetLabel}. Submitting anyway.`, { title: 'Duplicate detected', type: 'warning' });
+  }
   const selectedAgentLabel = (function(){ const s = document.getElementById('agentNameSelect'); return s && s.value ? s.selectedOptions[0].textContent.trim() : ''; })();
   const ticketUrl = convId ? `https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/27/0/conversation/${encodeURIComponent(convId)}` : '';
   // Read combined widgets directly; compute fallbacks from individual attributes
@@ -1639,7 +1644,7 @@ async function submit() {
   const documentationCrmFallback = (vDoc === 'No' || vCrm === 'No') ? 'No' : (vDoc === 'Yes' && vCrm === 'Yes') ? 'Yes' : (vDoc || vCrm || '');
   const commentDocumentationCrmFallback = [cDoc && `Documentation: ${cDoc}`, cCrm && `CRM Updates: ${cCrm}`].filter(Boolean).join(' | ');
 
-  const payload = {
+  const standardPayload = {
     Conversation_ID: convId,
     Agent_Name: selectedAgentLabel,
     Taker_Name: ((document.getElementById('takerNameInput') || {}).value || '').trim(),
@@ -1701,7 +1706,70 @@ async function submit() {
     appealed: null,
     coaching_delivered: null,
   };
+  const calibrationPayload = {
+    Conversation_ID: convId,
+    Agent_Name: selectedAgentLabel,
+    Taker_Name: ((document.getElementById('takerNameInput') || {}).value || '').trim(),
+    URL: ticketUrl,
+    Channel: getSelectVal('channelSelect'),
+    Monitoring_Type: getSelectVal('monitoringType'),
+    Interaction_Related_To: getSelectVal('interactionRelatedTo'),
+    Final_Score: `${totalFromRadios()}%`,
+    agent_email: ((document.getElementById('agentEmailInput') || {}).value || '').trim(),
+    Certification: getRadioVal('certification'),
+    date_created: new Date().toISOString().slice(0, 10),
+    interaction_protocols: getAttrValue('Interaction Protocols') || '',
+    understanding: getAttrValue('Understanding') || '',
+    'engagement_&_Langauge': (vEngLang || engagementLangFallback || ''),
+    'effectiveness_&_FCR': (vEffFcr || effFcrFallback || ''),
+    retention_skills:
+      getAttrValue('Retention Skills/Sales Skills') ||
+      getAttrValue('Retention / Sales Skills') ||
+      '',
+    offering_alternatives:
+      getAttrValue('Offering Alternatives/Options') ||
+      getAttrValue('Offering Alternatives / Options') ||
+      '',
+    product_awareness: getAttrValue('Product Awareness') || '',
+    process_awareness: getAttrValue('Process Awareness') || '',
+    tempo_values: getAttrValue('Tempo Values') || '',
+    verfication: getAttrValue('Verification') || getAttrValue('Verfication') || '',
+    documentation_crm: (vDocCrm || documentationCrmFallback || ''),
+    workflow: getAttrValue('Workflow') || '',
+    ownership: getAttrValue('Ownership') || '',
+    comment_interaction_protocols: getAttrComment('Interaction Protocols') || '',
+    comment_Understanding: getAttrComment('Understanding') || '',
+    'comment_Engagement_&_Langauge': (cEngLang || commentEngLangFallback || ''),
+    'comment_Effectiveness_&_FCR': (cEffFcr || commentEffFcrFallback || ''),
+    comment_Retention_Skills:
+      getAttrComment('Retention Skills/Sales Skills') ||
+      getAttrComment('Retention / Sales Skills') ||
+      '',
+    comment_Offering_Alternatives:
+      getAttrComment('Offering Alternatives/Options') ||
+      getAttrComment('Offering Alternatives / Options') ||
+      '',
+    comment_Product_Awareness: getAttrComment('Product Awareness') || '',
+    comment_Process_Awareness: getAttrComment('Process Awareness') || '',
+    comment_Tempo_Values: getAttrComment('Tempo Values') || '',
+    comment_Verification: getAttrComment('Verification') || getAttrComment('Verfication') || '',
+    comment_Documentation_crm: (cDocCrm || commentDocumentationCrmFallback || ''),
+    comment_Workflow: getAttrComment('Workflow') || '',
+    comment_ownership: getAttrComment('Ownership') || '',
+    ticket_status: getSelectVal('ticketStatus') || '',
+    coaching_delivered: null,
+    customer_retained: getSelectVal('customerRetainedSelect') || '',
+    fitness_fluency: getRadioVal('fitnessFluency') || '',
+    queue: getSelectVal('queueSelect') || '',
+    Agent_Acknowledge: null,
+    appealed: null
+  };
+  const payload = isCalibration ? calibrationPayload : standardPayload;
   console.log('DEBUG combined mapping', {
+    calibVal,
+    calibrationOsMode,
+    isCalibration,
+    targetTable,
     vEngLang,
     engagementLangFallback,
     vEffFcr,
@@ -1716,7 +1784,6 @@ async function submit() {
     payloadCommentEffectiveness: (cEffFcr || commentEffFcrFallback || '')
   });
   try {
-    const targetTable = 'sales_ret_audits';
     const url = `${config.restUrl}/${targetTable}`;
     const headers = authHeaders();
     headers['Prefer'] = 'return=minimal';
