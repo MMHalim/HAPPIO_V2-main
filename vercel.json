@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "crons": [
+    { "path": "/api/cron/freshchat-etl", "schedule": "5 * * * *" }
+  ],
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "**/*", "use": "@vercel/static" }

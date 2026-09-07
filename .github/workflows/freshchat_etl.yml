@@ -12,10 +12,6 @@ on:
       window_slot:
         description: "Optional Cairo slot key: 1705,1805,1905,2005,2105,2205,2305,0005,0105,0205"
         required: false
-  schedule:
-    # Run once per UTC hour at :05. The workflow itself resolves the current
-    # Cairo slot and decides whether that hour is one of the allowed ETL windows.
-    - cron: '5 * * * *'
 
 jobs:
   run-etl:
@@ -36,7 +32,6 @@ jobs:
       - name: Resolve Cairo Time Window
         id: resolve_window
         env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
           INPUT_FROM_CAIRO: ${{ github.event.inputs.from_cairo }}
           INPUT_TO_CAIRO: ${{ github.event.inputs.to_cairo }}
           INPUT_WINDOW_SLOT: ${{ github.event.inputs.window_slot }}
@@ -47,12 +42,9 @@ jobs:
           from zoneinfo import ZoneInfo
 
           tz = ZoneInfo("Africa/Cairo")
-          event_name = (os.getenv("GITHUB_EVENT_NAME") or "").strip()
           from_input = (os.getenv("INPUT_FROM_CAIRO") or "").strip()
           to_input = (os.getenv("INPUT_TO_CAIRO") or "").strip()
           slot = (os.getenv("INPUT_WINDOW_SLOT") or "").strip()
-          should_run = True
-          skip_reason = ""
 
           slot_map = {
               "1705": ((0, 2, 0), (0, 17, 0)),
@@ -91,48 +83,18 @@ jobs:
                   )
               resolved_from, resolved_to = resolve_slot(slot)
               reason = f"window_slot={slot}"
-          elif event_name == "schedule":
-              now_cairo = datetime.now(tz)
-              current_minute = now_cairo.minute
-              slot_candidate = f"{now_cairo.strftime('%H')}05"
-
-              # GitHub scheduled workflows can start late. Allow a wider grace
-              # window so a delayed start like 19:14 Cairo still runs slot 1905.
-              if 5 <= current_minute <= 29 and slot_candidate in slot_map:
-                  slot = slot_candidate
-                  resolved_from, resolved_to = resolve_slot(slot)
-                  reason = f"scheduled slot={slot}"
-              else:
-                  should_run = False
-                  resolved_from = ""
-                  resolved_to = ""
-                  reason = "scheduled run outside configured Cairo ETL slots"
-                  skip_reason = f"Current Cairo time {now_cairo.strftime('%Y-%m-%d %H:%M')} does not map to an ETL slot."
           else:
               raise SystemExit("Provide either from_cairo/to_cairo or window_slot.")
 
           github_output = os.environ["GITHUB_OUTPUT"]
           with open(github_output, "a", encoding="utf-8") as fh:
-              fh.write(f"should_run={'true' if should_run else 'false'}\n")
               fh.write(f"from_cairo={resolved_from}\n")
               fh.write(f"to_cairo={resolved_to}\n")
-              fh.write(f"skip_reason={skip_reason}\n")
 
-          if should_run:
-              print(f"Resolved Cairo window ({reason}): {resolved_from} -> {resolved_to}")
-          else:
-              print(f"Skipping workflow: {reason}")
-              print(skip_reason)
+          print(f"Resolved Cairo window ({reason}): {resolved_from} -> {resolved_to}")
           PY
 
-      - name: Skip non-slot schedule runs
-        if: steps.resolve_window.outputs.should_run != 'true'
-        run: |
-          echo "Skipping Freshchat ETL."
-          echo "${{ steps.resolve_window.outputs.skip_reason }}"
-
       - name: Cache pip
-        if: steps.resolve_window.outputs.should_run == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -143,13 +105,11 @@ jobs:
             pip-${{ runner.os }}-
 
       - name: Install dependencies
-        if: steps.resolve_window.outputs.should_run == 'true'
         run: |
           python -m pip install --upgrade pip
           pip install requests pandas gspread google-auth
 
       - name: Run ETL Script
-        if: steps.resolve_window.outputs.should_run == 'true'
         env:
           FRESHCHAT_TOKEN: ${{ secrets.FRESHCHAT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
