@@ -13,9 +13,9 @@ on:
         description: "Optional Cairo slot key: 1705,1805,1905,2005,2105,2205,2305,0005,0105,0205"
         required: false
   schedule:
-    # Run periodically and let the resolver decide whether the current Cairo time
-    # maps to one of the allowed ETL slots. This replaces the old Zapier timers.
-    - cron: '5,20,35,50 * * * *'
+    # Run once per UTC hour at :05. The workflow itself resolves the current
+    # Cairo slot and decides whether that hour is one of the allowed ETL windows.
+    - cron: '5 * * * *'
 
 jobs:
   run-etl:
@@ -96,9 +96,9 @@ jobs:
               current_minute = now_cairo.minute
               slot_candidate = f"{now_cairo.strftime('%H')}05"
 
-              # GitHub scheduled workflows can start late, so accept a grace window
-              # after :05 while still allowing only one valid run per hour.
-              if 5 <= current_minute <= 19 and slot_candidate in slot_map:
+              # GitHub scheduled workflows can start late. Allow a wider grace
+              # window so a delayed start like 19:14 Cairo still runs slot 1905.
+              if 5 <= current_minute <= 29 and slot_candidate in slot_map:
                   slot = slot_candidate
                   resolved_from, resolved_to = resolve_slot(slot)
                   reason = f"scheduled slot={slot}"
