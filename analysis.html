@@ -31,6 +31,25 @@
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
+    .analysis-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      color-scheme: dark;
+    }
+    .analysis-select option,
+    .analysis-select optgroup {
+      background: #111827;
+      color: #f8fafc;
+    }
+    [data-theme="light"] .analysis-select {
+      color-scheme: light;
+    }
+    [data-theme="light"] .analysis-select option,
+    [data-theme="light"] .analysis-select optgroup {
+      background: #ffffff;
+      color: #0f172a;
+    }
     .analysis-input:focus,
     .analysis-select:focus,
     .analysis-textarea:focus {
