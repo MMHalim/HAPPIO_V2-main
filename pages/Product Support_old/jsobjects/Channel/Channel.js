@@ -3,21 +3,19 @@ export default {
 	abuse: function(){
 		const caseId = Text119Copy.text;
 		storeValue("caseT2PS", caseId);
-	},
+ },
 
 	onUserRefresh: function () {
-		console.log("Page refreshed by the user!");
 		Text119Copy.setText(appsmith.store.caseT2PS);
 		showAlert('You have refreshed the page, Please complete the current assigned conversartion !')
 		Kustomer_Message.run();
-	},
-
+ },
 
 	f_order: async function () {
 
 		if(Text119Copy.text > 0){
 			showAlert("Please submit the current Case before asking for a new one !")	
-		} else {
+ } else {
 
 			const emptyWidgets = [];
 			if (DatePicker1.formattedDate === "") emptyWidgets.push("Date From");
@@ -26,36 +24,34 @@ export default {
 			if (emptyWidgets.length > 0) {
 				const emptyWidgetNames = emptyWidgets.join(', ');
 				showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
-			} else {
+ } else {
 				try {
 					await get_T2_PS.run();
 					await assigned.run();
 					await Kustomer_Message.run();
 					await Channel.abuse();
-				} catch (error) {
+ } catch (error) {
 					console.error('An error occurred during execution:', error);
 					showAlert(`An error occurred: ${error.message}`);
-				}
-			}
-		}
+ }
+ }
+ }
 		// Channel.onUserRefresh();
-	},
-
+ },
 
 	url: function () {
 		var txt1 = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/0/0/';
 		var txt2 = "conversation/";
 		var txt4 = Con_ID.text;
 		var combinedText = txt1.concat(txt2,txt4);
-		console.log(combinedText);
 		return Input4 = combinedText;
-	},
+ },
 
 	cid: function() {
 		if (Input1.value !== null) {
 			Kustomer_Message.run();
-		}
-	},
+ }
+ },
 
 	calculateTotal: function () {
 		const group1 = [RadioGroup1.selectedOptionValue, RadioGroup3.selectedOptionValue];
@@ -76,19 +72,19 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 
 	pass_fail: function () {
 		if(Text4.text === 0.00 + "%" ||Text4.text <90.00 + "%"){
 			return 'Failed'
-		}else{
+ }else{
 			return 'Passed'
-		}
+ }
 
-	},
+ },
 	// submit:async function () {
 		// const emptyWidgets = [];
 		// if (Con_ID.text === "") emptyWidgets.push("Conversation ID");
@@ -165,31 +161,30 @@ export default {
         const emptyWidgetNames = emptyWidgets.join(', ');
         showAlert(`The following attributes are empty: ${emptyWidgetNames}. Please fill them in.`);
         return; // Exit the function if any widget is empty
-    }
+ }
 
     try {
         if (Calibration.selectedOptionValue === "Yes") {
             await Calibration_PS.run();
-        } else if (Calibration.selectedOptionValue === "No") {
+ } else if (Calibration.selectedOptionValue === "No") {
             await PS_Scorecard.run();
-        }
+ }
         await Send_to_agent_passed.run();
         await QAED.run();
         await Channel.clean();
         await Channel.reset();
         await empty.run();
         await get_T2_PS.run();
-    } catch (error) {
+ } catch (error) {
         console.error('An error occurred:', error);
-    }
+ }
 },
-
 
 	clean: function(){
 		resetWidget(Text119.setText(""));
 		resetWidget(Input1.setValue(""));
 		resetWidget(Input4.setValue(""));
-	},
+ },
 
 	reset: function () {
 		resetWidget("Text5", true);
@@ -200,38 +195,38 @@ export default {
 		User_details.clear();
 		Input4.setValue("");
 		Calibration.setData("Null");
-	},
+ },
 
 	resetModal: async function(){
 		await Channel.reset();
 		await closeModal("Modal1", true);
-	},
+ },
 	search: async function(){
 		await Kustomer_Message.run();
 		await User_details.run();
-	},
+ },
 	logOut: () => {
 		removeValue("role");
 		removeValue('login_token');
 		navigateTo('Login_Modern');
-	},
+ },
 
 	skip_empty: function(){
 		if(!Text119Copy.text){
 			showAlert("Please Get Case first to continue !")
-		}else{
+ }else{
 			showModal('Modal2');
-		}
-	},
+ }
+ },
 	skip: async function (){
 		if(!Text119Copy.text){
 			showAlert("Please Add Skip Reason to continue !")	
-		}else{
+ }else{
 			resetWidget('Input19')
 			closeModal(Modal2);
 			await Skip.run();
 			get_T2_PS.run();
 			await Kustomer_Message.run();
-		}
-	}
+ }
+ }
 }

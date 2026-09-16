@@ -11,44 +11,40 @@ export default {
 
         const formattedThursday = thursdayDate.toISOString().slice(0, 10);
         return formattedThursday;
-    },
+ },
 
 	storeConversationID: function(){
 		const conId = Input19.text;
 		storeValue('calibration', conId);
-	},
-
-
+ },
 
 	coaching: async function(){
 		if(Checkbox1.isChecked){
 			await	Text1111.setText("true");
 			await Coaching_T1.run();
-		} else if (!Checkbox1.isChecked){
+ } else if (!Checkbox1.isChecked){
 			await Text1111.setText("false");
 			await Coaching_T1.run();
-		}
-	},
+ }
+ },
 	coachingOS: async function(){
 		if(Checkbox1Copy.isChecked){
 			await	Text1111Copy.setText("true");
 			await Coaching_T2OS.run();
-		} else if (!Checkbox1.isChecked){
+ } else if (!Checkbox1.isChecked){
 			await Text1111Copy.setText("false");
 			await Coaching_T2OS.run();
-		}
-	},
+ }
+ },
 	coachingPS: async function(){
 		if(Checkbox1CopyCopy.isChecked){
 			await	Text1111CopyCopy.setText("true");
 			await Coaching_T2PS.run();
-		} else if (!Checkbox1CopyCopy.isChecked){
+ } else if (!Checkbox1CopyCopy.isChecked){
 			await Text1111CopyCopy.setText("false");
 			await Coaching_T2PS.run();
-		}
-	},
-
-
+ }
+ },
 
 	all_apis: async function(){
 		await my_figures.run();
@@ -57,39 +53,38 @@ export default {
 		my_performance.my_search_T1();
 		my_performance.my_search_OS();
 		my_performance.my_search_PS();
-	},
+ },
 	showdelete: function(){
 		Button2CopyCopy.setVisibility(true);
 		Button2Copy1.setVisibility(true);
-	},
+ },
 	hidedelete: function(){
 		Button2CopyCopy.setVisibility(false);
 		Button2Copy1.setVisibility(false);
-	},
+ },
 	showdeleteOS: function(){
 		Button2CopyCopyCopy.setVisibility(true);
 		Button2Copy1Copy.setVisibility(true);
-	},
+ },
 	hidedeleteOS: function(){
 		Button2CopyCopyCopy.setVisibility(false);
 		Button2Copy1Copy.setVisibility(false);
-	},
+ },
 	showdeletePS: function(){
 		Button2CopyCopyCopyCopy.setVisibility(true);
 		Button2Copy1CopyCopy.setVisibility(true);
-	},
+ },
 	hidedeletePS: function(){
 		Button2Copy1CopyCopy.setVisibility(false);
 		Button2CopyCopyCopyCopy.setVisibility(false);
-	},
+ },
 	datepicker: function(){
 		const date = new Date();
 		let currentDay= String(date.getDate()).padStart(2, '0');
 		let currentMonth = String(date.getMonth()+1).padStart(2,"0");
 		let currentYear = date.getFullYear();
 		let currentDate = `${currentDay}-${currentMonth}-${currentYear}`;
-		console.log("The current date is " + currentDate); 
-	},
+ },
 	datepickermonday: function(){
 		const date = new Date();
 		const currentDay = date.getDay();
@@ -100,7 +95,7 @@ export default {
 		const currentDayFormatted = String(date.getDate()).padStart(2, '0');
 		const lastMondayDate = `${currentYear}-${currentMonth}-${currentDayFormatted}`;
 		return lastMondayDate;
-	},
+ },
 	my_search_OS: async function() {
 		const responseData = my_figuresCopy.data;
 		let sum = 0;
@@ -111,15 +106,14 @@ export default {
 			if (!isNaN(finalScore)) {
 				sum += finalScore;
 				count++;
-			}
-		}
+ }
+ }
 		let averageScore = 0;
 		if (count > 0) {
 			averageScore = (sum / count).toFixed(0); // Rounded to 2 decimal places
-		}
-		console.log("Average Score:", averageScore);
+ }
 		return averageScore + '%';
-	},
+ },
 	my_search_T1: async function() {
 		const responseData = my_figures.data;
 		let sum = 0;
@@ -130,15 +124,14 @@ export default {
 			if (!isNaN(finalScore)) {
 				sum += finalScore;
 				count++;
-			}
-		}
+ }
+ }
 		let averageScore = 0;
 		if (count > 0) {
 			averageScore = (sum / count).toFixed(0); // Rounded to 2 decimal places
-		}
-		console.log("Average Score:", averageScore);
+ }
 		return averageScore + '%';
-	},
+ },
 	my_search_PS: async function() {
 		const responseData = my_figuresTech.data;
 		let sum = 0;
@@ -149,15 +142,14 @@ export default {
 			if (!isNaN(finalScore)) {
 				sum += finalScore;
 				count++;
-			}
-		}
+ }
+ }
 		let averageScore = 0;
 		if (count > 0) {
 			averageScore = (sum / count).toFixed(0); // Rounded to 2 decimal places
-		}
-		console.log("Average Score:", averageScore);
+ }
 		return averageScore + '%';
-	},
+ },
 	edit: function (){
 		Text119Copy3.setVisibility(true);
 		Text119Copy2.setVisibility(true);
@@ -194,7 +186,7 @@ export default {
 		Input18Copy.setDisabled(false);
 		Input16CopyCopy.setDisabled(false);
 
-	},
+ },
 	discard: function () {
 		Text119Copy3.setVisibility(false);
 		Text119Copy2.setVisibility(false);
@@ -230,7 +222,7 @@ export default {
 		Input16CopyCopy.setDisabled(true);
 		Introduction.setDisabled(true);
 
-	},
+ },
 	calculateTotal: function () {
 		const group1 = [Introduction.selectedOptionValue, RadioGroup2.selectedOptionValue, RadioGroup14.selectedOptionValue];
 		const group2 = [RadioGroup5.selectedOptionValue, RadioGroup8.selectedOptionValue,  RadioGroup4.selectedOptionValue];
@@ -243,10 +235,10 @@ export default {
 		const valuesAssignedg4 = group4.map(value => {
 			if (value === "Yes" || value === "N/A") {
 				return 10;
-			} else {
+ } else {
 				return 0;
-			}
-		});
+ }
+ });
 		const totalg1 = valuesAssignedg1.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg2 = valuesAssignedg2.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg3 = valuesAssignedg3.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
@@ -256,10 +248,10 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 	calculateTotalOS: function () {
 		const group1 = [];
 
@@ -275,10 +267,10 @@ export default {
 		const valuesAssignedg4 = group4.map(value => {
 			if (value === "Yes" || value === "N/A") {
 				return 15;
-			} else {
+ } else {
 				return 0;
-			}
-		});
+ }
+ });
 		const totalg1 = valuesAssignedg1.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg2 = valuesAssignedg2.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg3 = valuesAssignedg3.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
@@ -288,10 +280,10 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 	editOS: function(){
 		Button2CopyCopy1.setVisibility(true);
 		Button2Copy2.setVisibility(true);
@@ -321,7 +313,7 @@ export default {
 		Documentation_C.setDisabled(false);
 		Workflow_C.setDisabled(false);
 		Engagement_C.setDisabled(false);
-	},
+ },
 	discardOS: function(){
 		Button2CopyCopy1.setVisibility(false);
 		Button2Copy2.setVisibility(false);
@@ -352,7 +344,7 @@ export default {
 		Workflow_C.setDisabled(true);
 		Engagement_C.setDisabled(true);
 
-	},
+ },
 	calculateTotalPS: function () {
 		const group1 = [RadioGroup1Copy1.selectedOptionValue, RadioGroup3Copy1.selectedOptionValue];
 		const group2 = [RadioGroup8Copy1.selectedOptionValue, RadioGroup13Copy1.selectedOptionValue, RadioGroup2Copy1.selectedOptionValue];
@@ -372,10 +364,10 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 	editPS: function() {
 		Text119Copy2CopyCopy.setVisibility(true);
 		Text119Copy3CopyCopy.setVisibility(true);
@@ -405,7 +397,7 @@ export default {
 		Input15Copy1.setDisabled(false);
 		RadioGroup10TempoValuesCopy1.setDisabled(false);
 		Input14Copy1.setDisabled(false);
-	},
+ },
 
 	discardPS: function() {
 		Text119Copy2CopyCopy.setVisibility(false);
@@ -436,7 +428,7 @@ export default {
 		Input15Copy1.setDisabled(true);
 		RadioGroup10TempoValuesCopy1.setDisabled(true);
 		Input14Copy1.setDisabled(true);
-	},
+ },
 
 }
 

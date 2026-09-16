@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales / Retention</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="global-theme.css" />
+  <style id="agent-os-styles">
+    .page-content { padding: 24px; }
+    .scorecard-header { font-size: 28px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; }
+    .scorecard-subtitle { color: var(--text-secondary); margin-bottom: 16px; }
+    .recent-table { width: 100%; border-collapse: collapse; }
+    .recent-table thead th { text-align: left; padding: 10px 12px; font-weight: 700; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+    .recent-table tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+    .recent-table tbody tr:hover { background: var(--bg-nav-item-hover); }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border-color); }
+    .status-yes { background: #eaffea; color: #166534; border-color: #86efac; }
+    .status-no { background: #fff7ed; color: #7c2d12; border-color: #fdba74; }
+    .attr-card { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; background: var(--bg-card, #fff); }
+    .attr-head { display: flex; align-items: center; justify-content: space-between; }
+    .attr-label { font-weight: 700; color: var(--text-primary); }
+    .score-badge { padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border-color); font-weight: 600; }
+    .score-good { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+    .score-zero { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .attr-comment { margin-top: 6px; color: var(--text-secondary); white-space: pre-wrap; }
+    .appeal-item { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; }
+    .appeal-item label { font-weight: 600; }
+    .appeal-item textarea { width: 100%; margin-top: 8px; }
+    /* Modal */
+    #agentPsModal { backdrop-filter: blur(2px); }
+    #agentPsModal .global-btn { min-height: 36px; }
+    /* Attribute layout styling */
+    .attr-row { display:grid; grid-template-columns: 1fr auto; gap:12px; border:1px solid var(--border-color); border-radius:12px; padding:12px; background: var(--bg-card, #fff); }
+    .attr-title { display:block; }
+    .attr-name { font-weight:800; font-size:18px; color: var(--text-primary); }
+    .attr-desc { margin-top:6px; color: var(--text-secondary); white-space: pre-wrap; }
+    .attr-controls { display:flex; align-items:center; gap:10px; }
+    .radio-pill { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border-color); border-radius:999px; padding:6px 12px; cursor:default; background: var(--bg-nav-item, #fff); }
+    .radio-pill input { accent-color: #7c3aed; }
+    .radio-pill.is-selected { border-color: #7c3aed; background: var(--bg-nav-item-hover); color: var(--text-primary); box-shadow: 0 0 0 2px rgba(124,58,237,0.25); }
+    .radio-pill.is-selected span { font-weight:700; }
+    .attr-score { align-self:center; font-weight:800; color: var(--text-primary); }
+    #agentPsAttributes .attr-score { background: transparent !important; border-color: transparent !important; color: var(--text-primary) !important; }
+    #agentPsAttributes .score-good, #agentPsAttributes .score-zero { background: transparent !important; border-color: transparent !important; }
+    /* Appeal redesigned */
+    .appeal-group { border:1px solid var(--border-color); border-radius:12px; padding:10px; background: var(--bg-card, #fff); }
+    .appeal-group-title { font-weight:800; font-size:16px; margin-bottom:6px; color: var(--text-primary); }
+    .appeal-list { display:flex; flex-direction:column; gap:10px; }
+    .appeal-item { display:grid; grid-template-columns: 1fr auto; gap:12px; border:1px solid var(--border-color); border-radius:10px; padding:10px; background: var(--bg-card, #fff); }
+    .appeal-item .attr-name { font-weight:700; }
+    .appeal-actions { display:flex; align-items:center; gap:8px; margin-top:6px; }
+    .checkbox-pill { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border-color); border-radius:999px; padding:6px 12px; background: var(--bg-nav-item, #fff); }
+    .checkbox-pill input { accent-color:#7c3aed; }
+    .appeal-item textarea { width:100%; border:1px solid var(--border-color); border-radius:8px; padding:8px; background: var(--bg-card, #111); color: var(--text-primary); caret-color: var(--text-primary); }
+    .appeal-item textarea::placeholder { color: var(--text-secondary); opacity: 1; }
+    .appeal-submit-bar { position: sticky; bottom: 0; display:flex; justify-content:flex-end; gap:8px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color); background: var(--bg-card, #fff); }
+    /* Right panel lock and banner */
+    .locked-panel { opacity: 0.55; pointer-events: none; }
+    .agent-banner { display:none; padding:6px 10px; margin:6px 12px 0; border-radius:8px; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-weight:600; }
+    /* App-styled alerts */
+    .app-alert-tray { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:100005; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+    .app-alert { min-width:280px; max-width:720px; background: var(--bg-card); color: var(--text-primary); border:1px solid var(--border-color); box-shadow: 0 12px 28px rgba(0,0,0,0.25); border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px; pointer-events:auto; }
+    .app-alert .alert-title { font-weight:800; }
+    .app-alert .alert-msg { color: var(--text-secondary); }
+    .app-alert.success { border-color:#86efac; }
+    .app-alert.error { border-color:#fca5a5; }
+    .app-alert.warning { border-color:#fde68a; }
+    /* Date range inline layout */
+    .compact-grid { display:flex; align-items:center; gap:12px; flex-wrap:nowrap; }
+    .compact-grid .field { display:flex; align-items:center; gap:8px; margin:0; }
+    .compact-grid .field:first-child { flex:1 1 auto; }
+    .compact-grid .field:last-child { flex:0 0 auto; }
+    .date-range { display:flex; align-items:center; gap:8px; }
+    .calendar-icon { display:inline-block; line-height:1; cursor:pointer; pointer-events:auto; }
+    .rp-label-collapsed { display:inline-block; font-weight:800; color: var(--text-primary); }
+  </style>
+  <style id="agent-os-dark-fixes">
+    #agentPsModal { z-index: 100001 !important; background: rgba(0,0,0,0.6) !important; }
+    .attr-desc { color: var(--text-primary) !important; }
+    .attr-comment { color: var(--text-primary) !important; }
+  </style>
+  <style id="agent-os-range-picker">
+    .range-picker-modal { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:100004; }
+    .range-picker-modal .rp-content { background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border-color); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.35); }
+    .rp-title { font-weight:800; margin-bottom:8px; color:var(--text-primary); }
+    .rp-controls { display:flex; align-items:center; gap:10px; }
+    .rp-col { border:1px solid var(--border-color); border-radius:12px; padding:10px; background: var(--bg-card); }
+    .rp-header-row { display:flex; gap:8px; margin-bottom:8px; }
+    .rp-header-row select { background: var(--bg-card); color: var(--text-primary); border:1px solid var(--border-color); border-radius:8px; padding:4px 6px; }
+    .rp-weekdays { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; font-size:12px; color:var(--text-secondary); }
+    .rp-days { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; }
+    .rp-day { text-align:center; padding:8px 0; border-radius:8px; cursor:pointer; background: var(--bg-nav-item); color: var(--text-primary); border:1px solid var(--border-color); }
+    .rp-day:hover { box-shadow: 0 0 0 2px rgba(124,58,237,0.35); }
+    .rp-day-out { opacity:0.35; }
+    .rp-day-selected { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+    .rp-day-inrange { background:rgba(124,58,237,0.18); color:var(--text-primary); }
+    .rp-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="page-content">
+    <div class="scorecard-header">Sales / Retention</div>
+    <div class="scorecard-subtitle">Audits performed by coaches on your conversations</div>
+
+    <div class="global-card" style="margin-top:12px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start;">
+      <div>
+        <div class="global-card-title">Select Criteria</div>
+        <div class="compact-grid">
+          <div class="field">
+            <label>Date Range</label>
+            <div class="date-range">
+              <span id="calendarIconAudits" class="calendar-icon" title="Pick Start then End">📅</span>
+              <input id="dateRangeSingleAudits" type="date" style="display:none;" />
+              <input id="dateFromAudits" type="hidden" />
+              <input id="dateToAudits" type="hidden" />
+              <div class="date-status" style="display:none;">
+                <span id="dateFromDisplayAudits" class="date-display">From: —</span>
+                <span id="dateToDisplayAudits" class="date-display">To: —</span>
+              </div>
+              <div id="rpCollapsedLabelAudits" class="rp-label-collapsed" style="margin-left:8px;"></div>
+            </div>
+          </div>
+          <div class="field">
+            <button id="insightsApplyBtn" type="button" class="global-btn">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div>
+
+        <div class="global-card-subtitle">Average score and audits count</div>
+        <div id="insightsMetrics" style="display:flex; gap:12px; margin-top:8px;">
+          <div style="flex:1; border:1px solid var(--border-color); border-radius:10px; padding:10px;">
+            <div style="color:var(--text-secondary);">Average Score</div>
+            <div id="insightsAvgScore" style="font-weight:800; font-size:18px;">—</div>
+          </div>
+          <div style="flex:1; border:1px solid var(--border-color); border-radius:10px; padding:10px;">
+            <div style="color:var(--text-secondary);">Audits Count</div>
+            <div id="insightsCount" style="font-weight:800; font-size:18px;">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="global-card" style="margin-top:16px;">
+      <div class="global-card-title">Audits</div>
+      <div class="global-card-subtitle">Latest 50 audits</div>
+      <table class="recent-table" id="agentPsAuditsTable">
+        <thead>
+          <tr>
+            <th>id</th>
+            <th>Conversation ID</th>
+            <th>Agent</th>
+            <th>Total</th>
+            <th>Created</th>
+            <th>Acknowledged</th>
+            <th>Appealed</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="agentPsModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:9999;">
+      <div class="agent-modal" style="background: var(--bg-card, #fff); color: var(--text-primary, #111827); width:96%; max-width:1160px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.35); overflow:hidden; display:flex; flex-direction:column; max-height:90vh;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid #e5e7eb;">
+          <div style="font-weight:600;">Audit Details</div>
+          <button id="agentPsCloseBtn" type="button" class="global-btn">Close</button>
+        </div>
+        <div id="agentPsBanner" class="agent-banner"></div>
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:12px; padding:12px; flex:1 1 auto; overflow:hidden; align-items:stretch;">
+          <div style="min-height:420px; border:1px solid var(--border-color); border-radius:10px; padding:12px; overflow:auto; background: var(--bg-card, #fff);">
+            <div id="agentPsMeta"></div>
+            <div id="agentPsAttributes" style="margin-top:12px;"></div>
+          </div>
+          <div id="agentPsRightPanel" style="display:flex; flex-direction:column; gap:10px; height:100%; border:1px solid var(--border-color); border-radius:10px; padding:12px; background: var(--bg-card, #fff); overflow:auto;">
+            <div style="display:flex; gap:8px;">
+              <button id="agentPsAckBtn" type="button" class="global-btn">Acknowledge</button>
+              <button id="agentPsAppealBtn" type="button" class="global-btn global-btn-secondary">Appeal</button>
+            </div>
+            <div id="agentPsAppealForm" style="display:none; margin-top:8px; border:1px solid var(--border-color); border-radius:10px; padding:10px; background: var(--bg-card, #fff); flex:1 1 auto; overflow:auto; overscroll-behavior: contain;">
+              <div style="font-weight:600; margin-bottom:6px;">Select attributes to appeal and add comments</div>
+              <div id="agentPsAppealList" style="display:flex; flex-direction:column; gap:8px; flex:1 1 auto; overflow:auto; overscroll-behavior: contain;"></div>
+              <div class="appeal-submit-bar">
+                <button id="agentPsAppealSubmitBtn" type="button" class="global-btn">Submit Appeal</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Range Picker Modal (audits) -->
+  <div id="rangePickerModalAudits" class="range-picker-modal" style="display:none;">
+    <div class="rp-content">
+      <div id="rpTitleAudits" class="rp-title">Select date range:</div>
+      <div class="rp-controls">
+        <button id="rpPrevAudits" class="global-btn btn-slim" type="button">‹</button>
+        <div class="rp-col">
+          <div class="rp-header-row">
+            <select id="rpMonthLeftAudits"></select>
+            <select id="rpYearLeftAudits"></select>
+          </div>
+          <div class="rp-weekdays"><div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div></div>
+          <div id="rpDaysLeftAudits" class="rp-days"></div>
+        </div>
+        <div class="rp-col">
+          <div class="rp-header-row">
+            <select id="rpMonthRightAudits"></select>
+            <select id="rpYearRightAudits"></select>
+          </div>
+          <div class="rp-weekdays"><div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div></div>
+          <div id="rpDaysRightAudits" class="rp-days"></div>
+        </div>
+        <button id="rpNextAudits" class="global-btn btn-slim" type="button">›</button>
+      </div>
+      <div class="rp-footer">
+        <button id="rpCancelAudits" class="global-btn btn-slim" type="button">Cancel</button>
+        <button id="rpDoneAudits" class="global-btn btn-slim" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appealPreviewOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:100002;">
+    <div style="background: var(--bg-card); width:96%; max-width:1000px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.35); overflow:hidden; display:flex; flex-direction:column; max-height:88vh;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--border-color);">
+        <div style="font-weight:600;">Appeal Email Preview</div>
+        <div style="display:flex; gap:8px;">
+          <button id="appealPreviewSendBtn" type="button" class="global-btn">Send</button>
+          <button id="appealPreviewCancelBtn" type="button" class="global-btn global-btn-secondary">Cancel</button>
+        </div>
+      </div>
+      <iframe id="appealPreviewIframe" style="flex:1 1 auto; border:0; background:var(--bg-card);"></iframe>
+    </div>
+  </div>
+
+  <script src="global-navigation.js"></script>
+  <script src="sales-retention-audits.js?v=20260916-08"></script>
+  <div id="appAlertTray" class="app-alert-tray" aria-live="polite"></div>
+</body>
+</html>

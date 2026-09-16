@@ -2,19 +2,18 @@ export default {
 	abuse: function(){
 		const caseId = Text119.text;
 		storeValue("caseMXT1", caseId);
-	},
+ },
 
 	onUserRefresh: function () {
-		console.log("Page refreshed by the user!");
 		Text119.setText(appsmith.store.caseMXT1);
 		showAlert('You have refreshed the page, Please complete the current assigned conversartion !')
 		Kustomer_Message.run();
-	},
+ },
 
 	f_order: async function () {
 		if(Text119.text.length > 1){
 			showAlert("Please submit the current Case before asking for a new one !")	
-		} else {
+ } else {
 			const emptyWidgets = [];
 			if(agent_email.text === "") emptyWidgets.push("Choose Agent");
 			if (Select2.selectedOptionLabel === "") emptyWidgets.push("Select Team");
@@ -23,35 +22,33 @@ export default {
 			if (emptyWidgets.length > 0) {
 				const emptyWidgetNames = emptyWidgets.join(', ');
 				showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
-			} else {
+ } else {
 				try {
 					await get_mx_con.run();
 					await assigned.run();
 					await Kustomer_Message.run();
 					await Channel.abuse();
-				} catch (error) {
+ } catch (error) {
 					console.error('An error occurred during execution:', error);
-				}
-			}
-		}
+ }
+ }
+ }
 		Channel.onUserRefresh();
-	},
-
+ },
 
 	url: function () {
 		var txt1 = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/0/0/';
 		var txt2 = "conversation/";
 		var txt4 = Con_ID.text;
 		var combinedText = txt1.concat(txt2,txt4);
-		console.log(combinedText);
 		return Input4 = combinedText;
-	},
+ },
 
 	cid: function() {
 		if (Input1.value !== null) {
 			Kustomer_Message.run();
-		}
-	},
+ }
+ },
 
 	// 
 	// preview: function() {  
@@ -120,10 +117,10 @@ export default {
 		const valuesAssignedg4 = group4.map(value => {
 			if (value === "Yes" || value === "N/A") {
 				return 10;
-			} else {
+ } else {
 				return 0;
-			}
-		});
+ }
+ });
 		// Assigning values based on "Yes" and "No"
 		// const valuesAssignedg1 = group1.map(value => value === "Yes" ? 5 : 0);
 		// const valuesAssignedg2 = group2.map(value => value === "Yes" ? 15 : 0);
@@ -139,17 +136,17 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 
 	pass_fail: function () {
 		const text = Text4.text;
 		const parsed = typeof text === 'string' ? parseFloat(text.replace('%','')) : Number(text);
 		const score = isNaN(parsed) ? 0 : parsed;
 		return (score === 0 || score < 90) ? 'Failed' : 'Passed';
-	},
+ },
 
 	// submit: async function () {
 	// try {
@@ -188,7 +185,7 @@ export default {
 		if (emptyWidgets.length > 0) {
 			const emptyWidgetNames = emptyWidgets.join(', ');
 			showAlert(`The following attributes are empty: ${emptyWidgetNames}. Please fill them in.`);
-		} else {
+ } else {
 			try {
 				await Chat_Scorecard.run();
 				await Send_to_agent_passed.run();
@@ -196,11 +193,11 @@ export default {
 				await Channel.clean();
 				await Channel.reset();
 				await empty.run();
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred:', error);
-			}
-		}
-	},
+ }
+ }
+ },
 
 	reset: function () {
 		resetWidget("Text5", true);
@@ -209,7 +206,7 @@ export default {
 		resetWidget("MX_T1", true);
 		resetWidget("Container4", true);
 
-	},
+ },
 
 	// resetModal: async function(){
 	// await Channel.reset();
@@ -226,7 +223,7 @@ export default {
 		Object.keys(appsmith.store)
 			.map(key => storeValue(key, undefined));
 		navigateTo('Login_Modern')
-	},
+ },
 
 	// extractMessages: function () {
 	// // Example usage with your API response
@@ -287,8 +284,8 @@ export default {
 			if (count <= 0) {
 				clearInterval(timer);
 				// If you want to perform some action when the timer reaches 0, you can do it here.
-			}
-		}
+ }
+ }
 
 		// Set up the interval for regular updates and condition checks every 60 seconds
 		timer = setInterval(() => {
@@ -298,39 +295,39 @@ export default {
 			if (!appsmith.store.access_token || count % 60 === 0) {
 				if (!appsmith.store.access_token) {
 					Channel.logOut();
-				}
-			}
-		}, 1000);
+ }
+ }
+ }, 1000);
 
 		return timer;
-	},
+ },
 
 	deleteStore  ()  {
 		Object.keys(appsmith.store)
 			.map(key => storeValue(key, undefined));
-	},
+ },
 	clean: function(){
 		resetWidget(Text119.setText(""));
 		resetWidget(Input1.setValue(""));
 		resetWidget(Input4.setValue(""));
-	},
+ },
 	skip_empty: function(){
 		if(!Text119.text){
 			showAlert("Please Get Case first to continue !")
-		}else{
+ }else{
 			showModal('Modal2');
-		}
-	},
+ }
+ },
 
 	skip: async function (){
 		if(!Input19.text){
 			showAlert("Please Add Skip Reason to continue !")
-		}else{
+ }else{
 			resetWidget('Input19')
 			closeModal(Modal2);
 			await Skip.run();
 			await get_mx_con.run();
 			await Kustomer_Message.run();
-		}
-	}
+ }
+ }
 }

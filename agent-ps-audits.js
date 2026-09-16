@@ -18,12 +18,12 @@
       el.appendChild(msg);
       tray.appendChild(el);
       setTimeout(() => { try { el.remove(); } catch(_) {} }, 2200);
-    } catch(e) { console.log('[INFO]', message); }
-  }
+ } catch(e) {}
+ }
   // Provide a showAlert shim that uses the app-alert tray if not globally available
   if (typeof window !== 'undefined' && typeof window.showAlert !== 'function') {
     window.showAlert = (msg, opts) => createAppAlert(msg, opts);
-  }
+ }
   let psAttributes = [];
 
   async function loadDatabaseConfig() {
@@ -35,20 +35,20 @@
       config.apiKey = json.supabase.client_api_key;
       config.serviceKey = json.supabase.service_key || null;
       config.emailLogoUrl = (json.email && json.email.logo_url) || null;
-    } catch (e) { console.error('Failed to load database config', e); }
-  }
+ } catch (e) { console.error('Failed to load database config', e); }
+ }
   function authHeaders(opts = {}) {
     const useServiceKey = !!opts.useServiceKey;
     return {
       apikey: config.apiKey,
       Authorization: `Bearer ${useServiceKey ? config.serviceKey : config.apiKey}`
-    };
-  }
+ };
+ }
   function getLogoUrl() {
     try { if (typeof window !== 'undefined' && window.EMAIL_LOGO_URL) return String(window.EMAIL_LOGO_URL); } catch(e) {}
     try { if (config.emailLogoUrl) return String(config.emailLogoUrl); } catch(e) {}
     return null;
-  }
+ }
   async function sendEmail({ html, to, subject, cc, bcc }) {
     const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
     const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
@@ -56,8 +56,8 @@
       const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to, subject, html, cc, bcc }) });
       if (!res.ok) throw new Error(await res.text());
       return true;
-    } catch (e) { console.warn('sendEmail error:', e); return false; }
-  }
+ } catch (e) {  return false; }
+ }
   async function sendEmailSMTP({ html, to, cc = [], subject }) {
     const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
     const endpoint = isLocal ? 'http://localhost:8025/send-email' : '/api/send-email';
@@ -67,18 +67,18 @@
         port: 587,
         user: 'happio.softs@gmail.com',
         pass: 'yinyeqhnfihainsi'
-      },
+ },
       to,
       cc,
       subject,
       html
-    };
+ };
     try {
       const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
       return true;
-    } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
-  }
+ } catch (e) {  return false; }
+ }
   function buildEmailHTML(p, opts = {}) {
     const pill = (label, value) => `
       <div style="display:inline-flex; align-items:center; gap:6px; background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; font-size:12px; margin:4px 6px 0 0;">
@@ -96,7 +96,7 @@
         <div style="margin-top:8px;display:flex;flex-wrap:wrap;align-items:center;">${pill('Conversation', p.conversation_id)}${pill('Agent', p.agent_name)}${pill('Taker', p.taker_name)}${pill('Type', p.monitoring_type)}${pill('Score', p.final_score)}</div>
       </div>
     </body></html>`;
-  }
+ }
 
   function buildAppealEmailHTML({ caseId, conversationId, userName, items, scorecardName = 'Product Support' }) {
     const base = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/search/0/conversation/';
@@ -120,15 +120,15 @@
           ${agentBlock}
         </div>
       `;
-    }).join('');
+ }).join('');
     return `<!DOCTYPE html><html><head><meta charset="utf-8" />
       <style>
         :root {
           --bg: #ffffff; --text: #111827; --muted: #374151; --border: #e5e7eb; --accent: #7c3aed; --pill: #f3f4f6;
-        }
+ }
         @media (prefers-color-scheme: dark) {
           :root { --bg: #0f172a; --text: #e5e7eb; --muted: #cbd5e1; --border: #334155; --pill: #1f2937; }
-        }
+ }
         body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
         .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
         .header { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-radius:12px; background: linear-gradient(135deg, rgba(124,58,237,0.07), rgba(59,130,246,0.06)); border:1px solid var(--border); }
@@ -159,7 +159,7 @@
         </div>
       </div>
     </body></html>`;
-  }
+ }
 
   // Helper to fetch coach comment by label from currentRow
   function getCoachCommentByLabel(label) {
@@ -177,8 +177,8 @@
       ];
       for (const k of candidates) { if (currentRow && currentRow[k]) { c = currentRow[k]; break; } }
       return c || '';
-    } catch(_) { return ''; }
-  }
+ } catch(_) { return ''; }
+ }
 
   async function fetchPsAttributes() {
     try {
@@ -186,9 +186,8 @@
       let res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (!res.ok) throw new Error(await res.text());
       psAttributes = await res.json();
-      console.log('DEBUG Agent PS: loaded ps_attributes=', (psAttributes||[]).length);
-    } catch (e) { console.warn('Failed to fetch ps_attributes', e); psAttributes = []; }
-  }
+ } catch (e) {  psAttributes = []; }
+ }
 
   const ATTR_VALUE_KEYS = {
     'Interaction Protocols': 'Interaction_Protocols',
@@ -206,7 +205,7 @@
     'Documentation': 'documentations',
     'CRM Updates': 'crm_update',
     'Workflow': 'workflow'
-  };
+ };
   const DISPLAY_ORDER = ['Interaction Protocols','Understanding','Responsiveness','Effectiveness','Soft Skills','Language','FCR','Ownership','Product Awareness','Tempo Values','Process Awareness','Verification','Documentation','CRM Updates','Workflow'];
   // New PS UI mapping (matches screenshot groups)
   const NEW_ATTR_MAP = [
@@ -242,11 +241,10 @@
         const c2 = 'comments_' + remainder;
         const comment = row[c1] || row[c2] || '';
         attrs.push({ key: k, label, score, comment, commentKey: c1 });
-      }
-    });
-    console.log('DEBUG Agent PS: parsed attributes count=', attrs.length);
+ }
+ });
     return attrs;
-  }
+ }
 
   let currentRow = null;
   let currentAttrs = [];
@@ -255,15 +253,14 @@
     try {
       const userEmail = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('user_email') || localStorage.getItem('email') || '';
       if (window.location.hash && window.location.hash.includes('type=recovery')) {
-        console.log('Recovery flow detected — skipping auth redirect');
-      } else if (!userEmail) { safeAlert('Login required'); window.location.href = '/login.html'; return; }
+ } else if (!userEmail) { safeAlert('Login required'); window.location.href = '/login.html'; return; }
       const url = `${config.restUrl}/t2_ps_scorecards?select=*&agent_email=eq.${encodeURIComponent(userEmail)}&order=created_at.desc&limit=50`;
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) { res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) }); if (!res.ok) throw new Error(await res.text()); }
       const rows = await res.json();
       renderAgentAudits(rows || []);
-    } catch (e) { console.error('Failed to fetch agent audits', e); }
-  }
+ } catch (e) { console.error('Failed to fetch agent audits', e); }
+ }
 
   async function fetchAuditsByRange(startISO, endISO) {
     try {
@@ -274,29 +271,29 @@
       if (!res.ok) { res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) }); if (!res.ok) throw new Error(await res.text()); }
       const rows = await res.json();
       return rows || [];
-    } catch (e) { console.error('Failed to fetch ranged audits', e); return []; }
-  }
+ } catch (e) { console.error('Failed to fetch ranged audits', e); return []; }
+ }
 
   function parseScoreNumber(finalScore) {
     if (finalScore == null) return NaN;
     const s = String(finalScore).trim();
     const n = parseFloat(s.replace('%',''));
     return Number.isFinite(n) ? n : NaN;
-  }
+ }
 
   function computeInsights(rows) {
     const nums = rows.map(r => parseScoreNumber(r.final_score)).filter(n => Number.isFinite(n));
     const count = rows.length;
     const avg = nums.length ? (nums.reduce((a,b)=>a+b,0) / nums.length) : 0;
     return { avgScore: Math.round(avg), count };
-  }
+ }
 
   function renderInsights({ avgScore, count }) {
     const avgEl = document.getElementById('insightsAvgScore');
     const cntEl = document.getElementById('insightsCount');
     if (avgEl) avgEl.textContent = `${avgScore}%`;
     if (cntEl) cntEl.textContent = String(count);
-  }
+ }
 
   async function applyInsights() {
     try {
@@ -311,8 +308,8 @@
       // Compute and render insights
       const stats = computeInsights(rows);
       renderInsights(stats);
-    } catch(e) { console.warn('applyInsights failed', e); }
-  }
+ } catch(e) {}
+ }
 
   function renderAgentAudits(rows) {
     const tbody = document.querySelector('#agentPsAuditsTable tbody');
@@ -335,8 +332,8 @@
       const btn = tr.querySelector('.viewAuditBtn');
       if (btn) btn.addEventListener('click', () => openAuditModal(r));
       tbody.appendChild(tr);
-    });
-  }
+ });
+ }
 
   async function openAuditModal(row) {
     try {
@@ -347,9 +344,8 @@
         const arr = await res.json();
         if (Array.isArray(arr) && arr.length > 0) { currentRow = arr[0]; }
         else { currentRow = row; }
-      } else { currentRow = row; }
-    } catch (e) { console.warn('Failed to load full audit row, using table row', e); currentRow = row; }
-    console.log('DEBUG Agent PS: row keys=', Object.keys(currentRow||{}));
+ } else { currentRow = row; }
+ } catch (e) {  currentRow = row; }
     currentAttrs = parseAttributesFromRow(currentRow);
     // Meta
     const meta = document.getElementById('agentPsMeta');
@@ -362,7 +358,7 @@
           <div><strong>Appealed:</strong> ${currentRow.appealed || 'No'}</div>
         </div>
       `;
-    }
+ }
     // Attributes list
     const container = document.getElementById('agentPsAttributes');
     if (container) {
@@ -372,7 +368,7 @@
       // Helpers to fetch Yes/No and comments with flexible fallbacks
       const getYesNo = (key) => {
         try { return (currentRow && key) ? (currentRow[key] || '') : ''; } catch(_) { return ''; }
-      };
+ };
       const getComment = (def) => {
         try {
           // Primary: com_* key used by PS page
@@ -388,8 +384,8 @@
           ];
           for (const k of candidates) { if (currentRow && currentRow[k]) { c = currentRow[k]; break; } }
           return c || '';
-        } catch(_) { return ''; }
-      };
+ } catch(_) { return ''; }
+ };
 
       NEW_ATTR_MAP.forEach(def => {
         const yesNo = getYesNo(def.valueKey);
@@ -398,7 +394,7 @@
         const score = meta && (meta.Score != null ? meta.Score : '');
         const comment = getComment(def);
         grouped[def.group].push({ label: def.label, yesNo, desc, score, comment });
-      });
+ });
       const sectionsHtml = NEW_GROUP_ORDER.map(group => {
         const items = grouped[group] || [];
         const rows = items.map(item => {
@@ -428,16 +424,16 @@
               <div class="${scoreClass}">${item.score || ''}</div>
             </div>
           `;
-        }).join('');
+ }).join('');
         return `
           <div class="global-card" style="padding:10px; margin-bottom:12px;">
             <div class="global-card-title">${group}</div>
             <div class="attributes-list" style="display:flex; flex-direction:column; gap:10px;">${rows}</div>
           </div>
         `;
-      }).join('');
+ }).join('');
       container.innerHTML = sectionsHtml;
-    }
+ }
     // Buttons state
     const ackBtn = document.getElementById('agentPsAckBtn');
     const appealBtn = document.getElementById('agentPsAppealBtn');
@@ -448,13 +444,13 @@
       const isAcked = (currentRow.agent_acknowledge || '').toString().toLowerCase() === 'yes';
       if (isAcked) { rightPanel.classList.add('locked-panel'); }
       else { rightPanel.classList.remove('locked-panel'); }
-    }
+ }
     const overlay = document.getElementById('agentPsModal');
     if (overlay) overlay.style.display = 'flex';
     try { document.body.style.overflow = 'hidden'; } catch(_) {}
     // Attributes now render from ps_attributes even if the scorecard row lacks Score_* keys,
     // so we no longer show a blank state here.
-  }
+ }
 
   async function acknowledgeAudit() {
     try {
@@ -477,8 +473,8 @@
       const appealForm = document.getElementById('agentPsAppealForm');
       if (appealForm) appealForm.style.display = 'none';
       await fetchAgentAudits();
-    } catch (e) { console.warn('acknowledge failed', e); safeAlert('Failed to acknowledge'); }
-  }
+ } catch (e) {  safeAlert('Failed to acknowledge'); }
+ }
 
   function startAppeal() {
     if (!currentRow) return;
@@ -495,7 +491,7 @@
         const score = (metaByLabel[label] && metaByLabel[label].Score != null) ? metaByLabel[label].Score : '';
         const key = 'Score_' + (def.valueKey || underscored);
         grouped[def.group].push({ label, key, score });
-      });
+ });
       const sectionsHtml = NEW_GROUP_ORDER.map(group => {
         const items = grouped[group] || [];
         const rows = items.map(it => {
@@ -513,17 +509,17 @@
               <div class="${scoreClass}">${it.score || ''}</div>
             </div>
           `;
-        }).join('');
+ }).join('');
         return `
           <div class="appeal-group">
             <div class="appeal-group-title">${group}</div>
             <div class="appeal-list">${rows}</div>
           </div>
         `;
-      }).join('');
+ }).join('');
       list.innerHTML = sectionsHtml;
-    }
-  }
+ }
+ }
 
   async function submitAppeal() {
     try {
@@ -538,7 +534,7 @@
         const ta = document.querySelector(`.appealAttrComment[data-key="${key}"]`);
         const val = (ta && ta.value ? ta.value.trim() : '');
         commentsMap[label] = val;
-      });
+ });
       // Compose appeal email HTML with button link
       const userName = (localStorage.getItem('loggedInUserName') || localStorage.getItem('userName') || '').trim() || 'User';
       const html = buildAppealEmailHTML({
@@ -547,7 +543,7 @@
         userName,
         items: Object.entries(commentsMap).map(([label, agentComment]) => ({ label, agentComment, coachComment: getCoachCommentByLabel(label) })),
         scorecardName: 'Product Support'
-      });
+ });
       const subject = `#${currentRow.id} Appeal Submitted by ${userName}`;
       // Send directly without preview
       const targetEmail = 'hebasobky@tempo.fit';
@@ -557,13 +553,12 @@
         if (!ok) {
           if (typeof showAlert === 'function') showAlert('Failed to send appeal email', { title: 'Appeal error', type: 'error' });
           else safeAlert('Failed to send appeal email');
-        } else {
+ } else {
           showAlert('Appeal Sent!', { title: 'Appeal sent', type: 'success' });
-        }
-      } catch(e) {
-        console.warn('SMTP send failed', e);
+ }
+ } catch(e) {
         showAlert('Failed to send appeal email', { title: 'Appeal error', type: 'error' });
-      }
+ }
       // Prepare combined comments (used in patch after sending)
       const combinedComments = Object.entries(commentsMap).map(([label, text]) => `${label}: ${text}`).join('\n');
       // Disable buttons, lock panel, and mark acknowledge=Yes along with appeal flags
@@ -572,8 +567,8 @@
         const body = { appealed: 'Yes', agent_appeal_comments: combinedComments, agent_acknowledge: 'Yes' };
         const headersService = Object.assign({ 'Content-Type': 'application/json' }, authHeaders({ useServiceKey: true }));
         let pRes = await fetch(patchUrl, { method: 'PATCH', headers: headersService, body: JSON.stringify(body) });
-        if (!pRes.ok) console.warn('Appeal patch failed:', await pRes.text());
-      } catch (pErr) { console.warn('Failed to mark appeal + acknowledge', pErr); }
+        if (!pRes.ok) {}
+      } catch (pErr) {}
       const ackBtnEl = document.getElementById('agentPsAckBtn');
       const appealBtnEl = document.getElementById('agentPsAppealBtn');
       if (ackBtnEl) ackBtnEl.disabled = true;
@@ -581,8 +576,8 @@
       const rightPanel2 = document.getElementById('agentPsRightPanel');
       if (rightPanel2) rightPanel2.classList.add('locked-panel');
       await fetchAgentAudits();
-    } catch (e) { console.warn('submit appeal failed', e); safeAlert('Failed to submit appeal'); }
-  }
+ } catch (e) {  safeAlert('Failed to submit appeal'); }
+ }
 
   async function initPage() {
     const getRole = () => (
@@ -618,7 +613,7 @@
       if (collapsed) collapsed.textContent = `${startStr} → ${endStr}`;
       const rows = await fetchAuditsByRange(`${startStr}T00:00:00Z`, `${endStr}T23:59:59Z`);
       renderInsights(computeInsights(rows));
-    } catch(e) { console.warn('init insights failed', e); }
+ } catch(e) {}
     const closeBtn = document.getElementById('agentPsCloseBtn');
     if (closeBtn) closeBtn.addEventListener('click', () => { const overlay = document.getElementById('agentPsModal'); if (overlay) overlay.style.display = 'none'; try { document.body.style.overflow = ''; } catch(_) {} });
     const ackBtn = document.getElementById('agentPsAckBtn');
@@ -659,7 +654,7 @@
       const days = []; let cur = new Date(start);
       for (let i=0;i<42;i++){ days.push(new Date(cur)); cur.setUTCDate(cur.getUTCDate()+1); }
       return days;
-    }
+ }
     function fillSelects(){
       const years = []; const y0 = anchor.getUTCFullYear(); for (let y=y0-3;y<=y0+3;y++) years.push(y);
       rpYearLeft.innerHTML = years.map(y=>`<option ${y===y0?'selected':''}>${y}</option>`).join('');
@@ -668,7 +663,7 @@
       rpMonthLeft.innerHTML = months.map((m,i)=>`<option value="${i}" ${i===anchor.getUTCMonth()?'selected':''}>${m}</option>`).join('');
       const nextMonth = (anchor.getUTCMonth()+1)%12;
       rpMonthRight.innerHTML = months.map((m,i)=>`<option value="${i}" ${i===nextMonth?'selected':''}>${m}</option>`).join('');
-    }
+ }
     function renderDays(){
       const yL = Number(rpYearLeft.value||anchor.getUTCFullYear());
       const mL = Number(rpMonthLeft.value||anchor.getUTCMonth());
@@ -684,13 +679,13 @@
         let inRange = false;
         if (startSel && endSel) {
           const t = d.getTime(); inRange = t>=startSel.getTime() && t<=endSel.getTime();
-        }
+ }
         const cls = ['rp-day'];
         if (!inMonth) cls.push('rp-day-out');
         if (isStart||isEnd) cls.push('rp-day-selected');
         else if (inRange) cls.push('rp-day-inrange');
         return `<div class="${cls.join(' ')}" data-date="${s}">${d.getUTCDate()}</div>`;
-      }
+ }
       rpDaysLeft.innerHTML = leftDays.map(cellHTML).join('');
       rpDaysRight.innerHTML = rightDays.map(cellHTML).join('');
       [...rpDaysLeft.querySelectorAll('.rp-day'), ...rpDaysRight.querySelectorAll('.rp-day')].forEach(el=>{
@@ -699,14 +694,14 @@
           if (!startSel || (startSel && endSel)) { startSel = d; endSel = null; }
           else { if (d.getTime()<startSel.getTime()) { endSel=startSel; startSel=d; } else { endSel=d; } }
           renderDays();
-        });
-      });
-    }
+ });
+ });
+ }
     function shiftAnchor(deltaMonths){
       const y = anchor.getUTCFullYear(); const m = anchor.getUTCMonth();
       const nm = m+deltaMonths; const ny = y + Math.floor(nm/12); const fm = ((nm%12)+12)%12;
       anchor = new Date(Date.UTC(ny,fm,1)); fillSelects(); renderDays();
-    }
+ }
     if (calIcon) calIcon.addEventListener('click', ()=>{ if (modal) modal.style.display='flex'; fillSelects(); renderDays(); });
     if (rpPrev) rpPrev.addEventListener('click', ()=>shiftAnchor(-1));
     if (rpNext) rpNext.addEventListener('click', ()=>shiftAnchor(1));
@@ -717,12 +712,12 @@
       if (fromEl) fromEl.value = startStr; if (toEl) toEl.value = endStr;
       if (collapsed) collapsed.textContent = `${startStr} → ${endStr}`;
       if (modal) modal.style.display='none';
-    });
-  }
+ });
+ }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPage);
-  } else {
+ } else {
     initPage();
-  }
+ }
 })();

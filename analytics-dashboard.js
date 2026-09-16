@@ -6,9 +6,8 @@
   if (!token) {
     // If not logged in, redirect to login page
     // This ensures the global navigation (which requires login) will show up after they log in
-    console.log('No login token found, redirecting to login...');
     window.location.href = 'login.html';
-  }
+ }
 
   const config = { supabaseUrl: null, restUrl: null, apiKey: null, serviceKey: null };
   const state = { 
@@ -23,7 +22,7 @@
     t2osAttributes: [],
     salesRetAttributes: [],
     certificationAttributes: []
-  };
+ };
 
   // --- 1. Config Loading ---
   async function loadDatabaseConfig() {
@@ -35,7 +34,6 @@
       config.apiKey = json.supabase.client_api_key;
       config.serviceKey = json.supabase.service_key || null;
       state.configLoaded = true;
-      console.log('Config loaded');
       
       // Fetch Attributes metadata
       fetchSmsAttributes();
@@ -47,11 +45,11 @@
 
       initRangePicker();
       initTableControls();
-    } catch (e) { 
+ } catch (e) { 
       console.error('Failed to load database config', e);
       showToast('Failed to load database configuration. Please refresh.', 'error');
-    }
-  }
+ }
+ }
 
   async function fetchSmsAttributes() {
     try {
@@ -59,11 +57,10 @@
       const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (res.ok) {
         state.smsAttributes = await res.json();
-      }
-    } catch (e) {
-      console.warn('Failed to fetch SMS attributes', e);
-    }
-  }
+ }
+ } catch (e) {
+ }
+ }
 
   async function fetchSocialAttributes() {
     try {
@@ -71,11 +68,10 @@
       const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (res.ok) {
         state.socialAttributes = await res.json();
-      }
-    } catch (e) {
-      console.warn('Failed to fetch Social attributes', e);
-    }
-  }
+ }
+ } catch (e) {
+ }
+ }
 
   async function fetchPsAttributes() {
     try {
@@ -83,13 +79,12 @@
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) {
          res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-      }
+ }
       if (!res.ok) throw new Error(await res.text());
       state.psAttributes = await res.json();
-    } catch (e) {
-      console.warn('Failed to fetch PS attributes', e);
-    }
-  }
+ } catch (e) {
+ }
+ }
 
   async function fetchNewScAttributes() {
     try {
@@ -97,13 +92,12 @@
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) {
          res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-      }
+ }
       if (!res.ok) throw new Error(await res.text());
       state.t2osAttributes = await res.json();
-    } catch (e) {
-      console.warn('Failed to fetch New SC attributes', e);
-    }
-  }
+ } catch (e) {
+ }
+ }
 
   function parseAttributeScoreValue(value) {
     if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -112,7 +106,7 @@
     if (!match) return 0;
     const parsed = Number(match[0]);
     return Number.isFinite(parsed) ? parsed : 0;
-  }
+ }
 
   function pickMappedRowValue(row, candidates, fallback = '') {
     const keys = Object.keys(row || {});
@@ -123,9 +117,9 @@
       const normalized = normalize(candidate);
       const fuzzy = keys.find((key) => normalize(key) === normalized);
       if (fuzzy && row[fuzzy] != null) return row[fuzzy];
-    }
+ }
     return fallback;
-  }
+ }
 
   async function fetchSalesRetAttributes() {
     try {
@@ -133,7 +127,7 @@
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) {
         res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-      }
+ }
       if (!res.ok) throw new Error(await res.text());
       const rows = await res.json();
       state.salesRetAttributes = Array.isArray(rows) ? rows.map((row, idx) => ({
@@ -142,12 +136,11 @@
         Subcategory: String(pickMappedRowValue(row, ['Subcategory', 'subcategory', 'subcategor'], '') || '').trim(),
         Criteria: String(pickMappedRowValue(row, ['Criteria', 'criteria', 'description'], '') || '').trim(),
         Score: parseAttributeScoreValue(pickMappedRowValue(row, ['Score', 'score'], 0))
-      })) : [];
-    } catch (e) {
-      console.warn('Failed to fetch sales retention attributes', e);
+ })) : [];
+ } catch (e) {
       state.salesRetAttributes = [];
-    }
-  }
+ }
+ }
 
   async function fetchCertificationAttributes() {
     try {
@@ -155,7 +148,7 @@
       let res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) {
         res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-      }
+ }
       if (!res.ok) throw new Error(await res.text());
       const rows = await res.json();
       state.certificationAttributes = Array.isArray(rows) ? rows.map((row, idx) => ({
@@ -164,12 +157,11 @@
         Subcategory: String(pickMappedRowValue(row, ['Attribute', 'attribute', 'Subcategory', 'subcategory', 'subcategor'], '') || '').trim(),
         Criteria: String(pickMappedRowValue(row, ['Criteria', 'criteria', 'description'], '') || '').trim(),
         Score: parseAttributeScoreValue(pickMappedRowValue(row, ['Score', 'score'], 0))
-      })) : [];
-    } catch (e) {
-      console.warn('Failed to fetch certification attributes', e);
+ })) : [];
+ } catch (e) {
       state.certificationAttributes = [];
-    }
-  }
+ }
+ }
 
   // --- Helper: Fetch SME Users for T1 ---
   let smeUsersCache = [];
@@ -191,17 +183,17 @@
             
             // Sort by Name
             smeUsersCache.sort((a, b) => a.label.localeCompare(b.label));
-        }
+ }
         
         // Always add N/A at the end
         smeUsersCache.push({ label: 'N/A', value: 'N/A' });
         
         return smeUsersCache;
-    } catch (e) {
+ } catch (e) {
         console.error('Error fetching SME users:', e);
         return [{ label: 'N/A', value: 'N/A' }];
-    }
-  }
+ }
+ }
 
   // --- Helper: Fetch Interaction Related To Options ---
   let interactionRelatedToOptions = [];
@@ -212,21 +204,21 @@
         let res = await fetch(url, { headers: authHeaders() });
         if (!res.ok) {
              res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-        }
+ }
         if (!res.ok) throw new Error('Failed to fetch Interaction Related To options');
         const data = await res.json();
         // Extract column values and filter empties
         interactionRelatedToOptions = data.map(item => item.interactionRelateTo).filter(Boolean).sort();
         return interactionRelatedToOptions;
-    } catch (e) {
+ } catch (e) {
         console.error('Error fetching Interaction Related To:', e);
         return [];
-    }
-  }
+ }
+ }
 
   function isJwtLike(value) {
     return typeof value === 'string' && value.split('.').length === 3;
-  }
+ }
 
   function parseRoleList(value) {
     if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
@@ -236,15 +228,15 @@
     try {
       const parsed = JSON.parse(s);
       if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
-    } catch (_) {}
+ } catch (_) {}
     return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
-  }
+ }
 
   function userHasRole(role) {
     const raw = localStorage.getItem('user_role') || localStorage.getItem('role') || localStorage.getItem('UserRole') || '';
     const roles = parseRoleList(raw).map(r => r.toLowerCase());
     return roles.includes(String(role).toLowerCase());
-  }
+ }
 
   function authHeaders(opts = {}) {
     const useServiceKey = opts.useServiceKey === true;
@@ -263,13 +255,13 @@
 
     if (!bearer || !apikey) {
       throw new Error('Missing/invalid Supabase credentials. Check database_config.json and your login session.');
-    }
+ }
     return {
       apikey,
       Authorization: `Bearer ${bearer}`,
       'Prefer': 'count=exact'
-    };
-  }
+ };
+ }
 
   // --- Email Helper (from agent-ps-audits.js) ---
   async function sendEmailSMTP({ html, to, cc = [], subject }) {
@@ -281,18 +273,18 @@
         port: 587,
         user: 'happio.softs@gmail.com',
         pass: 'yinyeqhnfihainsi'
-      },
+ },
       to,
       cc,
       subject,
       html
-    };
+ };
     try {
       const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
       return true;
-    } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
-  }
+ } catch (e) {  return false; }
+ }
 
   // --- Toast Notification ---
   function showToast(message, type = 'info') {
@@ -302,7 +294,7 @@
       container.id = 'toast-container';
       container.className = 'toast-container';
       document.body.appendChild(container);
-    }
+ }
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -325,18 +317,18 @@
     toast.querySelector('.toast-close').addEventListener('click', () => {
       toast.style.animation = 'slideOut 0.3s ease-in forwards';
       setTimeout(() => toast.remove(), 300);
-    });
+ });
 
     // Auto remove after 5s
     setTimeout(() => {
       if (toast.isConnected) {
         toast.style.animation = 'slideOut 0.3s ease-in forwards';
         setTimeout(() => toast.remove(), 300);
-      }
-    }, 5000);
+ }
+ }, 5000);
 
     container.appendChild(toast);
-  }
+ }
 
   function showConfirmDialog(message, opts = {}) {
     const overlay = document.getElementById('confirmModal');
@@ -347,7 +339,7 @@
 
     if (!overlay || !titleEl || !messageEl || !confirmBtn || !cancelBtn) {
       return Promise.resolve(window.confirm(message));
-    }
+ }
 
     titleEl.textContent = opts.title || 'Confirm Delete';
     messageEl.textContent = message || 'Are you sure?';
@@ -369,23 +361,23 @@
         confirmBtn.removeEventListener('click', onConfirm);
         cancelBtn.removeEventListener('click', onCancel);
         resolve(value);
-      };
+ };
 
       const onConfirm = () => finish(true);
       const onCancel = () => finish(false);
       const onOverlayClick = (e) => {
         if (e.target === overlay) finish(false);
-      };
+ };
       const onKeyDown = (e) => {
         if (e.key === 'Escape') finish(false);
-      };
+ };
 
       confirmBtn.addEventListener('click', onConfirm);
       cancelBtn.addEventListener('click', onCancel);
       overlay.addEventListener('click', onOverlayClick);
       document.addEventListener('keydown', onKeyDown);
-    });
-  }
+ });
+ }
 
   // --- 2. Data Fetching ---
   
@@ -396,54 +388,54 @@
       scoreCol: 'Final_Score',
       cols: ['created_at', 'agent_name', 'conversation_id', 'Final_Score', 'id', 'Channel', 'Taker_Name'],
       label: 'T1 Audit'
-    },
+ },
     sms: {
       name: 'sms_scorecard',
       scoreCol: 'final_score',
       cols: ['created_at', 'agent_name', 'conversation_id', 'final_score', 'id', 'taker_name'],
       label: 'SMS Audit'
-    },
+ },
     social: {
       name: 'MX_Social_Media_Scorecard',
       scoreCol: 'Final_Score',
       cols: ['created_at', 'Agent_Name', 'agent_name', 'Post_url', 'Final_Score', 'id', 'Taker_Name', 'Channel'],
       label: 'Social Media Audit'
-    },
+ },
     t2ps: {
       name: 't2_ps_scorecards',
       scoreCol: 'final_score',
       cols: ['created_at', 'agent_name', 'conversation_id', 'final_score', 'id', 'Channel', 'Taker_Name'],
       label: 'T2 PS Audit'
-    },
+ },
     t2os: {
       name: 'T2_OS_NEW_2025',
       scoreCol: 'Final_Score',
       cols: ['created_at', 'agent_name', 'conversation_id', 'Final_Score', 'id', 'Channel', 'Taker_Name'],
       label: 'T2 OS Audit'
-    },
+ },
     salesret: {
       name: 'sales_ret_audits',
       scoreCol: 'Final_Score',
       cols: ['created_at', 'Agent_Name', 'agent_name', 'Conversation_ID', 'conversation_id', 'Final_Score', 'id', 'Channel', 'Taker_Name'],
       label: 'T2 OS New Scorecard Audit'
-    },
+ },
     certification: {
       name: 'certification_audits',
       scoreCol: 'Final_Score',
       cols: ['created_at', 'Agent_Name', 'Conversation_ID', 'Final_Score', 'id', 'Channel', 'Taker_Name', 'Phase'],
       label: 'Certification Audit'
-    }
-  };
+ }
+ };
 
   async function fetchAnalytics() {
     if (!state.configLoaded) {
       showToast('Loading database configuration, please try again in a moment.', 'warning');
       return;
-    }
+ }
     if (!state.startISO || !state.endISO) {
       showToast('Please select a date range first.', 'warning');
       return;
-    }
+ }
 
     // Parallel fetch for all 4 scorecards
     await Promise.all([
@@ -455,7 +447,7 @@
       processScorecard('salesret'),
       processScorecard('certification')
     ]);
-  }
+ }
 
   async function processScorecard(key) {
     const def = TABLES[key];
@@ -469,15 +461,15 @@
       state.data[key] = data; // Store data
       
       refreshTable(key);
-    } catch (e) {
+ } catch (e) {
       console.error(`Error processing ${key}`, e);
       showToast(`Error loading ${def.label}: ${e.message}`, 'error');
       const countEl = document.getElementById(`${key}Count`);
       const avgEl = document.getElementById(`${key}Avg`);
       if (countEl) countEl.textContent = 'Err';
       if (avgEl) avgEl.textContent = 'Err';
-    }
-  }
+ }
+ }
 
   function updateStats(key, data, scoreCol) {
     const count = data.length;
@@ -489,7 +481,7 @@
       if (countEl) countEl.textContent = count;
       if (avgEl) avgEl.textContent = `${passRate}%`;
       return;
-    }
+ }
 
     let totalScore = 0;
     let scoredCount = 0;
@@ -501,8 +493,8 @@
       if (typeof val === 'number' && !isNaN(val)) {
         totalScore += val;
         scoredCount++;
-      }
-    });
+ }
+ });
 
     const avg = scoredCount > 0 ? (totalScore / scoredCount).toFixed(1) : 0;
 
@@ -510,7 +502,7 @@
     const avgEl = document.getElementById(`${key}Avg`);
     if (countEl) countEl.textContent = count;
     if (avgEl) avgEl.textContent = `${avg}%`;
-  }
+ }
 
   function renderTable(key, data, def) {
     const tbody = document.querySelector(`#${key}Table tbody`);
@@ -520,7 +512,7 @@
       const colSpan = (key === 't1' || key === 'social' || key === 'certification') ? 8 : 7;
       tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;">No records found</td></tr>`;
       return;
-    }
+ }
 
     // Limit to 100 for performance
     const displayData = data.slice(0, 100); 
@@ -533,9 +525,9 @@
       const getVal = (opts) => {
         for (const k of opts) {
           if (row[k] !== undefined && row[k] !== null) return row[k];
-        }
+ }
         return '';
-      };
+ };
 
       const dateStr = getVal(['created_at', 'Created_At']).replace('T', ' ').replace(/\..+/, '');
       const agent = getVal(['agent_name', 'Agent_Name', 'agent_email']);
@@ -549,14 +541,14 @@
           // standard behavior of parseFloat + string conversion does this automatically for many cases
           // but to be explicit:
           score = Number(numScore.toFixed(2)); // 100.00 -> 100, 98.50 -> 98.5
-        }
-      }
+ }
+ }
       
       let actionHtml = `<button class="global-btn btn-slim view-btn">View</button>`;
 
     if (isAdmin) {
         actionHtml += ` <button class="global-btn btn-slim delete-btn" style="background:var(--danger-color); color:white; margin-left:8px;">Delete</button>`;
-      }
+ }
 
       if (key === 't1') {
         const channel = getVal(['Channel', 'channel']) || '-';
@@ -571,7 +563,7 @@
           <td>${score}%</td>
           <td>${actionHtml}</td>
         `;
-      } else if (key === 'sms') {
+ } else if (key === 'sms') {
         const taker = getVal(['Taker_Name', 'taker_name', 'Taker Name']) || '-';
         tr.innerHTML = `
           <td>${row.id}</td>
@@ -582,7 +574,7 @@
           <td>${score}%</td>
           <td>${actionHtml}</td>
         `;
-      } else if (key === 't2ps') {
+ } else if (key === 't2ps') {
         const taker = getVal(['Taker_Name', 'taker_name', 'Taker Name']) || '-';
         tr.innerHTML = `
           <td>${row.id}</td>
@@ -593,7 +585,7 @@
           <td>${score}%</td>
           <td>${actionHtml}</td>
         `;
-      } else if (key === 'social') {
+ } else if (key === 'social') {
         const taker = getVal(['Taker_Name', 'taker_name', 'Taker Name']) || '-';
         const channel = getVal(['Channel', 'channel']) || '-';
         const postUrl = getVal(['Post_url', 'Post_URL', 'post_url', 'url', 'URL']) || '';
@@ -610,7 +602,7 @@
           <td>${score}%</td>
           <td>${actionHtml}</td>
         `;
-      } else if (key === 'certification') {
+ } else if (key === 'certification') {
         const taker = getVal(['Taker_Name', 'taker_name', 'Taker Name']) || '-';
         const phase = getVal(['Phase', 'phase']) || '-';
         tr.innerHTML = `
@@ -623,7 +615,7 @@
           <td>${score || '-'}</td>
           <td>${actionHtml}</td>
         `;
-      } else {
+ } else {
         const taker = getVal(['Taker_Name', 'taker_name', 'Taker Name']) || '-';
         tr.innerHTML = `
           <td>${row.id}</td>
@@ -634,12 +626,12 @@
           <td>${score}%</td>
           <td>${actionHtml}</td>
         `;
-      }
+ }
 
       tr.querySelector('.view-btn').addEventListener('click', (e) => {
         e.stopPropagation();
         openAuditModal(row, def, key);
-      });
+ });
 
       if (isAdmin) {
         const delBtn = tr.querySelector('.delete-btn');
@@ -650,21 +642,19 @@
               title: 'Delete Record',
               confirmText: 'Delete',
               cancelText: 'Cancel'
-            });
+ });
             if (confirmed) {
               deleteRecord(key, row.id);
-            }
-          });
-        }
-      }
-
-
+ }
+ });
+ }
+ }
 
       tr.addEventListener('click', () => openAuditModal(row, def, key));
 
       tbody.appendChild(tr);
-    });
-  }
+ });
+ }
 
   // --- Filter Logic ---
   const OPERATORS = [
@@ -691,8 +681,8 @@
       panel.style.display = isHidden ? 'block' : 'none';
       if (isHidden && (!state.filters[key] || state.filters[key].length === 0)) {
         addFilterRow(key);
-      }
-    });
+ }
+ });
 
     if (addBtn) addBtn.addEventListener('click', () => addFilterRow(key));
     
@@ -701,9 +691,9 @@
           state.filters[key] = [];
           renderFilterRows(key);
           refreshTable(key);
-        });
-    }
-  }
+ });
+ }
+ }
 
   function addFilterRow(key) {
     const data = state.data[key] || [];
@@ -712,7 +702,7 @@
       // Allow adding if data is empty? No, can't pick column.
       showToast('No data loaded to filter', 'warning');
       return;
-    }
+ }
     
     // Get columns from first row
     const columns = Object.keys(data[0]).sort();
@@ -723,22 +713,22 @@
       column: columns[0],
       operator: 'contains',
       value: ''
-    });
+ });
     
     renderFilterRows(key);
     refreshTable(key); 
-  }
+ }
 
   function removeFilterRow(key, index) {
     state.filters[key].splice(index, 1);
     renderFilterRows(key);
     refreshTable(key);
-  }
+ }
 
   function updateFilterRow(key, index, field, value) {
     state.filters[key][index][field] = value;
     refreshTable(key);
-  }
+ }
 
   function autoResizeSelect(select) {
      const style = window.getComputedStyle(select);
@@ -756,7 +746,7 @@
      const width = tempSpan.offsetWidth + 35;
      document.body.removeChild(tempSpan);
      select.style.width = `${width}px`;
-  }
+ }
 
   function renderFilterRows(key) {
     const container = document.getElementById(`${key}FilterRows`);
@@ -771,7 +761,7 @@
     if (filters.length === 0) {
        container.innerHTML = '<div style="color:var(--text-secondary); font-size:13px; font-style:italic;">No active filters</div>';
        return;
-    }
+ }
 
     const data = state.data[key] || [];
     const columns = data.length > 0 ? Object.keys(data[0]).sort() : [];
@@ -786,22 +776,22 @@
           const opt = document.createElement('option');
           opt.value = filter.column; opt.textContent = filter.column;
           colSelect.appendChild(opt);
-      } else {
+ } else {
           columns.forEach(col => {
             const opt = document.createElement('option');
             opt.value = col;
             opt.textContent = col;
             if (col === filter.column) opt.selected = true;
             colSelect.appendChild(opt);
-          });
-      }
+ });
+ }
       
       // Auto-resize logic
       const resize = () => autoResizeSelect(colSelect);
       colSelect.addEventListener('change', (e) => {
          resize();
          updateFilterRow(key, index, 'column', e.target.value);
-      });
+ });
       // Initial resize after append
       setTimeout(resize, 0);
 
@@ -813,7 +803,7 @@
         opt.textContent = op.label;
         if (op.value === filter.operator) opt.selected = true;
         opSelect.appendChild(opt);
-      });
+ });
       opSelect.addEventListener('change', (e) => updateFilterRow(key, index, 'operator', e.target.value));
       
       // Value Input
@@ -835,8 +825,8 @@
       row.appendChild(removeBtn);
       
       container.appendChild(row);
-    });
-  }
+ });
+ }
 
   function getFilteredData(key) {
     const rawData = state.data[key] || [];
@@ -861,10 +851,10 @@
               case 'empty': return val === null || val === undefined || val === '';
               case 'notEmpty': return val !== null && val !== undefined && val !== '';
               default: return true;
-            }
-          });
-        });
-    }
+ }
+ });
+ });
+ }
 
     // 2. Apply Search
     const searchInput = document.getElementById(`${key}Search`);
@@ -874,10 +864,10 @@
        data = data.filter(row => 
          Object.values(row).some(val => String(val).toLowerCase().includes(lowerQ))
        );
-    }
+ }
     
     return data;
-  }
+ }
 
   function refreshTable(key) {
     const filteredData = getFilteredData(key);
@@ -891,8 +881,8 @@
     const clearBtn = document.getElementById(`${key}Clear`);
     if (searchInput && clearBtn) {
         clearBtn.style.display = searchInput.value ? 'block' : 'none';
-    }
-  }
+ }
+ }
 
   // --- 3. New Features: Search, Export, Delete ---
 
@@ -908,32 +898,32 @@
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
           refreshTable(key);
-        });
-      }
+ });
+ }
 
       if (clearBtn) {
         clearBtn.addEventListener('click', () => {
           if (searchInput) {
             searchInput.value = '';
             refreshTable(key);
-          }
-        });
-      }
+ }
+ });
+ }
 
       if (exportBtn) {
         exportBtn.addEventListener('click', () => {
           exportCSV(key);
-        });
-      }
-    });
-  }
+ });
+ }
+ });
+ }
 
   function exportCSV(key) {
     const data = getFilteredData(key);
     if (data.length === 0) {
       showToast('No data to export', 'warning');
       return;
-    }
+ }
 
     // Get all unique keys from data to form header
     // Ideally we use a fixed set of keys for consistent CSV, but dynamic is safer for full export
@@ -951,9 +941,9 @@
         const val = row[k] === null || row[k] === undefined ? '' : row[k];
         const stringVal = String(val).replace(/"/g, '""'); // Escape quotes
         return `"${stringVal}"`; // Wrap in quotes
-      });
+ });
       csvRows.push(values.join(','));
-    });
+ });
 
     const csvString = csvRows.join('\n');
     const blob = new Blob([csvString], { type: 'text/csv' });
@@ -965,7 +955,7 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }
+ }
 
   async function deleteRecord(key, id) {
     const def = TABLES[key];
@@ -975,7 +965,7 @@
       const res = await fetch(url, { 
         method: 'DELETE',
         headers: authHeaders() 
-      });
+ });
       
       if (!res.ok) throw new Error(await res.text());
       
@@ -987,11 +977,11 @@
       renderTable(key, state.data[key], def);
       
       showToast('Record deleted successfully', 'success');
-    } catch (e) {
+ } catch (e) {
       console.error('Delete failed', e);
       showToast('Failed to delete record: ' + e.message, 'error');
-    }
-  }
+ }
+ }
 
   let cachedAttributeDefinitions = null;
 
@@ -1008,16 +998,15 @@
     try {
         const res = await fetch(`${config.restUrl}/T1_SC_Att?select=*&order=ID.asc`, {
             headers: authHeaders()
-        });
+ });
         if (!res.ok) throw new Error('Failed to fetch definitions');
         const data = await res.json();
         cachedAttributeDefinitions = data;
         return data;
-    } catch (e) {
-        console.warn('Could not fetch attribute definitions:', e);
+ } catch (e) {
         return [];
-    }
-  }
+ }
+ }
 
   // --- 4. Modal Logic ---
   
@@ -1054,9 +1043,9 @@
         if (direct) return direct;
         const found = normMap.get(normalizeToken(c));
         if (found) return found;
-      }
+ }
       return null;
-    };
+ };
 
     // Meta Section
     const metaSection = document.createElement('div');
@@ -1077,7 +1066,7 @@
           </div>
         </div>
       `;
-    };
+ };
 
     let metaHtml = '';
     // Common fields
@@ -1089,9 +1078,9 @@
     if (scoreDisplay !== null && scoreDisplay !== undefined) {
       scoreDisplay = String(scoreDisplay).trim();
       if (key !== 'certification' && scoreDisplay && !scoreDisplay.endsWith('%')) scoreDisplay = `${scoreDisplay}%`;
-    } else {
+ } else {
       scoreDisplay = '-';
-    }
+ }
     
     metaHtml += renderMetaCard('ID', row.id, 'id', 'color:var(--text-primary);', false);
      
@@ -1106,12 +1095,12 @@
     const takerKey = ['Taker_Name', 'taker_name', 'Taker Name'].find(k => row[k] !== undefined);
     if (takerKey) {
         metaHtml += renderMetaCard('Taker Name', row[takerKey], takerKey, 'color:var(--text-primary);', false);
-    }
+ }
 
     const channelKey = ['Channel', 'channel'].find(k => row[k] !== undefined);
     if (channelKey) {
         metaHtml += renderMetaCard('Channel', row[channelKey], channelKey, 'color:var(--text-primary);', false);
-    }
+ }
 
     if (key === 'social') {
       const postKey = pickRowKey(row, ['Post_url', 'Post_URL', 'post_url', 'url', 'URL']);
@@ -1120,16 +1109,16 @@
         ? `<a href="${String(postUrl).replace(/"/g, '&quot;')}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">Post URL</a>`
         : 'Post URL';
       metaHtml += renderMetaCard(postLabelHtml, '&nbsp;', null, 'color:var(--text-primary);', false);
-    } else {
+ } else {
       const convBase = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/0/0/conversation/';
       const conversationId = row[convKey];
       if (conversationId) {
         const convLinkHtml = `<a href="${convBase}${conversationId}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">${conversationId}</a>`;
         metaHtml += renderMetaCard('Conversation ID', convLinkHtml, null, 'color:var(--text-primary);', false);
-      } else {
+ } else {
         metaHtml += renderMetaCard('Conversation ID', '-', null, 'color:var(--text-primary);', false);
-      }
-    }
+ }
+ }
     const scoreColor = (key === 'certification' && String(scoreDisplay || '').trim().toLowerCase() === 'fail')
       ? 'color:var(--danger-color);'
       : 'color:var(--success-color);';
@@ -1168,7 +1157,7 @@
       
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
-    } else if (key === 't2ps') {
+ } else if (key === 't2ps') {
       const ticketSection = document.createElement('div');
       ticketSection.className = 'detail-section';
       ticketSection.innerHTML = `<h3>Ticket Details</h3>`;
@@ -1185,7 +1174,7 @@
 
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
-    } else if (key === 't2os') {
+ } else if (key === 't2os') {
       const ticketSection = document.createElement('div');
       ticketSection.className = 'detail-section';
       ticketSection.innerHTML = `<h3>Ticket Details</h3>`;
@@ -1207,12 +1196,12 @@
       fields.forEach(f => {
          if (row[f.key] !== undefined && row[f.key] !== null) {
              ticketHtml += renderMetaCard(f.label, row[f.key], f.key, 'color:var(--text-primary);', true);
-         }
-      });
+ }
+ });
 
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
-    } else if (key === 'salesret') {
+ } else if (key === 'salesret') {
       const ticketSection = document.createElement('div');
       ticketSection.className = 'detail-section';
       ticketSection.innerHTML = `<h3>Ticket Details</h3>`;
@@ -1234,17 +1223,17 @@
       fields.forEach(f => {
         if (row[f.key] !== undefined && row[f.key] !== null) {
           ticketHtml += renderMetaCard(f.label, row[f.key], f.key, 'color:var(--text-primary);', true);
-        }
-      });
+ }
+ });
 
       if (row.URL) {
         const safeUrl = String(row.URL).replace(/"/g, '&quot;');
         ticketHtml += renderMetaCard('Ticket URL', `<a href="${safeUrl}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">Open</a>`);
-      }
+ }
 
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
-    } else if (key === 'certification') {
+ } else if (key === 'certification') {
       const ticketSection = document.createElement('div');
       ticketSection.className = 'detail-section';
       ticketSection.innerHTML = `<h3>Ticket Details</h3>`;
@@ -1266,13 +1255,13 @@
         if (row[f.key] !== undefined && row[f.key] !== null) {
           usedKeys.add(f.key);
           ticketHtml += renderMetaCard(f.label, row[f.key], f.key, 'color:var(--text-primary);', true);
-        }
-      });
+ }
+ });
 
       if (row.URL) {
         const safeUrl = String(row.URL).replace(/"/g, '&quot;').trim();
         ticketHtml += renderMetaCard('Ticket URL', `<a href="${safeUrl}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">Open</a>`);
-      }
+ }
 
       if (row.Comments_SME_Related !== undefined && row.Comments_SME_Related !== null) {
         usedKeys.add('Comments_SME_Related');
@@ -1282,7 +1271,7 @@
             <div style="color:var(--text-primary); white-space: pre-wrap;" data-key="Comments_SME_Related">${row.Comments_SME_Related || '-'}</div>
           </div>
         `;
-      }
+ }
 
       if (row.Sales_Comments !== undefined && row.Sales_Comments !== null) {
         usedKeys.add('Sales_Comments');
@@ -1292,11 +1281,11 @@
             <div style="color:var(--text-primary); white-space: pre-wrap;" data-key="Sales_Comments">${row.Sales_Comments || '-'}</div>
           </div>
         `;
-      }
+ }
 
       ticketSection.innerHTML += ticketHtml;
       body.appendChild(ticketSection);
-    }
+ }
 
     // Attributes Section (Dynamic Parsing)
     const attrSection = document.createElement('div');
@@ -1307,7 +1296,7 @@
     const formatLink = (text) => {
       if (typeof text !== 'string') return text;
       return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--primary-color); text-decoration:underline; cursor:pointer;">URL</a>');
-    };
+ };
 
     // SMS SPECIFIC LOGIC
     if (key === 'sms') {
@@ -1333,7 +1322,7 @@
         "Workflow Compliance": "Workflow_Compliance",
         "CRM Utilization and Accurate Documentation": "CRM_Utilization_and_Accurate_Documentation",
         "Effective Sales Promotion and Customer Persuasion": "Effective_Sales_Promotion_and_Customer_Persuasion"
-      };
+ };
 
       // Use API attributes for metadata (description, score), but enforce order from smsOrderedAttributes
       const apiAttrs = state.smsAttributes || [];
@@ -1357,7 +1346,7 @@
         if (dbColName && row[dbColName] !== undefined) {
              scoreKey = dbColName;
              scoreVal = row[dbColName];
-        } else {
+ } else {
             // Fallback: Convert "Personalized Customer Engagement" -> "personalized_customer_engagement"
             const snakeKey = attrName.toLowerCase().replace(/\s+/g, '_').replace(/,/g, ''); 
             
@@ -1375,9 +1364,9 @@
                 scoreKey = found;
                 scoreVal = row[found];
                 break;
-              }
-            }
-        }
+ }
+ }
+ }
 
         // 3. Find Comment
         // Try explicit comment key first: com_ + dbColName
@@ -1389,8 +1378,8 @@
             if (row[explicitComKey] !== undefined) {
                 commentKey = explicitComKey;
                 commentVal = row[explicitComKey];
-            }
-        }
+ }
+ }
 
         if (!commentKey) {
              // Fallback fuzzy search
@@ -1409,9 +1398,9 @@
                 commentKey = found;
                 commentVal = row[found];
                 break;
-              }
-            }
-        }
+ }
+ }
+ }
 
         // Even if we don't find a scoreKey, we should display the attribute if it comes from the API
         // But typically we want to show it only if we have data or if it's a required field.
@@ -1430,13 +1419,13 @@
              comment: commentVal,
              commentKey: commentKey,
              maxScore: maxScore
-        });
+ });
         
         if (scoreKey) usedKeys.add(scoreKey);
         if (commentKey) usedKeys.add(commentKey);
-      });
+ });
 
-    } else if (key === 'social') {
+ } else if (key === 'social') {
       const apiAttrs = state.socialAttributes || [];
       const sortedApiAttrs = [...apiAttrs].sort((a, b) => Number(a.id || a.ID || 0) - Number(b.id || b.ID || 0));
 
@@ -1451,13 +1440,13 @@
           if (typeof maxScore === 'string') {
             const clean = maxScore.replace(/%/g, '').trim();
             maxScore = clean ? parseFloat(clean) : null;
-          } else {
+ } else {
             maxScore = Number(maxScore);
-          }
+ }
           if (maxScore !== null && !Number.isFinite(maxScore)) maxScore = null;
-        } else {
+ } else {
           maxScore = null;
-        }
+ }
 
         const norm = normalizeToken(attrName);
         const scoreKey = pickRowKey(row, [attrName, norm, norm.replace(/_/g, ' ')]);
@@ -1484,13 +1473,13 @@
           comment: commentVal,
           commentKey: commentKey,
           maxScore: maxScore
-        });
+ });
 
         if (scoreKey) usedKeys.add(scoreKey);
         if (commentKey) usedKeys.add(commentKey);
-      });
+ });
 
-    } else if (key === 't2ps') {
+ } else if (key === 't2ps') {
        const apiAttrs = state.psAttributes || [];
       let t2PsOrderedAttributes = [];
 
@@ -1503,7 +1492,7 @@
             'Resolution': ['Product Awareness','Process Awareness','Ownership'],
             'Tempo Values': ['Brand Representation'],
             'Workflow': ['CRM Updates','Documentation','Workflow']
-          };
+ };
           const ORDERED_GROUP_KEYS = [
             'Video Call Etiquette',
             'Soft Skills',
@@ -1525,15 +1514,15 @@
                   if (subs.includes(sub)) {
                       g = groupName;
                       break;
-                  }
-              }
+ }
+ }
               if (grouped[g]) grouped[g].push(sub);
-          });
+ });
           
           ORDERED_GROUP_KEYS.forEach(k => {
               if (grouped[k]) t2PsOrderedAttributes.push(...grouped[k]);
-          });
-      }
+ });
+ }
 
       if (t2PsOrderedAttributes.length === 0) {
          t2PsOrderedAttributes = [
@@ -1553,7 +1542,7 @@
           "Documentation",
           "Workflow"
         ];
-      }
+ }
 
       const T2_PS_DB_MAPPING = {
         "Introduction": "introduction",
@@ -1571,7 +1560,7 @@
         "CRM Updates": "crm_updates",
         "Documentation": "documentation",
         "Workflow": "workflow"
-      };
+ };
 
       t2PsOrderedAttributes.forEach(attrName => {
         // Find metadata from API
@@ -1587,7 +1576,7 @@
         if (dbColName && row[dbColName] !== undefined) {
              scoreKey = dbColName;
              scoreVal = row[dbColName];
-        }
+ }
 
         let commentKey = null;
         let commentVal = '';
@@ -1596,13 +1585,13 @@
             // Special case for Empathy & Positive Attitude where comment key differs from score key pattern
             if (attrName === "Empathy & Positive Attitude") {
                  explicitComKey = "com_empathy_&_positive_attitude";
-            }
+ }
 
             if (row[explicitComKey] !== undefined) {
                 commentKey = explicitComKey;
                 commentVal = row[explicitComKey];
-            }
-        }
+ }
+ }
 
         attributes.push({
              label: attrName,
@@ -1612,13 +1601,13 @@
              comment: commentVal,
              commentKey: commentKey,
              maxScore: maxScore
-        });
+ });
         
         if (scoreKey) usedKeys.add(scoreKey);
         if (commentKey) usedKeys.add(commentKey);
-      });
+ });
 
-    } else if (key === 't2os') {
+ } else if (key === 't2os') {
        const apiAttrs = state.t2osAttributes || [];
        
        // Filter by specific IDs (1-14) as requested and Sort by ID ascending
@@ -1650,7 +1639,7 @@
            'Effectiveness': 'effectiveness',
            'FCR': 'fcr',
            'Verification': 'verfication'
-       };
+ };
 
        // NEW: Explicit Comment Map provided by user
        // Maps the DB column name (from T2_OS_DB_MAPPING) to the specific Comment Column
@@ -1669,7 +1658,7 @@
            'documentation': 'comment_Documentation',
            'workflow': 'comment_Workflow',
            'ownership': 'comment_ownership'
-       };
+ };
 
        sortedApiAttrs.forEach(attrItem => {
            // Case insensitive fallback for API fields
@@ -1691,10 +1680,10 @@
                    const clean = maxScore.replace(/%/g, '').trim();
                    if (clean === '') maxScore = null;
                    else maxScore = parseFloat(clean);
-               } else {
+ } else {
                    maxScore = Number(maxScore);
-               }
-           }
+ }
+ }
            
            // Safety check
            if (maxScore !== null && isNaN(maxScore)) maxScore = null;
@@ -1708,7 +1697,7 @@
            if (dbColName && row[dbColName] !== undefined) {
                scoreVal = row[dbColName];
                scoreKey = dbColName;
-           }
+ }
 
            // 2. Fallback fuzzy search if not found
            if (scoreVal === undefined) {
@@ -1746,9 +1735,9 @@
                         scoreKey = found;
                         scoreVal = row[found];
                         break;
-                    }
-                }
-           }
+ }
+ }
+ }
 
            // Find Comment
            let commentKey = null;
@@ -1763,8 +1752,8 @@
                if (row[explicitKey] !== undefined) {
                    commentKey = explicitKey;
                    commentVal = row[explicitKey];
-               }
-           }
+ }
+ }
 
            // 2. Try explicit mapping patterns if not found
            if (!commentKey && dbColName) {
@@ -1778,9 +1767,9 @@
                        commentKey = c;
                        commentVal = row[c];
                        break;
-                   }
-               }
-           }
+ }
+ }
+ }
            
            // 2. Fallback fuzzy search if not found
            if (!commentKey) {
@@ -1804,20 +1793,20 @@
                     
                     const noAmpKey = attrName.toLowerCase().replace('&', '').replace(/\s+/g, '_').replace(/__/g, '_');
                     commentCandidates.push(`com_${noAmpKey}`, `comment_${noAmpKey}`, `comments_${noAmpKey}`);
-                }
+ }
                 
                 // Typo fallbacks
                 if (attrName.includes('Verification')) {
                      commentCandidates.push('com_verfication', 'comment_verfication');
-                }
+ }
                 if (attrName.includes('Engagement & Language')) {
                      commentCandidates.push('com_engagement_&_langauge');
-                }
+ }
                 
                 // SME Fallback
                 if (attrName === 'SME Following Process' || attrName === 'SME Related') {
                      commentCandidates.push('comments_sme_related', 'comment_sme_related');
-                }
+ }
 
                 for (const c of commentCandidates) {
                     const found = rowKeys.find(k => k.toLowerCase() === c.toLowerCase());
@@ -1825,9 +1814,9 @@
                         commentKey = found;
                         commentVal = row[found];
                         break;
-                    }
-                }
-           }
+ }
+ }
+ }
            
            // 3. Loose Search (Token based) - catch things like "Pre_Sales_Comments" for "Sales"
            if (!commentKey) {
@@ -1841,14 +1830,14 @@
                        
                        // Must contain ALL tokens (e.g. "fitness" AND "fluency")
                        return parts.every(p => lowerK.includes(p));
-                   });
+ });
                    
                    if (looseMatch) {
                        commentKey = looseMatch;
                        commentVal = row[looseMatch];
-                   }
-               }
-           }
+ }
+ }
+ }
 
            // Push to attributes
            attributes.push({
@@ -1859,13 +1848,13 @@
                comment: commentVal,
                commentKey: commentKey,
                maxScore: maxScore
-           });
+ });
            
            if (scoreKey) usedKeys.add(scoreKey);
            if (commentKey) usedKeys.add(commentKey);
-       });
+ });
 
-    } else if (key === 'salesret') {
+ } else if (key === 'salesret') {
       const apiAttrs = state.salesRetAttributes || [];
       const sortedApiAttrs = [...apiAttrs].sort((a, b) => Number(a.ID || a.id || 0) - Number(b.ID || b.id || 0));
 
@@ -1890,7 +1879,7 @@
         'CRM Updates': 'documentation_crm',
         'Workflow': 'workflow',
         'Ownership': 'ownership'
-      };
+ };
 
       const SALES_RET_COMMENT_MAPPING = {
         'interaction_protocols': 'comment_interaction_protocols',
@@ -1906,7 +1895,7 @@
         'documentation_crm': 'comment_Documentation_crm',
         'workflow': 'comment_Workflow',
         'ownership': 'comment_ownership'
-      };
+ };
 
       sortedApiAttrs.forEach(attrItem => {
         let attrName = String(attrItem.Subcategory || attrItem.subcategory || attrItem.subcategor || '').trim();
@@ -1917,9 +1906,9 @@
         let maxScore = attrItem.Score ?? attrItem.score ?? null;
         if (maxScore !== null && maxScore !== undefined && maxScore !== '') {
           maxScore = parseAttributeScoreValue(maxScore);
-        } else {
+ } else {
           maxScore = null;
-        }
+ }
 
         const dbColName = SALES_RET_DB_MAPPING[attrName];
         let scoreKey = null;
@@ -1928,7 +1917,7 @@
         if (dbColName && row[dbColName] !== undefined) {
           scoreKey = dbColName;
           scoreVal = row[dbColName];
-        }
+ }
 
         if (scoreVal === undefined) {
           scoreKey = pickRowKey(row, [
@@ -1942,7 +1931,7 @@
             'verfication'
           ].filter(Boolean));
           scoreVal = scoreKey ? row[scoreKey] : undefined;
-        }
+ }
 
         let commentKey = null;
         let commentVal = '';
@@ -1950,7 +1939,7 @@
         if (dbColName && SALES_RET_COMMENT_MAPPING[dbColName] && row[SALES_RET_COMMENT_MAPPING[dbColName]] !== undefined) {
           commentKey = SALES_RET_COMMENT_MAPPING[dbColName];
           commentVal = row[commentKey];
-        }
+ }
 
         if (!commentKey) {
           commentKey = pickRowKey(row, [
@@ -1966,7 +1955,7 @@
             `comments_${normalizeToken(attrName)}`
           ].filter(Boolean));
           commentVal = commentKey ? row[commentKey] : '';
-        }
+ }
 
         attributes.push({
           label: attrName,
@@ -1976,39 +1965,39 @@
           comment: commentVal,
           commentKey,
           maxScore
-        });
+ });
 
         if (scoreKey) usedKeys.add(scoreKey);
         if (commentKey) usedKeys.add(commentKey);
-      });
+ });
 
-    } else if (key === 'certification') {
+ } else if (key === 'certification') {
       const certificationAttributes = [
         {
           label: 'Understanding & Effectiveness',
           scoreKey: 'Understanding_And_Effectiveness',
           commentKey: 'Comments_Understanding_And_Effectiveness'
-        },
+ },
         {
           label: 'Communication',
           scoreKey: 'Communication',
           commentKey: 'Comments_Communication'
-        },
+ },
         {
           label: 'Issue Resolution (Product, Process, and FCR)',
           scoreKey: 'Issue_Resolution_Product_Process_And_FCR',
           commentKey: 'Comments_Issue_Resolution_Product_Process_And_FCR'
-        },
+ },
         {
           label: 'Brand Representation and Ownership',
           scoreKey: 'Brand_Representation_And_Ownership',
           commentKey: 'Comments_Brand_Representation_And_Ownership'
-        },
+ },
         {
           label: 'Internal Process',
           scoreKey: 'Internal_Process',
           commentKey: 'Comments_Internal_Process'
-        }
+ }
       ];
 
       certificationAttributes.forEach((attr) => {
@@ -2021,12 +2010,12 @@
           comment: row[attr.commentKey] || '',
           commentKey: attr.commentKey,
           maxScore: meta.Score ?? null
-        });
+ });
 
         usedKeys.add(attr.scoreKey);
         usedKeys.add(attr.commentKey);
-      });
-    } else {
+ });
+ } else {
       // GENERIC LOGIC (T1, T2PS, T2OS)
       const keys = Object.keys(row).sort();
     
@@ -2049,12 +2038,12 @@
       if (lowerK.startsWith('score_')) {
         suffix = k.substring(6);
         label = toTitle(suffix);
-      } else if (lowerK.startsWith('yn_')) {
+ } else if (lowerK.startsWith('yn_')) {
         suffix = k.substring(3);
         label = toTitle(suffix);
-      } else {
+ } else {
          label = toTitle(k);
-      }
+ }
 
       const foundCommentKey = keys.find(ck => {
         const lowerCK = ck.toLowerCase();
@@ -2083,7 +2072,7 @@
             if (suffixLower.endsWith('s') && suffixLower.slice(0, -1) === baseName) return true;
             
             return false;
-        }
+ }
 
         if (isPrefix) {
             // Prefix-style (e.g. "Comments_Greeting"). Attribute is "Greeting".
@@ -2099,10 +2088,10 @@
             if (suffixLower.endsWith('s') && lowerCK.includes(suffixLower.slice(0, -1))) return true;
             
             return false;
-        }
+ }
 
         return false;
-      });
+ });
 
       // Force include specific keys even if they don't look like scores
       const FORCED_ATTRS = new Set([
@@ -2123,21 +2112,21 @@
         commentVal = row[foundCommentKey];
         commentKey = foundCommentKey;
         usedKeys.add(foundCommentKey);
-      } else {
+ } else {
         const sVal = String(scoreVal).toLowerCase();
         // If no comment found, stick to strict check to avoid polluting attributes with random metadata
         // BUT allow forced attributes
         if (!FORCED_ATTRS.has(lowerK) && sVal !== 'yes' && sVal !== 'no' && isNaN(parseFloat(sVal))) {
            return; 
-        }
-      }
+ }
+ }
 
       if (FORCED_ATTRS.has(lowerK) || (scoreVal !== null && scoreVal !== '') || commentKey) {
         attributes.push({ label, score: scoreVal, scoreKey: k, comment: commentVal, commentKey: commentKey });
         usedKeys.add(k);
         if (commentKey) usedKeys.add(commentKey);
-      }
-    });
+ }
+ });
 
       // --- Second Pass: Orphaned Comments ---
     // Catch comments that didn't have a matching "Score" key (e.g. "Comments FCR" where "FCR" column is missing/null/mismatched)
@@ -2160,10 +2149,10 @@
              if (label.startsWith('Comments ')) label = label.substring(9);
              else if (label.startsWith('Comment ')) label = label.substring(8);
              else if (label.startsWith('Com ')) label = label.substring(4);
-         } else if (isSuffix) {
+ } else if (isSuffix) {
              if (lowerK.endsWith('_comments')) label = toTitle(k.slice(0, -9));
              else if (lowerK.endsWith(' comments')) label = toTitle(k.slice(0, -9));
-         }
+ }
          
          // Infer a Score Key? 
          // If "Comments FCR", assume score key is "FCR" or "fcr" or "Fcr"?
@@ -2183,11 +2172,11 @@
              scoreKey: realScoreKey || null, // Only set key if it exists
              comment: row[k], 
              commentKey: k 
-         });
+ });
          usedKeys.add(k);
-      }
-    });
-    } // END GENERIC LOGIC
+ }
+ });
+ } // END GENERIC LOGIC
     
     // --- Post-Processing: Rename, Filter, Sort ---
     const RENAME_MAP = {
@@ -2206,7 +2195,7 @@
         'Int_related_to': 'Interaction Related To',
         'Interaction Related To': 'Interaction Related To',
         'Documentation': 'Documentations'
-    };
+ };
 
     const EXCLUDE_LABELS = new Set(['Date Created', 'Agent Appeal']);
     
@@ -2259,7 +2248,7 @@
     /* 
     if (definitions && definitions.length > 0) {
         dynamicSection2 = definitions.map(d => d.Subcategory.trim());
-    } 
+ } 
     */
     
     const FULL_DISPLAY_ORDER = [...SECTION_1_ORDER, ...dynamicSection2];
@@ -2269,7 +2258,7 @@
         // Apply Renaming
         if (RENAME_MAP[attr.label]) {
             attr.label = RENAME_MAP[attr.label];
-        }
+ }
         
         // Attach Definition Data
         // Try exact match first
@@ -2282,28 +2271,28 @@
                  if (key.toLowerCase() === attr.label.toLowerCase()) {
                      def = val;
                      break;
-                 }
-             }
-        }
+ }
+ }
+ }
         
         if (!def) {
              // 2. Try singular/plural
              if (attr.label.endsWith('s')) {
                  def = defMap.get(attr.label.slice(0, -1));
-             } else {
+ } else {
                  def = defMap.get(attr.label + 's');
-             }
-        }
+ }
+ }
 
         if (def) {
             if (!attr.description) attr.description = def.Criteria;
             if (attr.maxScore === undefined || attr.maxScore === null) attr.maxScore = def.Score;
-        }
+ }
         
         // Filter
         if (EXCLUDE_LABELS.has(attr.label)) return false;
         return true;
-    });
+ });
 
     // T1-specific adjustment: replace Tempo Values and Ownership with Brand Representation Ownership
     if (key === 't1') {
@@ -2320,15 +2309,15 @@
                 if (normalized === 'brandrepresentationownership') {
                     brandDef = v;
                     break;
-                }
-            }
-        }
+ }
+ }
+ }
         if (!brandDef && Array.isArray(definitions)) {
             brandDef = definitions.find(d => {
                 const sub = String(d.Subcategory || '').toLowerCase();
                 return sub.includes('brand') && sub.includes('ownership');
-            }) || definitions.find(d => Number(d.ID || d.id || 0) === 16);
-        }
+ }) || definitions.find(d => Number(d.ID || d.id || 0) === 16);
+ }
 
         // Try to find an existing attribute derived from the DB column
         let brandAttr = processedAttributes.find(attr =>
@@ -2351,8 +2340,8 @@
                 brandScoreKey = k;
                 brandScoreVal = row[k];
                 break;
-            }
-        }
+ }
+ }
 
         let brandCommentKey = null;
         let brandCommentVal = '';
@@ -2361,24 +2350,24 @@
                 brandCommentKey = k;
                 brandCommentVal = row[k];
                 break;
-            }
-        }
+ }
+ }
 
         if (brandAttr) {
             brandAttr.label = brandLabel;
             if (brandDef) {
                 if (!brandAttr.description) brandAttr.description = brandDef.Criteria;
                 if (brandAttr.maxScore === undefined || brandAttr.maxScore === null) brandAttr.maxScore = brandDef.Score;
-            }
+ }
             if (brandScoreKey) {
                 brandAttr.scoreKey = brandScoreKey;
                 brandAttr.score = brandScoreVal;
-            }
+ }
             if (brandCommentKey) {
                 brandAttr.commentKey = brandCommentKey;
                 brandAttr.comment = brandCommentVal;
-            }
-        } else if (brandScoreKey || brandCommentKey) {
+ }
+ } else if (brandScoreKey || brandCommentKey) {
             processedAttributes.push({
                 label: brandLabel,
                 description: brandDef ? brandDef.Criteria : '',
@@ -2387,9 +2376,9 @@
                 comment: brandCommentVal,
                 commentKey: brandCommentKey,
                 maxScore: brandDef ? brandDef.Score : undefined
-            });
-        }
-    }
+ });
+ }
+ }
 
     // Deduplicate attributes with same label (prefer ones with Score)
     const uniqueAttrs = new Map();
@@ -2397,7 +2386,7 @@
         const existing = uniqueAttrs.get(attr.label);
         if (!existing) {
             uniqueAttrs.set(attr.label, attr);
-        } else {
+ } else {
             // Merge or Replace
             // If existing has no score but new one does, replace
             const existingHasScore = existing.score !== null && existing.score !== '';
@@ -2407,16 +2396,16 @@
                 // Take the new one, but preserve comment if new one lacks it?
                 if (!attr.comment && existing.comment) attr.comment = existing.comment;
                 uniqueAttrs.set(attr.label, attr);
-            } else if (existingHasScore && !newHasScore) {
+ } else if (existingHasScore && !newHasScore) {
                 // Keep existing, but if it lacks comment and new one has it, take comment
                 if (!existing.comment && attr.comment) existing.comment = attr.comment;
-            } else {
+ } else {
                 // Both have score or both lack score.
                 // Prefer the one with comment?
                 if (!existing.comment && attr.comment) uniqueAttrs.set(attr.label, attr);
-            }
-        }
-    });
+ }
+ }
+ });
     processedAttributes = Array.from(uniqueAttrs.values());
 
     // 2. Sort by FULL_DISPLAY_ORDER (Skip for SMS and T2 PS as they are already ordered)
@@ -2429,8 +2418,8 @@
             if (idxA !== -1) return -1;
             if (idxB !== -1) return 1;
             return a.label.localeCompare(b.label);
-        });
-    }
+ });
+ }
 
     // 3. Render in Two Groups
     const group1 = [];
@@ -2438,18 +2427,18 @@
 
     if (key === 'sms' || key === 't2ps' || key === 't2os' || key === 'salesret' || key === 'certification') {
         group2.push(...processedAttributes);
-    } else {
+ } else {
         processedAttributes.forEach(attr => {
             if (SECTION_1_ORDER.includes(attr.label)) {
                 group1.push(attr);
-            } else if (dynamicSection2.includes(attr.label)) {
+ } else if (dynamicSection2.includes(attr.label)) {
                 group2.push(attr);
-            } else {
+ } else {
                 // Fallback: Group 1
                 group1.push(attr);
-            }
-        });
-    }
+ }
+ });
+ }
 
     const recomputeScore = () => {
       if (key === 'certification') {
@@ -2459,15 +2448,15 @@
           const inputEl = body.querySelector(`[data-editing-key="${attrKey}"]`);
           const val = inputEl ? inputEl.value : row[attrKey];
           return String(val || '').trim().toLowerCase() === 'pass' ? sum + 1 : sum;
-        }, 0);
+ }, 0);
         const newScore = passingCount >= 4 ? 'Pass' : 'Fail';
         const scoreEl = metaSection.querySelector('#scoreDisplay');
         if (scoreEl) {
           scoreEl.textContent = newScore;
           scoreEl.style.color = newScore === 'Pass' ? 'var(--success-color)' : 'var(--danger-color)';
-        }
+ }
         return newScore;
-      }
+ }
 
       let zeroGateFail = false;
       let total = 0;
@@ -2488,30 +2477,30 @@
         // "if the score of the attribute is 0 and it is a No then the whole score should be 0"
         if (max === 0) {
           if (sval === 'no' || sval === 0 || sval === '0') zeroGateFail = true;
-        } else {
+ } else {
           // "if Yes is the value then add the new score if No then dedyct the score from the new score"
           // Assuming "deduct from new score" means we simply don't add points.
           if (sval === 'yes') {
             total += max;
-          } else {
+ } else {
              // Handle numeric partial scores if present, otherwise treat as 0
              const num = parseFloat(val);
              if (!isNaN(num)) {
                  // Cap at maxScore, but allow 0
                  total += Math.min(num, max);
-             } else {
+ } else {
                  // If "No" (and not a number), add 0. 
                  // Effectively "deducting" the potential points from the total.
                  total += 0;
-             }
-          }
-        }
-      });
+ }
+ }
+ }
+ });
       const newScore = zeroGateFail ? 0 : Math.round(total);
       const scoreEl = metaSection.querySelector('#scoreDisplay');
       if (scoreEl) scoreEl.textContent = `${newScore}%`;
       return newScore;
-    };
+ };
 
     const escapeHtml = (text) => {
       if (typeof text !== 'string') return text;
@@ -2521,7 +2510,7 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-    };
+ };
 
     // Helper to generate HTML for a list of attributes
     const renderAttrList = (list) => {
@@ -2548,13 +2537,13 @@
                    if (safeComment && safeComment.trim().length > 0) {
                         const displayContent = formatLink(safeComment);
                         commentHtml = `<div style="font-size:13px; color:var(--text-primary); white-space:pre-wrap; border-top:1px solid var(--border-color); padding-top:6px; margin-top:4px;" data-key="${attr.commentKey}">${displayContent}</div>`;
-                   } else {
+ } else {
                         commentHtml = `<div style="display:none;" data-key="${attr.commentKey}"></div>`;
-                   }
-                } else {
+ }
+ } else {
                    commentHtml = '';
-                }
-            }
+ }
+ }
 
             // Description / Max Score
             let descHtml = '';
@@ -2562,7 +2551,7 @@
             
             if (attr.maxScore !== undefined && attr.maxScore !== null) {
                 maxScoreLabel = `<span style="font-weight:400; color:var(--text-secondary); font-size:0.9em; margin-left:8px;">(Score: ${attr.maxScore})</span>`;
-            }
+ }
 
             if (attr.description) {
                 const safeDesc = escapeHtml(attr.description);
@@ -2578,7 +2567,7 @@
                     <div style="font-size:12px; color:var(--text-secondary); margin-top:6px; white-space:pre-wrap; line-height:1.4;">${safeDesc}</div>
                   </details>
                 `;
-             }
+ }
 
             html += `
                 <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; background: var(--bg-nav-item);">
@@ -2592,27 +2581,27 @@
                   ${descHtml}
                 </div>
             `;
-        });
+ });
         return html;
-    };
+ };
 
     let finalHtml = `
       <style>
         details.criteria-details > summary {
           list-style: none;
-        }
+ }
         details.criteria-details > summary::-webkit-details-marker {
           display: none;
-        }
+ }
         details.criteria-details > summary::before {
           content: '+ ';
           display: inline-block;
           width: 12px;
           font-weight: bold;
-        }
+ }
         details.criteria-details[open] > summary::before {
           content: '- ';
-        }
+ }
       </style>
     `;
     
@@ -2620,13 +2609,13 @@
     if (group1.length > 0) {
         finalHtml += `<h3>Attributes & Comments</h3>`;
         finalHtml += renderAttrList(group1);
-    }
+ }
 
     // Header 2
     if (group2.length > 0) {
         finalHtml += `<h3>Scorecard Attributes</h3>`;
         finalHtml += renderAttrList(group2);
-    }
+ }
     
     attrSection.innerHTML = finalHtml;
     body.appendChild(attrSection);
@@ -2637,9 +2626,9 @@
             const summary = d.querySelector('summary');
             if (summary) {
                 summary.textContent = d.open ? 'Hide Criteria' : 'Show Criteria';
-            }
-        });
-    });
+ }
+ });
+ });
 
     // --- Header with Actions (Admin Only) ---
     // Clear previous custom buttons in header, keep only the Close button (which we can re-inject or assume is there)
@@ -2685,7 +2674,7 @@
         let smeOpts = [];
         if (key === 't1') {
             smeOpts = await fetchSmeUsers();
-        }
+ }
 
         const DROPDOWN_CONFIG = {
             'customer_retained': ['Yes', 'No', 'N/A'],
@@ -2700,11 +2689,11 @@
             'sme_following_process': ['Yes', 'No', 'N/A'],
             'sales': ['Yes', 'No'],
             'phase': ['Certification', 'OJT']
-        };
+ };
         
         if (key === 't1') {
             DROPDOWN_CONFIG['sme_name'] = smeOpts;
-        }
+ }
 
         const editableElements = body.querySelectorAll('[data-key]');
         editableElements.forEach(el => {
@@ -2713,7 +2702,7 @@
           
           if (el.style.display === 'none') {
              el.style.display = 'block';
-          }
+ }
 
           // Determine input type
           const lowerKey = key.toLowerCase();
@@ -2738,7 +2727,7 @@
           if (def.name === 'T1_QA_New_Scorecards' && (lowerKey === 'sme_name' || lowerKey === 'sme name')) {
               TEXT_KEYS.delete('sme_name');
               TEXT_KEYS.delete('SME Name');
-          }
+ }
 
           if (el.innerText.length > 50 || lowerKey.includes('comment')) {
             const textarea = document.createElement('textarea');
@@ -2753,7 +2742,7 @@
             textarea.setAttribute('data-editing-key', key);
             el.innerHTML = '';
             el.appendChild(textarea);
-          } else if (TEXT_KEYS.has(key) || TEXT_KEYS.has(lowerKey)) {
+ } else if (TEXT_KEYS.has(key) || TEXT_KEYS.has(lowerKey)) {
             // Revert to text input for Ticket Details
             const input = document.createElement('input');
             input.type = 'text';
@@ -2769,14 +2758,14 @@
             el.appendChild(input);
             input.addEventListener('input', recomputeScore); // In case it affects score (unlikely but safe)
             input.addEventListener('change', recomputeScore);
-          } else {
+ } else {
             const select = document.createElement('select');
             select.style.width = '100%';
             
             // Constrain width for Interaction Related To
             if (lowerKey === 'interaction_related_to') {
                 select.style.maxWidth = '180px'; 
-            }
+ }
 
             select.style.background = 'var(--bg-primary)';
             select.style.color = 'var(--text-primary)';
@@ -2790,7 +2779,7 @@
 
             if (def.name === 'certification_audits' && processedAttributes.some((attr) => attr.scoreKey === key)) {
               options = ['Pass', 'Fail'];
-            }
+ }
             
             if (DROPDOWN_CONFIG[key]) options = DROPDOWN_CONFIG[key];
             else if (DROPDOWN_CONFIG[lowerKey]) options = DROPDOWN_CONFIG[lowerKey];
@@ -2802,12 +2791,12 @@
                 if (typeof opt === 'object' && opt !== null) {
                     option.value = opt.value;
                     option.textContent = opt.label;
-                } else {
+ } else {
                     option.value = opt;
                     option.textContent = opt;
-                }
+ }
                 select.appendChild(option);
-            });
+ });
 
             // Set current value
             const valStr = String(currentVal || '').trim();
@@ -2819,8 +2808,8 @@
                 if (opt.value === valStr) {
                     select.value = valStr;
                     matched = true;
-                }
-            });
+ }
+ });
             
             // Try match against text content (Label) if value match failed
             // Useful for transition from Name -> Email storage
@@ -2829,9 +2818,9 @@
                     if (opt.textContent === valStr) {
                         select.value = opt.value;
                         matched = true;
-                    }
-                });
-            }
+ }
+ });
+ }
 
             if (!matched) {
                 // Try case-insensitive match on value
@@ -2839,9 +2828,9 @@
                     if (opt.value.toLowerCase() === lowerVal) {
                         select.value = opt.value;
                         matched = true;
-                    }
-                });
-            }
+ }
+ });
+ }
             
             if (!matched) {
                  // Try numeric logic for Yes/No if options are strictly Yes/No
@@ -2852,23 +2841,23 @@
                      if (!isNaN(numVal) && numVal > 0) select.value = 'Yes';
                      else if (!isNaN(numVal) && numVal === 0) select.value = 'No';
                      else select.value = 'No'; // Default fallback
-                 } else {
+ } else {
                      // For other dropdowns, select first option as default if no match
                      if (select.options.length > 0) select.selectedIndex = 0;
-                 }
-            }
+ }
+ }
 
             el.innerHTML = '';
             el.appendChild(select);
             select.addEventListener('change', recomputeScore);
-          }
-        });
-      });
+ }
+ });
+ });
 
       // Cancel Action
       cancelBtn.addEventListener('click', () => {
         openAuditModal(row, def, key); // Re-render original
-      });
+ });
 
       // Save Action
       saveBtn.addEventListener('click', async () => {
@@ -2879,15 +2868,15 @@
         const computedScore = recomputeScore();
         if (key === 'certification') {
           updates[def.scoreCol] = computedScore;
-        } else if (!isNaN(computedScore)) {
+ } else if (!isNaN(computedScore)) {
           // SMS scorecard and T1/T2 PS scorecard convention is to store score as string with % (e.g. "85%")
           // Updated: T2 OS (T2_OS_NEW_2025) also requires % format as per user request
            if (def.name === 'sms_scorecard' || def.name === 'T1_QA_New_Scorecards' || def.name === 't2_ps_scorecards' || def.name === 'T2_OS_NEW_2025' || def.name === 'MX_Social_Media_Scorecard' || def.name === 'sales_ret_audits') {
              updates[def.scoreCol] = `${computedScore}%`;
-           } else {
+ } else {
             updates[def.scoreCol] = computedScore;
-          }
-        }
+ }
+ }
 
         inputs.forEach(input => {
           const key = input.getAttribute('data-editing-key');
@@ -2896,15 +2885,15 @@
           if (String(row[key]) != String(val)) {
             updates[key] = val;
             hasChanges = true;
-          }
-        });
+ }
+ });
 
         if (!hasChanges) {
           showToast('No changes detected', 'warning');
           isEditing = false;
           openAuditModal(row, def);
           return;
-        }
+ }
 
         try {
             // Save to Database
@@ -2914,9 +2903,9 @@
               headers: {
                 ...authHeaders(),
                 'Content-Type': 'application/json'
-              },
+ },
               body: JSON.stringify(updates)
-            });
+ });
 
             if (!res.ok) throw new Error(await res.text());
 
@@ -2933,21 +2922,21 @@
                   state.data[tableKey][dataIndex] = updatedRow;
                   renderTable(tableKey, state.data[tableKey], def);
                   updateStats(tableKey, state.data[tableKey], def.scoreCol);
-                }
-            }
+ }
+ }
 
             openAuditModal(updatedRow, def, key); // Re-render with new data
 
-        } catch (e) {
+ } catch (e) {
             console.error('Update failed', e);
             showToast('Failed to update record: ' + e.message, 'error');
-        }
-      });
+ }
+ });
 
       headerControls.appendChild(editBtn);
       headerControls.appendChild(saveBtn);
       headerControls.appendChild(cancelBtn);
-    }
+ }
 
     // Always append Close button at the end
     const closeBtn = document.createElement('button');
@@ -2956,7 +2945,7 @@
     closeBtn.onclick = () => {
         document.getElementById('auditModal').style.display = 'none';
         document.body.style.overflow = ''; // Restore scrolling
-    };
+ };
 
     // Toggle Descriptions Button
     const toggleDescBtn = document.createElement('button');
@@ -2975,17 +2964,16 @@
         details.forEach(d => {
             if (isExpand) d.setAttribute('open', '');
             else d.removeAttribute('open');
-        });
+ });
         
         toggleDescBtn.textContent = isExpand ? 'Collapse All Criteria' : 'Expand All Criteria';
-    };
+ };
     
     headerControls.appendChild(toggleDescBtn);
     headerControls.appendChild(closeBtn);
 
     modal.style.display = 'flex';
-  }
-
+ }
 
   // --- 5. Range Picker Logic (Simplified from mx-t1-scorecard.js) ---
   function initRangePicker() {
@@ -3018,7 +3006,7 @@
     const render = () => {
       renderCalendar('Left', leftDate);
       renderCalendar('Right', rightDate);
-    };
+ };
 
     const renderCalendar = (side, date) => {
       const year = date.getFullYear();
@@ -3032,14 +3020,14 @@
         const opt = document.createElement('option');
         opt.value = i; opt.textContent = m; if(i===month) opt.selected=true;
         mSel.appendChild(opt);
-      });
+ });
       
       ySel.innerHTML = '';
       for(let y=2023; y<=2030; y++){
         const opt = document.createElement('option');
         opt.value = y; opt.textContent = y; if(y===year) opt.selected=true;
         ySel.appendChild(opt);
-      }
+ }
 
       // Grid
       const grid = document.getElementById(`rpDays${side}`);
@@ -3050,7 +3038,7 @@
       // Empty slots
       for(let i=0; i<firstDay; i++) {
         grid.appendChild(document.createElement('div'));
-      }
+ }
       
       for(let d=1; d<=daysInMonth; d++) {
         const el = document.createElement('div');
@@ -3067,25 +3055,25 @@
           if (!tempStart || (tempStart && tempEnd)) {
             tempStart = currentIso;
             tempEnd = null;
-          } else {
+ } else {
             if (currentIso < tempStart) {
               tempEnd = tempStart;
               tempStart = currentIso;
-            } else {
+ } else {
               tempEnd = currentIso;
-            }
-          }
+ }
+ }
           render();
-        });
+ });
         grid.appendChild(el);
-      }
-    };
+ }
+ };
 
     // Event Listeners
     openBtn.parentElement.addEventListener('click', () => {
         modal.style.display = 'flex';
         render();
-    });
+ });
 
     document.getElementById('rpCancel').addEventListener('click', () => modal.style.display = 'none');
     
@@ -3096,30 +3084,30 @@
         display.textContent = `${tempStart} to ${tempEnd}`;
         modal.style.display = 'none';
         // Auto fetch?
-      } else {
+ } else {
         alert('Please select both start and end dates.');
-      }
-    });
+ }
+ });
     
     applyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         fetchAnalytics();
-    });
+ });
 
     // Navigation
     document.getElementById('rpPrev').addEventListener('click', () => {
       leftDate.setMonth(leftDate.getMonth()-1);
       rightDate.setMonth(rightDate.getMonth()-1);
       render();
-    });
+ });
     document.getElementById('rpNext').addEventListener('click', () => {
       leftDate.setMonth(leftDate.getMonth()+1);
       rightDate.setMonth(rightDate.getMonth()+1);
       render();
-    });
+ });
 
     render();
-  }
+ }
 
   // Init
   loadDatabaseConfig();

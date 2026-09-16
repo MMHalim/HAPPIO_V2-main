@@ -9,23 +9,23 @@
         body {
             padding: 20px;
             font-family: Arial, sans-serif;
-        }
+ }
         .debug-info {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
             margin: 20px 0;
-        }
+ }
         .debug-title {
             font-weight: bold;
             color: var(--text-primary);
             margin-bottom: 10px;
-        }
+ }
         .debug-item {
             margin: 5px 0;
             color: var(--text-secondary);
-        }
+ }
     </style>
 </head>
 <body>
@@ -58,7 +58,7 @@
         console.error = function(...args) {
             consoleErrors.push(args.join(' '));
             originalError.apply(console, args);
-        };
+ };
 
         // Update debug info
         function updateDebugInfo() {
@@ -67,61 +67,47 @@
             document.getElementById('nav-items-count').textContent = window.globalNav ? window.globalNav.navigationItems.length : 'Not loaded';
             document.getElementById('global-nav-status').textContent = window.globalNav ? 'Loaded' : 'Not loaded';
             document.getElementById('console-errors').textContent = consoleErrors.length > 0 ? consoleErrors.join('; ') : 'None';
-        }
+ }
 
         // Test functions
         function testNavigation() {
-            console.log('Testing navigation creation...');
             if (window.globalNav) {
-                console.log('Global nav exists:', window.globalNav);
-                console.log('Navigation items:', window.globalNav.navigationItems);
-            } else {
-                console.log('Global nav does not exist');
-            }
+ } else {
+ }
             updateDebugInfo();
-        }
+ }
 
         async function testSupabaseAPI() {
-            console.log('Testing Supabase API...');
             try {
                 const response = await fetch('https://kupaxfvjfobfdgtbfnnt.supabase.co/rest/v1/navigation_items?is_active=eq.true&order=order_index.asc', {
                     headers: {
                         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw',
                         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw'
-                    }
-                });
+ }
+ });
                 
-                console.log('API Response status:', response.status);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('API Response data:', data);
-                } else {
+ } else {
                     const errorText = await response.text();
-                    console.log('API Error:', errorText);
-                }
-            } catch (error) {
-                console.log('API Exception:', error);
-            }
+ }
+ } catch (error) {
+ }
             updateDebugInfo();
-        }
+ }
 
         function showConsoleLogs() {
-            console.log('=== CONSOLE LOGS ===');
-            console.log('Errors:', consoleErrors);
-            console.log('Global Nav:', window.globalNav);
             if (window.globalNav) {
-                console.log('Navigation Items:', window.globalNav.navigationItems);
-            }
+ }
             updateDebugInfo();
-        }
+ }
 
         // Initialize debug info
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 updateDebugInfo();
-                console.log('Page loaded, checking navigation...');
-            }, 1000);
-        });
+ }, 1000);
+ });
 
         // Update debug info every 2 seconds
         setInterval(updateDebugInfo, 2000);

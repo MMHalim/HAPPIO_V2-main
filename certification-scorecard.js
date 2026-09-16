@@ -5,7 +5,7 @@ const CertificationScorecard = (function() {
     restUrl: null,
     apiKey: null,
     serviceKey: null,
-  };
+ };
 
   // Track single datepicker selection steps
   let dateRangePickStep = 0; // Single-date picker keeps from/to aligned to the same day
@@ -30,24 +30,24 @@ const CertificationScorecard = (function() {
     if (h < 6) startAnchor.setDate(startAnchor.getDate() - 1);
     const id = `${startAnchor.getFullYear()}-${String(startAnchor.getMonth()+1).padStart(2,'0')}-${String(startAnchor.getDate()).padStart(2,'0')}`;
     return { allowed, id };
-  }
+ }
   function getSkipNextKey(userKey) {
     const { id } = computeSkipWindow();
     return `skipNextUses:${userKey || 'anon'}:${id}`;
-  }
+ }
   function getSkipNextUsed(userKey) {
     const key = getSkipNextKey(userKey);
     const used = parseInt(localStorage.getItem(key) || '0', 10) || 0;
     return { key, used };
-  }
+ }
   function incSkipNextUsed(userKey) {
     const { key, used } = getSkipNextUsed(userKey);
     localStorage.setItem(key, String(used + 1));
     return used + 1;
-  }
+ }
   function remainingSkipNext(userKey) {
     return Math.max(0, SKIP_NEXT_LIMIT - getSkipNextUsed(userKey).used);
-  }
+ }
 
   function loadConfig() {
     const candidates = ['/database_config.json', './database_config.json', '../database_config.json'];
@@ -63,13 +63,13 @@ const CertificationScorecard = (function() {
           config.apiKey = json.supabase.client_api_key;
           config.serviceKey = json.supabase.service_key || null;
           return;
-        } catch (e) {
+ } catch (e) {
           lastError = e;
-        }
-      }
+ }
+ }
       console.error('Failed to load config', lastError);
-    })();
-  }
+ })();
+ }
 
   function authHeaders(opts = {}) {
     const { useServiceKey = false } = opts;
@@ -84,8 +84,43 @@ const CertificationScorecard = (function() {
       'Authorization': `Bearer ${useBearer}`,
       'Content-Type': 'application/json',
       'Prefer': 'count=exact'
-    };
-  }
+ };
+ }
+
+  async function loadSmeList() {
+    const sel = document.getElementById('smeName');
+    if (!sel || !config.restUrl) return;
+
+    const currentValue = sel.value;
+    const url = `${config.restUrl}/sme_list?select=id,name,sort_order,is_active&is_active=eq.true&order=sort_order.asc,id.asc`;
+
+    try {
+      let res = await fetch(url, { headers: authHeaders() });
+      if (!res.ok) res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
+      if (!res.ok) throw new Error(`Failed to fetch SME list: ${res.status}`);
+
+      const rows = await res.json();
+      if (!Array.isArray(rows) || !rows.length) return;
+
+      sel.innerHTML = '<option value="">Select SME</option>';
+      rows.forEach((item) => {
+        const name = String(item.name || '').trim();
+        if (!name) return;
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+ });
+
+      const matching = rows.find((item) => item.name === currentValue);
+      if (matching) {
+        sel.value = String(matching.name || '');
+ } else if (Array.from(sel.options).some((option) => option.value === currentValue)) {
+        sel.value = currentValue;
+ }
+ } catch (error) {
+ }
+ }
  
   function showAlert(msg, opts = {}) {
     try {
@@ -97,7 +132,7 @@ const CertificationScorecard = (function() {
         else if (lowerMsg.includes('fail') || lowerMsg.includes('error') || lowerMsg.includes('not authenticated')) type = 'error';
         else if (lowerMsg.includes('duplicate') || lowerMsg.includes('please') || lowerMsg.includes('empty')) type = 'warning';
         else type = 'info';
-      }
+ }
       const title = options.title || (type === 'error' ? 'Error' : type === 'success' ? 'Success' : type === 'warning' ? 'Heads up' : 'Notice');
 
       // Build overlay
@@ -112,7 +147,7 @@ const CertificationScorecard = (function() {
         overlay.style.justifyContent = 'center';
         overlay.style.zIndex = '9999';
         document.body.appendChild(overlay);
-      }
+ }
       // Make Heads up/Warning and Success overlays transparent so page remains visible
       overlay.style.background = ((type === 'warning' || type === 'success') ? 'transparent' : 'rgba(0, 0, 0, 0.45)');
       overlay.innerHTML = '';
@@ -146,7 +181,7 @@ const CertificationScorecard = (function() {
         warning: 'var(--warning-color)',
         error: 'var(--danger-color)',
         info: 'var(--primary-color)'
-      };
+ };
       accent.style.background = colorMap[type] || 'var(--primary-color)';
       card.appendChild(accent);
 
@@ -187,13 +222,13 @@ const CertificationScorecard = (function() {
           const li = document.createElement('li');
           li.textContent = line.replace(/^\-?\s*/, '');
           ul.appendChild(li);
-        });
+ });
         msgContainer.appendChild(ul);
-      } else {
+ } else {
         const p = document.createElement('p');
         p.textContent = msg || '';
         msgContainer.appendChild(p);
-      }
+ }
       card.appendChild(msgContainer);
 
       const footer = document.createElement('div');
@@ -208,45 +243,45 @@ const CertificationScorecard = (function() {
       card.appendChild(footer);
 
       overlay.appendChild(card);
-    } catch (e) {
+ } catch (e) {
       // As a fallback, use default alert
       alert(msg);
-    }
-  }
+ }
+ }
 
   const CERTIFICATION_ATTRIBUTE_COLUMN_MAP = [
     {
       label: 'Understanding & Effectiveness',
       valueKey: 'Understanding_And_Effectiveness',
       commentKey: 'Comments_Understanding_And_Effectiveness'
-    },
+ },
     {
       label: 'Communication',
       valueKey: 'Communication',
       commentKey: 'Comments_Communication'
-    },
+ },
     {
       label: 'Issue Resolution (Product, Process, and FCR)',
       valueKey: 'Issue_Resolution_Product_Process_And_FCR',
       commentKey: 'Comments_Issue_Resolution_Product_Process_And_FCR'
-    },
+ },
     {
       label: 'Brand Representation and Ownership',
       valueKey: 'Brand_Representation_And_Ownership',
       commentKey: 'Comments_Brand_Representation_And_Ownership'
-    },
+ },
     {
       label: 'Internal Process',
       valueKey: 'Internal_Process',
       commentKey: 'Comments_Internal_Process'
-    }
+ }
   ];
 
   function isLocalEmailHost() {
     if (typeof location === 'undefined') return false;
     const host = String(location.hostname || '').toLowerCase();
     return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]' || host === '::' || host === '[::]';
-  }
+ }
 
   // SMTP email sender, mirrors appeal implementation
   async function sendEmailSMTP({ html, to, cc = [], bcc = [], subject }) {
@@ -257,10 +292,9 @@ const CertificationScorecard = (function() {
       const raw = await res.text();
       if (!res.ok) throw new Error(raw || `HTTP ${res.status}`);
       return true;
-    } catch (e) {
-      console.warn('sendEmailSMTP error:', e); return false;
-    }
-  }
+ } catch (e) {
+ }
+ }
 
   // --- Attributes Scoring (Pass/Fail-based) ---
   const ATTR_ORDER = {
@@ -270,32 +304,32 @@ const CertificationScorecard = (function() {
     Process: [
       'Process Awareness','Verification','Documentation','CRM Updates','Workflow'
     ]
-  };
+ };
 
   let attributes = [];
   function mapSubcategoryToGroup(subcat) {
     if (ATTR_ORDER.Customer.includes(subcat)) return 'Customer';
     if (ATTR_ORDER.Process.includes(subcat)) return 'Process';
     return 'Customer';
-  }
+ }
   function orderAttributes(list) {
     const groups = { Customer: [], Process: [] };
     list.forEach(item => {
       const g = mapSubcategoryToGroup(item.Subcategory);
       groups[g].push(item);
-    });
+ });
     const sortByOrder = (arr, order) => arr.sort((a,b) => {
       const ia = order.indexOf(a.Subcategory);
       const ib = order.indexOf(b.Subcategory);
       const sa = ia === -1 ? 999 : ia;
       const sb = ib === -1 ? 999 : ib;
       return sa - sb;
-    });
+ });
     return {
       Customer: sortByOrder(groups.Customer, ATTR_ORDER.Customer),
       Process: sortByOrder(groups.Process, ATTR_ORDER.Process)
-    };
-  }
+ };
+ }
 
   async function fetchAttributes() {
     const normalizeAttributes = (rows) => Array.isArray(rows) ? rows.map((row, idx) => {
@@ -308,36 +342,35 @@ const CertificationScorecard = (function() {
           const normalized = normalize(candidate);
           const fuzzy = keys.find((key) => normalize(key) === normalized);
           if (fuzzy && source[fuzzy] != null) return source[fuzzy];
-        }
+ }
         return fallback;
-      };
+ };
       return {
         ...row,
         ID: pickMappedValue(row, ['ID', 'id'], idx + 1),
         Subcategory: String(pickMappedValue(row, ['Attribute', 'attribute', 'Subcategory', 'subcategory', 'subcategor'], '') || ''),
         Criteria: String(pickMappedValue(row, ['Criteria', 'criteria', 'description'], '') || ''),
         Score: pickMappedValue(row, ['Score', 'score'], 0)
-      };
-    }) : [];
+ };
+ }) : [];
 
     try {
       const url = `${config.restUrl}/cert_attr?select=*&order=id.asc`;
       const res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) throw new Error(await res.text());
       attributes = normalizeAttributes(await res.json());
-    } catch (e) {
-      console.warn('Failed to fetch cert_attr via client, retrying with service key...', e);
+ } catch (e) {
       try {
         const url = `${config.restUrl}/cert_attr?select=*&order=id.asc`;
         const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
         if (!res.ok) throw new Error(await res.text());
         attributes = normalizeAttributes(await res.json());
-      } catch (err) {
+ } catch (err) {
         console.error('Failed to fetch cert_attr', err);
         attributes = [];
-      }
-    }
-  }
+ }
+ }
+ }
 
   function createRTEComponent(placeholder) {
     const container = document.createElement('div');
@@ -354,9 +387,9 @@ const CertificationScorecard = (function() {
       btn.onmousedown = (e) => {
         e.preventDefault();
         document.execCommand(cmd, false, null);
-      };
+ };
       return btn;
-    };
+ };
 
     toolbar.appendChild(createBtn('• Bullet', 'insertUnorderedList'));
     toolbar.appendChild(createBtn('1. Number', 'insertOrderedList'));
@@ -370,7 +403,7 @@ const CertificationScorecard = (function() {
     container.appendChild(editor);
 
     return { container, editor };
-  }
+ }
 
   function extractTextFromRTE(editor) {
     if (!editor) return '';
@@ -387,30 +420,30 @@ const CertificationScorecard = (function() {
         node.childNodes.forEach(child => {
           if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
             content += '\n• ' + getText(child).trim();
-          } else {
+ } else {
             content += getText(child);
-          }
-        });
-      } else if (tag === 'ol') {
+ }
+ });
+ } else if (tag === 'ol') {
         let idx = 0;
         node.childNodes.forEach(child => {
           if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
             idx++;
             content += `\n${idx}. ` + getText(child).trim();
-          } else {
+ } else {
             content += getText(child);
-          }
-        });
-      } else {
+ }
+ });
+ } else {
         node.childNodes.forEach(c => content += getText(c));
-      }
+ }
       
       if (tag === 'div' || tag === 'p') return '\n' + content;
       return content;
-    }
+ }
     
     return getText(editor).replace(/\n\s*\n/g, '\n').trim();
-  }
+ }
 
   function initStaticRTEs() {
     const ids = [
@@ -428,13 +461,13 @@ const CertificationScorecard = (function() {
 
       editor.addEventListener('input', () => {
         ta.value = extractTextFromRTE(editor);
-      });
+ });
 
       ta.parentNode.insertBefore(container, ta);
       ta.style.display = 'none';
       ta.dataset.hasRte = 'true';
-    });
-  }
+ });
+ }
 
   function buildAttrRow(item, idx) {
     const row = document.createElement('div');
@@ -495,7 +528,7 @@ const CertificationScorecard = (function() {
 
     editor.addEventListener('input', () => {
       hiddenArea.value = extractTextFromRTE(editor);
-    });
+ });
 
     rteContainer.appendChild(hiddenArea);
     
@@ -509,7 +542,7 @@ const CertificationScorecard = (function() {
     failInput.addEventListener('change', onChange);
 
     return row;
-  }
+ }
 
   function renderAttributes() {
     const grouped = orderAttributes(attributes);
@@ -520,7 +553,7 @@ const CertificationScorecard = (function() {
     const merged = [...grouped.Customer, ...grouped.Process];
     merged.forEach((item, idx) => { if (customerEl) customerEl.appendChild(buildAttrRow(item, idx)); });
     updateAttrSubtotal();
-  }
+ }
 
   function updateAttrSubtotal() {
     const subtotalEl = document.getElementById('attrSubtotal');
@@ -530,10 +563,10 @@ const CertificationScorecard = (function() {
       const name = `attr_${item.ID || idx}`;
       const passed = document.querySelector(`input[name="${name}"][value="Pass"]:checked`);
       if (passed) passedCount += 1;
-    });
+ });
     const finalScore = passedCount >= 4 ? 'Pass' : 'Fail';
     subtotalEl.textContent = `Final Score: ${finalScore}`;
-  }
+ }
 
   function countSelectedAttributes() {
     let count = 0;
@@ -541,9 +574,9 @@ const CertificationScorecard = (function() {
       const name = `attr_${item.ID || idx}`;
       const sel = document.querySelector(`input[name="${name}"]:checked`);
       if (sel) count += 1;
-    });
+ });
     return count;
-  }
+ }
 
   function selectAllAttributesYes() {
     attributes.forEach((item, idx) => {
@@ -556,11 +589,11 @@ const CertificationScorecard = (function() {
         if (comment) {
           const wrapper = comment.closest('.attr-comment');
           if (wrapper) wrapper.style.display = 'block';
-        }
-      }
-    });
+ }
+ }
+ });
     updateAttrSubtotal();
-  }
+ }
 
   function resetAttributesUI() {
     // Clear attribute radios and comments
@@ -572,15 +605,15 @@ const CertificationScorecard = (function() {
       if (editor) editor.innerHTML = '';
       const cw = row.querySelector('.attr-comment');
       if (cw) cw.style.display = 'none';
-    });
+ });
     updateAttrSubtotal();
-  }
+ }
 
   function updateConversationIdState() {
     const input = document.getElementById('conversationIdInput');
     if (!input) return;
     input.disabled = false;
-  }
+ }
 
   function focusDateRange() {
     const single = document.getElementById('dateRangeSingle');
@@ -596,7 +629,7 @@ const CertificationScorecard = (function() {
     toggleGetCaseEnabled();
     // Open overlay range picker
     openRangePicker();
-  }
+ }
 
   function selectAllRadios() {
     const groups = ['communication','professionalism','knowledge','resolution'];
@@ -607,10 +640,10 @@ const CertificationScorecard = (function() {
       radios.forEach(r => {
         const v = parseInt(r.value, 10);
         if (!isNaN(v) && v > maxVal) { maxVal = v; maxRadio = r; }
-      });
+ });
       if (maxRadio) maxRadio.checked = true;
-    });
-  }
+ });
+ }
 
   function ymdParts(dateStr) {
     // expects yyyy-mm-dd
@@ -619,8 +652,8 @@ const CertificationScorecard = (function() {
       yyyy: d.getFullYear(),
       mm: String(d.getMonth()+1).padStart(2,'0'),
       dd: String(d.getDate()).padStart(2,'0')
-    };
-  }
+ };
+ }
 
   async function getCase() {
     // mirror f_order validation
@@ -628,7 +661,7 @@ const CertificationScorecard = (function() {
     if (currentConv && currentConv.length > 0) {
       showAlert('Please submit the current Case before asking for a new one !');
       return;
-    }
+ }
     const emptyWidgets = [];
     const team = document.getElementById('teamSelect').value;
     const dateFrom = document.getElementById('dateFrom').value;
@@ -644,9 +677,9 @@ const CertificationScorecard = (function() {
       const agentLabel = (opt && opt.textContent) || '';
       const emailInput = document.getElementById('agentEmailInput');
       if (emailInput && agentEmail) emailInput.value = agentEmail;
-    } else {
+ } else {
       agentEmail = (document.getElementById('agentEmailInput')||{value:''}).value.trim();
-    }
+ }
 
     if (!team) emptyWidgets.push('Select Team');
     if (!dateFrom || !dateTo) emptyWidgets.push('Date Range');
@@ -656,7 +689,7 @@ const CertificationScorecard = (function() {
       const emptyWidgetNames = emptyWidgets.join(', ');
       showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
       return;
-    }
+ }
 
     try {
       const f = ymdParts(dateFrom);
@@ -689,30 +722,21 @@ const CertificationScorecard = (function() {
       if (excludedFreshworksIds && excludedFreshworksIds.size > 0) {
         const idsList = Array.from(excludedFreshworksIds).join(',');
         url += `&id=not.in.(${idsList})`;
-      }
-      console.log('GetCase URL:', url);
-      console.log('GetCase filters:', { agentEmail, team: `|${team}|`, dateFrom, dateTo, excludedIds: Array.from(excludedFreshworksIds) });
+ }
       const token = localStorage.getItem('login_token');
-      console.log('Auth token present:', !!token, 'token length:', token ? token.length : 0);
       let res = await fetch(url, { headers: authHeaders() });
-      console.log('GetCase response status (client):', res.status, res.statusText);
-      console.log('GetCase content-range (client):', res.headers ? res.headers.get('Content-Range') : null);
       if (!res.ok) {
         const errText = await res.text();
-        console.warn('GetCase client error body:', errText);
         // Fallback: try with service key in case RLS blocks anon/client
         res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-        console.log('GetCase response status (service):', res.status, res.statusText);
-        console.log('GetCase content-range (service):', res.headers ? res.headers.get('Content-Range') : null);
         if (!res.ok) {
           const svcErr = await res.text();
           console.error('GetCase service error body:', svcErr);
           showAlert('Unable to fetch case. Please check filters or login.');
           return;
-        }
-      }
+ }
+ }
       const rowsRaw = await res.json();
-      console.log('GetCase raw rows:', rowsRaw);
       const rows = (rowsRaw || []).map(item => {
         // Match Appsmith SQL: derive Conversation_ID from interaction_id
         const directCid = item.con_Id || '';
@@ -721,8 +745,7 @@ const CertificationScorecard = (function() {
         const dashPos = interaction.indexOf('-');
         const cid = dashPos > 0 ? interaction.slice(0, dashPos) : interaction;
         return { Conversation_ID: directCid || cid, id: item.id };
-      });
-      console.log('GetCase mapped rows:', rows);
+ });
       if (!rows || rows.length === 0) {
         showAlert('No conversations found for the selected criteria.');
         // Diagnostic: try querying without agent filter but same Channel/date to verify visibility
@@ -734,16 +757,11 @@ const CertificationScorecard = (function() {
             `&date_created=gte.${encodeURIComponent(dateFrom)}` +
             `&date_created=lte.${encodeURIComponent(dateTo)}` +
             `&limit=5`;
-          console.log('Diagnostic URL (no agent filter):', diagUrl);
           const diagRes = await fetch(diagUrl, { headers: authHeaders({ useServiceKey: true }) });
-          console.log('Diagnostic response status:', diagRes.status, diagRes.statusText);
-          console.log('Diagnostic content-range:', diagRes.headers ? diagRes.headers.get('Content-Range') : null);
           if (diagRes.ok) {
             const diagRows = await diagRes.json();
-            console.log('Diagnostic raw rows:', diagRows);
-          } else {
-            console.log('Diagnostic error body:', await diagRes.text());
-          }
+ } else {
+ }
           // Additional diagnostic: same agent and dates, but no Channel filter
           let diagUrl2 = `${config.restUrl}/Freshworks?select=interaction_id,id,con_Id,first_responded_by,Channel,date_created` +
             `&first_responded_by=eq.${encodeURIComponent(agentEmail)}` +
@@ -752,21 +770,15 @@ const CertificationScorecard = (function() {
             `&date_created=gte.${encodeURIComponent(dateFrom)}` +
             `&date_created=lte.${encodeURIComponent(dateTo)}` +
             `&limit=5`;
-          console.log('Diagnostic URL (no team filter):', diagUrl2);
           const diagRes2 = await fetch(diagUrl2, { headers: authHeaders({ useServiceKey: true }) });
-          console.log('Diagnostic 2 response status:', diagRes2.status, diagRes2.statusText);
-          console.log('Diagnostic 2 content-range:', diagRes2.headers ? diagRes2.headers.get('Content-Range') : null);
           if (diagRes2.ok) {
             const diagRows2 = await diagRes2.json();
-            console.log('Diagnostic 2 raw rows:', diagRows2);
-          } else {
-            console.log('Diagnostic 2 error body:', await diagRes2.text());
-          }
-        } catch (diagErr) {
-          console.warn('Diagnostic fetch failed:', diagErr);
-        }
+ } else {
+ }
+ } catch (diagErr) {
+ }
         return;
-      }
+ }
       const item = rows[0];
       const conversationId = item.Conversation_ID || item.conversation_id || '';
       const convInput = document.getElementById('conversationIdInput');
@@ -786,7 +798,7 @@ const CertificationScorecard = (function() {
                      : teamVal.includes('phone') ? 'Phone'
                      : '';
         if (mapped) chSel.value = mapped;
-      }
+ }
 
       // Persist case across refresh and debug the saved values
       try {
@@ -798,7 +810,7 @@ const CertificationScorecard = (function() {
           u.searchParams.set('cid', conversationId);
           u.searchParams.set('rid', item.id || '');
           window.history.replaceState({}, '', u.toString());
-        } catch (urlErr) { console.warn('T1 URL persist failed:', urlErr); }
+ } catch (urlErr) {}
         // sessionStorage and window.name
         try {
           sessionStorage.setItem('t1_last_cid', conversationId);
@@ -807,25 +819,15 @@ const CertificationScorecard = (function() {
           nameObj.t1_last_cid = conversationId;
           nameObj.t1_last_rid = (item.id || '');
           window.name = JSON.stringify(nameObj);
-        } catch (sessErr) { console.warn('T1 session/window persist failed:', sessErr); }
+ } catch (sessErr) {}
         // cookies
         try {
           document.cookie = `t1cid=${encodeURIComponent(conversationId)}; path=/; max-age=604800`;
           document.cookie = `t1rid=${encodeURIComponent(item.id || '')}; path=/; max-age=604800`;
-        } catch (cookieErr) { console.warn('T1 cookie persist failed:', cookieErr); }
+ } catch (cookieErr) {}
         // Debug confirms
-        console.log('DEBUG T1 Save: cid=%s rid=%s', conversationId, (item.id || ''));
-        console.log('DEBUG T1 Storage localStorage.t1_current_case:', localStorage.getItem('t1_current_case'));
-        console.log('DEBUG T1 Storage sessionStorage:', {
-          t1_last_cid: sessionStorage.getItem('t1_last_cid'),
-          t1_last_rid: sessionStorage.getItem('t1_last_rid')
-        });
-        console.log('DEBUG T1 Storage window.name:', window.name);
-        console.log('DEBUG T1 Storage cookies:', document.cookie);
-        console.log('DEBUG T1 Storage URL:', window.location.href);
-      } catch (persistErr) {
-        console.warn('T1 persist failed:', persistErr);
-      }
+ } catch (persistErr) {
+ }
 
       // On Get Case: mark conversation as QAED and assign auditor (Coach Name)
       const auditorEmail = localStorage.getItem('loggedInUserEmail') || '';
@@ -835,13 +837,13 @@ const CertificationScorecard = (function() {
       if (!coachNameVal) {
         const cachedName = localStorage.getItem('loggedInUserName') || localStorage.getItem('userName') || '';
         if (!cachedName) {
-          try { await loadTakerName(); } catch(e) { console.warn('loadTakerName failed, falling back to email:', e); }
+          try { await loadTakerName(); } catch(e) {}
           coachNameInput = document.getElementById('takerNameInput');
           coachNameVal = (coachNameInput && coachNameInput.value ? coachNameInput.value.trim() : '');
-        } else {
+ } else {
           coachNameVal = cachedName;
-        }
-      }
+ }
+ }
       const assignedVal = coachNameVal || auditorEmail || '';
       const targetId = (rowIdInput && rowIdInput.value) ? rowIdInput.value : (item.id || '');
       if (targetId) {
@@ -851,25 +853,24 @@ const CertificationScorecard = (function() {
           let patchRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(patchBody) });
           if (!patchRes.ok) {
             const pe = await patchRes.text();
-            console.warn('Failed to mark QAED/assign (client):', pe);
             patchRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders({ useServiceKey: true }), body: JSON.stringify(patchBody) });
-            if (!patchRes.ok) console.warn('Failed to mark QAED/assign (service):', await patchRes.text());
+            if (!patchRes.ok) {}
           }
         } catch(pErr) {
           const msg = (pErr && pErr.message) ? pErr.message : String(pErr || '');
           const abortLike = (pErr && pErr.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
-          if (!abortLike) console.warn('Patch error (mark QAED/assign):', pErr);
+          if (!abortLike) {}
         }
-      }
-    } catch (error) {
+ }
+ } catch (error) {
       const msg = (error && error.message) ? error.message : String(error || '');
       const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
       if (!abortLike) {
         console.error('An error occurred during execution:', error);
         showAlert('Error while fetching case. Please try again.');
-      }
-    }
-  }
+ }
+ }
+ }
 
   async function loadAgents() {
     try {
@@ -881,13 +882,13 @@ const CertificationScorecard = (function() {
         try {
           const parsed = JSON.parse(s);
           if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
-        } catch (_) {}
+ } catch (_) {}
         return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
-      };
+ };
       const hasAnyRole = (value, required) => {
         const roles = normalizeRoles(value).map(r => r.toLowerCase());
         return required.some(r => roles.includes(String(r).toLowerCase()));
-      };
+ };
 
       const urlAll = `${config.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
       let res = await fetch(urlAll, { headers: authHeaders() });
@@ -915,8 +916,8 @@ const CertificationScorecard = (function() {
           opt.textContent = u.name;
           if (u.email) opt.setAttribute('data-email', u.email);
           sel.appendChild(opt);
-        });
-      }
+ });
+ }
       function renderDropdown(list) {
         if (!ddList) return;
         ddList.innerHTML = '';
@@ -931,10 +932,10 @@ const CertificationScorecard = (function() {
             if (emailInput) emailInput.value = u.email || '';
             if (ddInput) ddInput.value = u.name || '';
             if (ddPanel) ddPanel.hidden = true;
-          });
+ });
           ddList.appendChild(li);
-        });
-      }
+ });
+ }
       renderSelect(sel._allAgents);
       renderDropdown(sel._allAgents);
       // Bind change to auto-fill email and reflect in custom input
@@ -945,7 +946,7 @@ const CertificationScorecard = (function() {
         const emailInput = document.getElementById('agentEmailInput');
         if (emailInput) emailInput.value = email;
         if (ddInput) ddInput.value = label;
-      });
+ });
       // Bind embedded filter to list re-render
       if (ddFilter) {
         const applyFilter = () => {
@@ -953,16 +954,15 @@ const CertificationScorecard = (function() {
           const all = sel._allAgents || [];
           const filtered = q ? all.filter(a => (a.name||'').toLowerCase().includes(q) || (a.email||'').toLowerCase().includes(q)) : all;
           renderDropdown(filtered);
-        };
+ };
         // Replace any previous handler safely
         ddFilter.removeEventListener('input', ddFilter.__applyFilter);
         ddFilter.addEventListener('input', applyFilter);
         ddFilter.__applyFilter = applyFilter;
-      }
-    } catch(e) {
-      console.log('Failed to load agents', e);
-    }
-  }
+ }
+ } catch(e) {
+ }
+ }
 
   async function fetchRecent() {
     try {
@@ -971,47 +971,44 @@ const CertificationScorecard = (function() {
 
       if (!config.restUrl) {
         await loadConfig();
-      }
+ }
 
       if (!isLocal) {
         try {
           const apiRes = await fetch('/api/recent-certification-submissions?limit=10', {
             headers: { 'Content-Type': 'application/json' }
-          });
+ });
           const apiText = await apiRes.text();
           if (!apiRes.ok) {
-            console.warn('Recent submissions API error:', apiText);
-          } else {
+ } else {
             const apiJson = apiText ? JSON.parse(apiText) : {};
             rows = Array.isArray(apiJson?.rows) ? apiJson.rows : [];
-          }
-        } catch (apiErr) {
-          console.warn('Recent submissions API fetch failed:', apiErr);
-        }
-      }
+ }
+ } catch (apiErr) {
+ }
+ }
 
       if (!rows) {
         const url = `${config.restUrl}/certification_audits?select=id,Conversation_ID,Agent_Name,Channel,Final_Score,created_at&order=created_at.desc&limit=10`;
         let res = await fetch(url, { headers: authHeaders() });
         if (!res.ok) {
           const errText = await res.text();
-          console.warn('Recent submissions fetch error (client):', errText);
           // Fallback: try with service key in case RLS blocks anon/client
           res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
           if (!res.ok) {
             const svcErr = await res.text();
             console.error('Recent submissions fetch error (service):', svcErr);
             throw new Error(svcErr);
-          }
-        }
+ }
+ }
         rows = await res.json();
-      }
+ }
 
       renderRecentRows(rows || []);
-    } catch (err) {
+ } catch (err) {
       console.error('Failed to load recent submissions', err);
-    }
-  }
+ }
+ }
 
   function formatRecentCreatedAt(row) {
     const rawValue = row.created_at ?? row.Created_At ?? '';
@@ -1028,11 +1025,11 @@ const CertificationScorecard = (function() {
         minute: '2-digit',
         second: '2-digit',
         hour12: false
-      }).format(parsed);
-    } catch (_) {
+ }).format(parsed);
+ } catch (_) {
       return parsed.toLocaleString('en-GB');
-    }
-  }
+ }
+ }
 
   function renderRecentRows(rows) {
     const tbody = document.querySelector('#recentTable tbody');
@@ -1049,8 +1046,8 @@ const CertificationScorecard = (function() {
         <td>${formatRecentCreatedAt(r)}</td>
       `;
       tbody.appendChild(tr);
-    });
-  }
+ });
+ }
 
   function upsertRecentSubmissionRow(row) {
     const tbody = document.querySelector('#recentTable tbody');
@@ -1063,8 +1060,8 @@ const CertificationScorecard = (function() {
       const existingConversationId = (tr.children[1]?.textContent || '').trim();
       if (keyConversationId && existingConversationId === keyConversationId) {
         tr.remove();
-      }
-    });
+ }
+ });
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -1079,35 +1076,35 @@ const CertificationScorecard = (function() {
 
     while (tbody.children.length > 10) {
       tbody.removeChild(tbody.lastElementChild);
-    }
-  }
+ }
+ }
 
   const ANALYTICS_ERROR_FIELDS = [
     {
       key: 'Understanding_And_Effectiveness',
       label: 'Understanding & Effectiveness',
       commentKey: 'Comments_Understanding_And_Effectiveness'
-    },
+ },
     {
       key: 'Communication',
       label: 'Communication',
       commentKey: 'Comments_Communication'
-    },
+ },
     {
       key: 'Issue_Resolution_Product_Process_And_FCR',
       label: 'Issue Resolution (Product, Process, and FCR)',
       commentKey: 'Comments_Issue_Resolution_Product_Process_And_FCR'
-    },
+ },
     {
       key: 'Brand_Representation_And_Ownership',
       label: 'Brand Representation and Ownership',
       commentKey: 'Comments_Brand_Representation_And_Ownership'
-    },
+ },
     {
       key: 'Internal_Process',
       label: 'Internal Process',
       commentKey: 'Comments_Internal_Process'
-    }
+ }
   ];
 
   let analyticsRows = [];
@@ -1122,7 +1119,7 @@ const CertificationScorecard = (function() {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
+ }
 
   function analyticsToCairoDateTime(value) {
     if (!value) return '';
@@ -1137,31 +1134,31 @@ const CertificationScorecard = (function() {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
-      }).format(date);
-    } catch (_) {
+ }).format(date);
+ } catch (_) {
       return date.toLocaleString('en-GB');
-    }
-  }
+ }
+ }
 
   function analyticsTodayYmd() {
     const now = new Date();
     const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 10);
-  }
+ }
 
   function analyticsShiftYmd(daysBack) {
     const base = new Date();
     base.setDate(base.getDate() - daysBack);
     const local = new Date(base.getTime() - base.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 10);
-  }
+ }
 
   function analyticsGetRangeInputs() {
     return {
       fromInput: document.getElementById('analyticsDateFrom'),
       toInput: document.getElementById('analyticsDateTo')
-    };
-  }
+ };
+ }
 
   function analyticsUpdateRangeLabel() {
     const { fromInput, toInput } = analyticsGetRangeInputs();
@@ -1171,12 +1168,12 @@ const CertificationScorecard = (function() {
     const to = toInput.value;
     if (from && to) {
       valueEl.textContent = `${from} -> ${to}`;
-    } else if (from) {
+ } else if (from) {
       valueEl.textContent = `${from} -> Pick end date`;
-    } else {
+ } else {
       valueEl.textContent = 'Select date range';
-    }
-  }
+ }
+ }
 
   function analyticsSetDefaultDates(days = 30) {
     const { fromInput, toInput } = analyticsGetRangeInputs();
@@ -1184,18 +1181,18 @@ const CertificationScorecard = (function() {
     if (!toInput.value) toInput.value = analyticsTodayYmd();
     if (!fromInput.value) fromInput.value = analyticsShiftYmd(days - 1);
     analyticsUpdateRangeLabel();
-  }
+ }
 
   function analyticsSetStatus(message) {
     const el = document.getElementById('analyticsStatus');
     if (el) el.textContent = message;
-  }
+ }
 
   function analyticsBuildDateIso(ymd, endOfDay = false) {
     if (!ymd) return '';
     const date = new Date(`${ymd}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}`);
     return date.toISOString();
-  }
+ }
 
   function analyticsToDisplayDate(ymd) {
     if (!ymd) return 'Select range';
@@ -1206,11 +1203,11 @@ const CertificationScorecard = (function() {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
-      }).format(date);
-    } catch (_) {
+ }).format(date);
+ } catch (_) {
       return ymd;
-    }
-  }
+ }
+ }
 
   function analyticsUpdateRangeSummary() {
     const summary = document.getElementById('analyticsRangeSummary');
@@ -1221,11 +1218,11 @@ const CertificationScorecard = (function() {
     summary.textContent = from && to
       ? `${analyticsToDisplayDate(from)} - ${analyticsToDisplayDate(to)}`
       : 'Pick a start and end date';
-  }
+ }
 
   function analyticsStripTime(date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  }
+ }
 
   function analyticsEnsureRangeAnchor() {
     if (analyticsRangeAnchorYear != null && analyticsRangeAnchorMonth != null) return;
@@ -1235,11 +1232,11 @@ const CertificationScorecard = (function() {
       analyticsRangeAnchorYear = fromDate.getFullYear();
       analyticsRangeAnchorMonth = fromDate.getMonth();
       return;
-    }
+ }
     const today = new Date();
     analyticsRangeAnchorYear = today.getFullYear();
     analyticsRangeAnchorMonth = today.getMonth();
-  }
+ }
 
   function analyticsShiftRangeAnchor(delta) {
     analyticsEnsureRangeAnchor();
@@ -1247,13 +1244,13 @@ const CertificationScorecard = (function() {
     if (analyticsRangeAnchorMonth < 0) {
       analyticsRangeAnchorMonth = 11;
       analyticsRangeAnchorYear -= 1;
-    }
+ }
     if (analyticsRangeAnchorMonth > 11) {
       analyticsRangeAnchorMonth = 0;
       analyticsRangeAnchorYear += 1;
-    }
+ }
     analyticsRenderRangeCalendars();
-  }
+ }
 
   function analyticsRangeDayCell(dateObj, otherMonth, fromDate, toDate) {
     const iso = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
@@ -1267,7 +1264,7 @@ const CertificationScorecard = (function() {
     if (isEnd) classes.push('end');
     if (inRange && !isStart && !isEnd) classes.push('in-range');
     return `<div class="${classes.join(' ')}" data-iso="${iso}">${dateObj.getDate()}</div>`;
-  }
+ }
 
   function analyticsRenderRangeMonth(containerId, year, month) {
     const cont = document.getElementById(containerId);
@@ -1281,15 +1278,15 @@ const CertificationScorecard = (function() {
     let html = '';
     for (let i = 0; i < firstDayIdx; i++) {
       html += analyticsRangeDayCell(new Date(year, month - 1, prevMonthDays - firstDayIdx + 1 + i), true, fromDate, toDate);
-    }
+ }
     for (let day = 1; day <= daysInMonth; day++) {
       html += analyticsRangeDayCell(new Date(year, month, day), false, fromDate, toDate);
-    }
+ }
     const totalCells = firstDayIdx + daysInMonth;
     const trailing = (Math.ceil(totalCells / 7) * 7) - totalCells;
     for (let i = 1; i <= trailing; i++) {
       html += analyticsRangeDayCell(new Date(year, month + 1, i), true, fromDate, toDate);
-    }
+ }
     cont.innerHTML = html;
     cont.querySelectorAll('.analytics-range-day').forEach((dayEl) => {
       dayEl.addEventListener('click', () => {
@@ -1297,18 +1294,18 @@ const CertificationScorecard = (function() {
         if (!fromInput.value || (fromInput.value && toInput.value)) {
           fromInput.value = iso;
           toInput.value = '';
-        } else if (iso < fromInput.value) {
+ } else if (iso < fromInput.value) {
           toInput.value = fromInput.value;
           fromInput.value = iso;
-        } else {
+ } else {
           toInput.value = iso;
-        }
+ }
         analyticsUpdateRangeLabel();
         analyticsUpdateRangeSummary();
         analyticsRenderRangeCalendars();
-      });
-    });
-  }
+ });
+ });
+ }
 
   function analyticsRenderRangeCalendars() {
     analyticsEnsureRangeAnchor();
@@ -1320,7 +1317,7 @@ const CertificationScorecard = (function() {
     analyticsRenderRangeMonth('analyticsRangeDaysLeft', leftYear, leftMonth);
     analyticsRenderRangeMonth('analyticsRangeDaysRight', rightDate.getFullYear(), rightDate.getMonth());
     analyticsUpdateRangeSummary();
-  }
+ }
 
   function openAnalyticsRangeModal() {
     const modal = document.getElementById('analyticsRangeModal');
@@ -1330,21 +1327,21 @@ const CertificationScorecard = (function() {
       const date = new Date(`${fromInput.value}T00:00:00`);
       analyticsRangeAnchorYear = date.getFullYear();
       analyticsRangeAnchorMonth = date.getMonth();
-    } else {
+ } else {
       analyticsRangeAnchorYear = null;
       analyticsRangeAnchorMonth = null;
-    }
+ }
     analyticsRenderRangeCalendars();
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
-  }
+ }
 
   function closeAnalyticsRangeModal() {
     const modal = document.getElementById('analyticsRangeModal');
     if (!modal) return;
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
-  }
+ }
 
   async function fetchAnalyticsRows(dateFrom, dateTo) {
     if (!config.restUrl) await loadConfig();
@@ -1370,12 +1367,11 @@ const CertificationScorecard = (function() {
     let res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) {
       const errText = await res.text();
-      console.warn('Analytics fetch error (client):', errText);
       res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (!res.ok) throw new Error(await res.text());
-    }
+ }
     return await res.json();
-  }
+ }
 
   function aggregateAnalytics(rows) {
     const totalAudits = rows.length;
@@ -1400,15 +1396,15 @@ const CertificationScorecard = (function() {
           channel: row.Channel || 'Unknown',
           phase: row.Phase || 'Unknown',
           created_at: row.created_at || ''
-        });
-      });
+ });
+ });
       return {
         field,
         label: field.label,
         count: matchingRows.length,
         comments: comments.slice(0, 5)
-      };
-    }).sort((a, b) => b.count - a.count);
+ };
+ }).sort((a, b) => b.count - a.count);
 
     rows.forEach((row) => {
       const agent = row.Agent_Name || 'Unknown';
@@ -1426,7 +1422,7 @@ const CertificationScorecard = (function() {
       if (String(row.Final_Score || '').trim().toLowerCase() === 'pass') channelStats.pass += 1;
       else channelStats.fail += 1;
       channelMap.set(channel, channelStats);
-    });
+ });
 
     const contributors = Array.from(contributorMap.values())
       .filter((item) => item.failedPoints > 0 || item.failedAudits > 0)
@@ -1448,7 +1444,7 @@ const CertificationScorecard = (function() {
         errors: ANALYTICS_ERROR_FIELDS
           .filter((field) => String(row[field.key] || '').trim().toLowerCase() === 'fail')
           .map((field) => field.label)
-      }));
+ }));
 
     const worstError = topErrors.find((item) => item.count > 0);
     const topContributor = contributors[0];
@@ -1466,9 +1462,9 @@ const CertificationScorecard = (function() {
       insight: {
         worstError: worstError ? `${worstError.label} (${worstError.count})` : 'No repeated errors found',
         topContributor: topContributor ? `${topContributor.name} (${topContributor.failedPoints} failed attributes)` : 'No contributor trend yet'
-      }
-    };
-  }
+ }
+ };
+ }
 
   function renderAnalyticsGauge(title, value, total, color, meta, fullRing = false) {
     const radius = 40;
@@ -1490,7 +1486,7 @@ const CertificationScorecard = (function() {
         <div class="analytics-gauge-meta">${analyticsEscapeHtml(meta)}</div>
       </div>
     `;
-  }
+ }
 
   function renderAnalytics() {
     const gaugeGrid = document.getElementById('analyticsGaugeGrid');
@@ -1594,7 +1590,7 @@ const CertificationScorecard = (function() {
         </div>
       </div>
     `).join('') : `<div class="analytics-empty">No failed audits found for this date range.</div>`;
-  }
+ }
 
   async function applyAnalyticsDateRange() {
     const { fromInput, toInput } = analyticsGetRangeInputs();
@@ -1604,30 +1600,30 @@ const CertificationScorecard = (function() {
     if (!from || !to) {
       showAlert('Please choose both analytics dates.', { title: 'Analytics range required', type: 'warning' });
       return;
-    }
+ }
     if (from > to) {
       showAlert('The analytics start date cannot be after the end date.', { title: 'Invalid date range', type: 'warning' });
       return;
-    }
+ }
     analyticsSetStatus('Loading analytics...');
     try {
       analyticsRows = await fetchAnalyticsRows(from, to);
       analyticsLoadedOnce = true;
       renderAnalytics();
       analyticsSetStatus(`Loaded ${analyticsRows.length} audits from ${from} to ${to}`);
-    } catch (error) {
+ } catch (error) {
       console.error('Failed to load analytics', error);
       analyticsSetStatus('Analytics load failed');
       showAlert(`Failed to load analytics: ${error && error.message ? error.message : 'Unexpected error'}`, { title: 'Analytics error', type: 'error' });
-    }
-  }
+ }
+ }
 
   async function refreshAnalyticsIfVisible() {
     const overlay = document.getElementById('analyticsOverlay');
     if (overlay && overlay.classList.contains('open')) {
       await applyAnalyticsDateRange();
-    }
-  }
+ }
+ }
 
   function openAnalyticsOverlay() {
     const overlay = document.getElementById('analyticsOverlay');
@@ -1636,16 +1632,16 @@ const CertificationScorecard = (function() {
     overlay.setAttribute('aria-hidden', 'false');
     analyticsSetDefaultDates();
     if (!analyticsLoadedOnce) {
-      applyAnalyticsDateRange().catch((err) => console.warn('Initial analytics load failed', err));
-    }
-  }
+      applyAnalyticsDateRange();
+ }
+ }
 
   function closeAnalyticsOverlay() {
     const overlay = document.getElementById('analyticsOverlay');
     if (!overlay) return;
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
-  }
+ }
 
   function applyAnalyticsPreset(days) {
     const { fromInput, toInput } = analyticsGetRangeInputs();
@@ -1654,8 +1650,8 @@ const CertificationScorecard = (function() {
     fromInput.value = analyticsShiftYmd(Math.max(0, Number(days) - 1));
     analyticsUpdateRangeLabel();
     analyticsUpdateRangeSummary();
-    applyAnalyticsDateRange().catch((err) => console.warn('Preset analytics load failed', err));
-  }
+    applyAnalyticsDateRange();
+ }
 
   function initAnalyticsFabDrag() {
     const fab = document.getElementById('analyticsFab');
@@ -1681,7 +1677,7 @@ const CertificationScorecard = (function() {
         fab.classList.add('dragging');
         startLeft = rect.left;
         startTop = rect.top;
-      }
+ }
       if (!didMove) return;
       const maxLeft = Math.max(12, window.innerWidth - fab.offsetWidth - 12);
       const maxTop = Math.max(12, window.innerHeight - fab.offsetHeight - 12);
@@ -1689,14 +1685,14 @@ const CertificationScorecard = (function() {
       const nextTop = Math.min(maxTop, Math.max(12, startTop + dy));
       fab.style.left = `${nextLeft}px`;
       fab.style.top = `${nextTop}px`;
-    };
+ };
 
     const onPointerUp = (event) => {
       if (pointerId !== event.pointerId) return;
       fab.classList.remove('dragging');
       pointerId = null;
       setTimeout(() => { fab.dataset.dragging = 'false'; }, 0);
-    };
+ };
 
     fab.addEventListener('pointerdown', (event) => {
       pointerId = event.pointerId;
@@ -1705,7 +1701,7 @@ const CertificationScorecard = (function() {
       startY = event.clientY;
       didMove = false;
       fab.setPointerCapture(pointerId);
-    });
+ });
     fab.addEventListener('pointermove', onPointerMove);
     fab.addEventListener('pointerup', onPointerUp);
     fab.addEventListener('pointercancel', onPointerUp);
@@ -1714,10 +1710,10 @@ const CertificationScorecard = (function() {
         event.preventDefault();
         event.stopPropagation();
         return;
-      }
+ }
       openAnalyticsOverlay();
-    });
-  }
+ });
+ }
 
   function initAnalyticsUI() {
     analyticsSetDefaultDates();
@@ -1737,31 +1733,31 @@ const CertificationScorecard = (function() {
     const monthRight = document.getElementById('analyticsRangeMonthRight');
     const yearRight = document.getElementById('analyticsRangeYearRight');
     if (closeBtn) closeBtn.addEventListener('click', closeAnalyticsOverlay);
-    if (applyBtn) applyBtn.addEventListener('click', () => { applyAnalyticsDateRange().catch((err) => console.warn('Analytics apply failed', err)); });
+    if (applyBtn) applyBtn.addEventListener('click', () => { applyAnalyticsDateRange(); });
     if (rangeTrigger) rangeTrigger.addEventListener('click', openAnalyticsRangeModal);
     if (rangeCloseBtn) rangeCloseBtn.addEventListener('click', closeAnalyticsRangeModal);
     if (rangeCancelBtn) rangeCancelBtn.addEventListener('click', closeAnalyticsRangeModal);
     if (rangeApplyBtn) {
       rangeApplyBtn.addEventListener('click', () => {
         closeAnalyticsRangeModal();
-        applyAnalyticsDateRange().catch((err) => console.warn('Analytics range apply failed', err));
-      });
-    }
+        applyAnalyticsDateRange();
+ });
+ }
     if (rangeModal) {
       rangeModal.addEventListener('click', (event) => {
         if (event.target === rangeModal) closeAnalyticsRangeModal();
-      });
-    }
+ });
+ }
     if (prevBtn) prevBtn.addEventListener('click', () => analyticsShiftRangeAnchor(-1));
     if (nextBtn) nextBtn.addEventListener('click', () => analyticsShiftRangeAnchor(1));
     if (monthLeft) monthLeft.addEventListener('change', () => {
       analyticsRangeAnchorMonth = parseInt(monthLeft.value, 10);
       analyticsRenderRangeCalendars();
-    });
+ });
     if (yearLeft) yearLeft.addEventListener('change', () => {
       analyticsRangeAnchorYear = parseInt(yearLeft.value, 10);
       analyticsRenderRangeCalendars();
-    });
+ });
     if (monthRight) monthRight.addEventListener('change', () => {
       const rightMonth = parseInt(monthRight.value, 10);
       const rightYear = parseInt((yearRight && yearRight.value) || `${new Date().getFullYear()}`, 10);
@@ -1769,7 +1765,7 @@ const CertificationScorecard = (function() {
       analyticsRangeAnchorYear = leftDate.getFullYear();
       analyticsRangeAnchorMonth = leftDate.getMonth();
       analyticsRenderRangeCalendars();
-    });
+ });
     if (yearRight) yearRight.addEventListener('change', () => {
       const rightYear = parseInt(yearRight.value, 10);
       const rightMonth = parseInt((monthRight && monthRight.value) || '0', 10);
@@ -1777,11 +1773,11 @@ const CertificationScorecard = (function() {
       analyticsRangeAnchorYear = leftDate.getFullYear();
       analyticsRangeAnchorMonth = leftDate.getMonth();
       analyticsRenderRangeCalendars();
-    });
+ });
     document.querySelectorAll('[data-analytics-preset]').forEach((button) => {
       button.addEventListener('click', () => applyAnalyticsPreset(button.getAttribute('data-analytics-preset')));
-    });
-  }
+ });
+ }
 
   async function loadCalibrationCase() {
     try {
@@ -1789,61 +1785,56 @@ const CertificationScorecard = (function() {
       const base = `${config.restUrl}/Assigning_Calibration`;
       const select = 'select=Conversation_Id,day,Score_card,id';
       async function fetchWithAuth(url, label) {
-        console.log('Calibration API request', label, url);
         let res = await fetch(url, { headers: authHeaders() });
         let data = [];
         if (res.ok) {
           data = await res.json();
-        } else {
+ } else {
           const errText = await res.text();
-          console.warn('Calibration fetch error (client)', label, errText);
-        }
+ }
 
         // If client headers returned nothing (or failed), retry with service key
         if ((!Array.isArray(data) || data.length === 0) && config.serviceKey) {
-          console.log('Calibration fetch retrying with service key for', label);
           res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
           if (!res.ok) {
             const svcErr = await res.text();
             console.error('Calibration fetch error (service)', label, svcErr);
             showAlert('Unable to fetch calibration case. Please try again.');
             return null;
-          }
+ }
           data = await res.json();
-        }
+ }
 
-        console.log('Calibration API rows', label, data);
         return data;
-      }
+ }
       const urlLatest = `${base}?${select}&Score_card=eq.MX-T1_Scorecard&order=day.desc&limit=1`;
       const rows = await fetchWithAuth(urlLatest, 't1-eq-day');
       if (!rows || !Array.isArray(rows) || rows.length === 0) {
-        console.log('Calibration API returned no rows for MX-T1_Scorecard with max day filter');
         showAlert('No calibration cases found for MX-T1_Scorecard.');
         calibrationMode = false;
         return;
-      }
+ }
       const row = rows[0] || {};
       const convId = (row.Conversation_Id || row.conversation_id || '').toString().trim();
       if (!convId) {
         showAlert('Calibration case found but Conversation ID is empty.');
         calibrationMode = false;
         return;
-      }
+ }
       const convInput = document.getElementById('conversationIdInput');
       if (convInput) {
         convInput.value = convId;
         convInput.setAttribute('value', convId);
         convInput.dispatchEvent(new Event('input'));
         convInput.dispatchEvent(new Event('change'));
-      }
+ }
       const icon = document.getElementById('ticketIconBtn');
       if (icon && convId) icon.style.display = 'inline-flex';
       const calibYes = document.querySelector('input[name="calibration"][value="Yes"]');
       if (calibYes) {
         calibYes.checked = true;
         calibYes.dispatchEvent(new Event('change', { bubbles: true }));
-      }
+ }
       calibrationMode = true;
       const agentSel = document.getElementById('agentNameSelect');
       const agentDdInput = document.getElementById('agentDropdownInput');
@@ -1855,8 +1846,8 @@ const CertificationScorecard = (function() {
           if (label === 'Heba El Sobky') {
             targetOption = opt;
             break;
-          }
-        }
+ }
+ }
         if (targetOption) {
           agentSel.value = targetOption.value;
           const email = targetOption.getAttribute('data-email') || '';
@@ -1864,14 +1855,14 @@ const CertificationScorecard = (function() {
           if (emailInput) emailInput.value = email;
           if (agentDdInput) agentDdInput.value = 'Heba El Sobky';
           agentSel.dispatchEvent(new Event('change'));
-        }
-      }
+ }
+ }
       showAlert(`Calibration conversation loaded: ${convId}`, { type: 'success' });
-    } catch (err) {
+ } catch (err) {
       console.error('Failed to load calibration case', err);
       showAlert('Failed to load calibration case. Please try again.');
-    }
-  }
+ }
+ }
 
   async function loadTakerName() {
     try {
@@ -1887,25 +1878,24 @@ const CertificationScorecard = (function() {
       if (res.ok) {
         const rows = await res.json();
         name = rows && rows[0] && (rows[0].Name || rows[0].name) || '';
-      }
+ }
       // Fallback to service key if needed
       if (!name) {
         res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
         if (res.ok) {
           const rows = await res.json();
           name = rows && rows[0] && (rows[0].Name || rows[0].name) || '';
-        }
-      }
+ }
+ }
       if (name && input) {
         input.value = name;
         // cache for quick reuse
         localStorage.setItem('userName', name);
         localStorage.setItem('loggedInUserName', name);
-      }
-    } catch (e) {
-      console.log('Could not load taker name', e);
-    }
-  }
+ }
+ } catch (e) {
+ }
+ }
 
   function totalFromRadios() {
     let passedCount = 0;
@@ -1913,9 +1903,9 @@ const CertificationScorecard = (function() {
       const name = `attr_${item.ID || idx}`;
       const passed = document.querySelector(`input[name="${name}"][value="Pass"]:checked`);
       if (passed) passedCount += 1;
-    });
+ });
     return passedCount >= 4 ? 'Pass' : 'Fail';
-  }
+ }
 
   function validate() {
     // Helpers
@@ -1927,9 +1917,9 @@ const CertificationScorecard = (function() {
         const nameEl = row.querySelector('.attr-name');
         const text = nameEl ? (nameEl.textContent || '').trim() : (row.dataset && row.dataset.subcategory ? row.dataset.subcategory : '');
         if (text === label) return row;
-      }
+ }
       return null;
-    };
+ };
     const buildAttrMap = () => {
       // Dynamic validation based on fetched attributes
       const labels = attributes.map(a => a.Subcategory);
@@ -1942,12 +1932,12 @@ const CertificationScorecard = (function() {
           const commentEl = row.querySelector('textarea');
           const comment = commentEl ? (commentEl.value || '').trim() : '';
           res[l] = { val, comment };
-        } else {
+ } else {
           res[l] = { val: '', comment: '' };
-        }
-      });
+ }
+ });
       return res;
-    };
+ };
 
     const conversationId = (document.getElementById('conversationIdInput') || { value: '' }).value.trim();
     const agentNameSelect = document.getElementById('agentNameSelect');
@@ -1987,9 +1977,9 @@ const CertificationScorecard = (function() {
       const list = empties.map(e => `- ${e}`).join('\n');
       showAlert(list, { title: 'Missing required fields', type: 'warning' });
       return false;
-    }
+ }
     return true;
-  }
+ }
 
   async function submit() {
     if (!validate()) return;
@@ -2005,16 +1995,16 @@ const CertificationScorecard = (function() {
     const buildTicketUrl = (conversationId) => {
       const base = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/27/0/conversation/';
       return conversationId ? `${base}${encodeURIComponent(conversationId)}` : '';
-    };
+ };
     const findAttrRowByLabel = (label) => {
       const rows = document.querySelectorAll('.attr-row');
       for (const row of rows) {
         const nameEl = row.querySelector('.attr-name');
         const text = nameEl ? (nameEl.textContent || '').trim() : (row.dataset && row.dataset.subcategory ? row.dataset.subcategory : '');
         if (text === label) return row;
-      }
+ }
       return null;
-    };
+ };
     const getAttrValue = (label) => { const row = findAttrRowByLabel(label); const chk = row ? row.querySelector('input[type="radio"]:checked') : null; return chk ? chk.value : ''; };
     const getAttrComment = (label) => { const row = findAttrRowByLabel(label); const ta = row ? row.querySelector('textarea') : null; return ta ? (ta.value || '').trim() : ''; };
     const getAttrScore = (label) => {
@@ -2029,16 +2019,16 @@ const CertificationScorecard = (function() {
           const n = s ? parseInt((s.textContent || '').trim(), 10) : NaN;
           if (Number.isFinite(n)) { return n; }
           break;
-        }
-      }
+ }
+ }
       // Fallback to attributes dataset
       try {
         const item = (attributes || []).find(a => (a.Subcategory || '').trim() === label);
         const v = item && (item.Score != null ? item.Score : 0);
         const n = parseInt(String(v), 10);
         return Number.isFinite(n) ? n : 0;
-      } catch (e) { return 0; }
-    };
+ } catch (e) { return 0; }
+ };
 
     const payload = {
       Conversation_ID: convId,
@@ -2060,17 +2050,16 @@ const CertificationScorecard = (function() {
       Sales: getRadioVal('salesRadio'),
       Sales_Comments: ((document.getElementById('salesComments') || {}).value || '').trim(),
       fitness_fluency: getRadioVal('fitnessFluency')
-    };
+ };
 
     CERTIFICATION_ATTRIBUTE_COLUMN_MAP.forEach(({ label, valueKey, commentKey }) => {
       payload[valueKey] = getAttrValue(label);
       payload[commentKey] = getAttrComment(label);
-    });
+ });
 
     try {
       const targetTable = 'certification_audits';
       const url = `${config.restUrl}/${targetTable}`;
-      console.log('Submitting Certification scorecard', { targetTable });
 
       const headers = authHeaders();
       headers['Prefer'] = 'return=minimal';
@@ -2079,7 +2068,6 @@ const CertificationScorecard = (function() {
       let res = await fetch(url, { method: 'POST', headers, body });
       if (!res.ok) {
         const bodyText = await res.text().catch(() => '');
-        console.warn('Submit error (client token):', targetTable, res.status, bodyText);
         if (res.status === 401 || res.status === 403) {
           const svcHeaders = authHeaders({ useServiceKey: true });
           svcHeaders['Prefer'] = 'return=minimal';
@@ -2087,7 +2075,7 @@ const CertificationScorecard = (function() {
           const resSvc = await fetch(url, { method: 'POST', headers: svcHeaders, body });
           if (!resSvc.ok) throw new Error(await resSvc.text());
           res = resSvc;
-        } else {
+ } else {
           const lower = String(bodyText || '').toLowerCase();
           const isDuplicate =
             (res.status === 409 || res.status === 400) &&
@@ -2101,18 +2089,18 @@ const CertificationScorecard = (function() {
             if (!patchRes.ok) {
               const patchText = await patchRes.text().catch(() => '');
               throw new Error(patchText || 'Duplicate update failed');
-            }
+ }
             try {
               const notice = document.getElementById('duplicateNotice');
               if (notice) notice.style.display = 'block';
               showAlert('Duplicate Conversation ID detected. Updated the existing submission.', { title: 'Duplicate detected', type: 'warning' });
-            } catch (_) {}
+ } catch (_) {}
             res = patchRes;
-          } else {
+ } else {
             throw new Error(bodyText || 'Unknown submission error');
-          }
-        }
-      }
+ }
+ }
+ }
 
       // Only Certification submissions send the QA summary email.
       if (String(payload.Phase || '').trim().toLowerCase() === 'certification') {
@@ -2126,12 +2114,11 @@ const CertificationScorecard = (function() {
           to: payload.agent_email,
           cc: payload.loggedInEmail ? [payload.loggedInEmail] : [],
           subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}`
-        });
+ });
         if (!emailSent) {
-          console.warn('Email send failed or is not configured for the current environment.');
           try { showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); } catch(_) {}
-        }
-      }
+ }
+ }
 
       upsertRecentSubmissionRow({
         Conversation_ID: payload.Conversation_ID,
@@ -2139,20 +2126,20 @@ const CertificationScorecard = (function() {
         Channel: payload.Channel,
         Final_Score: payload.Final_Score,
         created_at: new Date().toISOString()
-      });
+ });
       try { showAlert('Scorecard submitted successfully', { title: 'Submission successful', type: 'success' }); } catch(_) {}
       try {
         reset();
-      } finally {
+ } finally {
         await fetchRecent();
         await refreshAnalyticsIfVisible();
-      }
-    } catch (e) {
+ }
+ } catch (e) {
       console.error('Failed to submit scorecard', e);
       const msg = (e && (e.message || (typeof e === 'string' ? e : ''))) || 'Unexpected error';
       showAlert(`Failed to submit scorecard: ${msg}`, { title: 'Submission failed', type: 'error' });
-    }
-  }
+ }
+ }
 
   function buildEmailHTML(p, opts = {}) {
     const pill = (label, value) => `
@@ -2169,7 +2156,7 @@ const CertificationScorecard = (function() {
           <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#111827;">${safeVal}</td>
           <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#6b7280; white-space: pre-wrap;">${safeComment ? safeComment : ''}</td>
         </tr>`;
-    };
+ };
     const attrRows = CERTIFICATION_ATTRIBUTE_COLUMN_MAP
       .map(({ label, valueKey, commentKey }) => row(label, p[valueKey], p[commentKey]))
       .join('');
@@ -2182,7 +2169,7 @@ const CertificationScorecard = (function() {
           <span style="font-weight:800; font-size:20px; color:#111827; letter-spacing:0.02em;">Tempo</span>
         </div>
       </div>`;
-    })();
+ })();
     const header = `
       ${logoHtml}
       <div style="background:#4f46e5; background-image:linear-gradient(135deg,#6366f1,#8b5cf6); padding:22px; border-radius:16px 16px 0 0; color:#fff; text-align:center;">
@@ -2234,7 +2221,7 @@ const CertificationScorecard = (function() {
         </div>
       </div>`;
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"/></head><body>${wrapper}</body></html>`;
-  }
+ }
 
   async function blobToDataURI(blob) {
     return new Promise((resolve, reject) => {
@@ -2242,20 +2229,20 @@ const CertificationScorecard = (function() {
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
-    });
-  }
+ });
+ }
 
   function getLogoUrl() {
     try {
       // Allow setting via page script: window.EMAIL_LOGO_URL = 'https://...'
       if (typeof window !== 'undefined' && window.EMAIL_LOGO_URL) return String(window.EMAIL_LOGO_URL);
-    } catch (e) {}
+ } catch (e) {}
     try {
       // Allow via config object if present: config.emailLogoUrl
       if (typeof config !== 'undefined' && config.emailLogoUrl) return String(config.emailLogoUrl);
-    } catch (e) {}
+ } catch (e) {}
     return null;
-  }
+ }
 
   async function fetchLogoAsDataURI() {
     const candidates = ['/assets/tempo-logo.png', '/assets/tempo-logo.svg', '/tempo-logo.png', '/tempo-logo.svg'];
@@ -2265,10 +2252,10 @@ const CertificationScorecard = (function() {
         if (!res.ok) continue;
         const blob = await res.blob();
         return await blobToDataURI(blob);
-      } catch (e) { /* ignore */ }
-    }
+ } catch (e) { /* ignore */ }
+ }
     return null;
-  }
+ }
 
   async function sendEmail({ html, to, subject, cc, bcc }) {
     // Use local relay in dev; Vercel Serverless route in production
@@ -2279,15 +2266,14 @@ const CertificationScorecard = (function() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to, subject, html, cc, bcc })
-      });
+ });
       if (!res.ok) throw new Error(await res.text());
       return true;
-    } catch (e) {
+ } catch (e) {
       // Log and continue; email is auxiliary
-      console.warn('sendEmail error:', e);
       return false;
-    }
-  }
+ }
+ }
 
   async function previewEmail() {
     try {
@@ -2301,9 +2287,9 @@ const CertificationScorecard = (function() {
           const displayText = nameEl ? (nameEl.textContent || '').trim() : '';
           const dataText = (row.dataset && row.dataset.subcategory ? row.dataset.subcategory : '').trim();
           if (displayText === label || dataText === label) return row;
-        }
+ }
         return null;
-      };
+ };
       const getAttrValue = (label) => { const row = findAttrRowByLabel(label); const chk = row ? row.querySelector('input[type="radio"]:checked') : null; return chk ? chk.value : ''; };
       const getAttrComment = (label) => { const row = findAttrRowByLabel(label); const ta = row ? row.querySelector('textarea') : null; return ta ? (ta.value || '').trim() : ''; };
       const convId = (document.getElementById('conversationIdInput') || { value: '' }).value.trim();
@@ -2323,11 +2309,11 @@ const CertificationScorecard = (function() {
         Final_Score: totalFromRadios(),
         agent_email: ((document.getElementById('agentEmailInput') || {}).value || '').trim(),
         Phase: getRadioVal('phase'),
-      };
+ };
       CERTIFICATION_ATTRIBUTE_COLUMN_MAP.forEach(({ label, valueKey, commentKey }) => {
         payload[valueKey] = getAttrValue(label);
         payload[commentKey] = getAttrComment(label);
-      });
+ });
       const logoUrl = getLogoUrl();
       const logoDataUri = logoUrl ? null : await fetchLogoAsDataURI();
       const html = buildEmailHTML(payload, { logoDataUri, logoUrl });
@@ -2335,24 +2321,24 @@ const CertificationScorecard = (function() {
       const iframe = document.getElementById('emailPreviewIframe');
       if (iframe) iframe.srcdoc = html;
       if (overlay) overlay.style.display = 'flex';
-    } catch (e) {
+ } catch (e) {
       console.error('Failed to render email preview', e);
       showAlert('Failed to render email preview', { title: 'Preview error', type: 'error' });
-    }
-  }
+ }
+ }
 
   function reset() {
     calibrationMode = false;
     ['conversationIdInput'].forEach(id => {
       const el = document.getElementById(id); if (el) { el.value = ''; el.disabled = false; }
-    });
+ });
     const monSelectReset = document.getElementById('monitoringType');
     if (monSelectReset) {
       monSelectReset.disabled = false;
       monSelectReset.removeAttribute('data-sbs-locked');
       monSelectReset.dataset.pasteLocked = 'false';
       monSelectReset.title = '';
-    }
+ }
     const agentEmailEl = document.getElementById('agentEmailInput');
     if (agentEmailEl) agentEmailEl.value = '';
     const channelEl = document.getElementById('channelSelect');
@@ -2383,15 +2369,15 @@ const CertificationScorecard = (function() {
           if (el.dataset.hasRte === 'true' && el.previousElementSibling && el.previousElementSibling.classList.contains('rte-container')) {
              const ed = el.previousElementSibling.querySelector('.rte-editor');
              if (ed) ed.innerHTML = '';
-          }
-        }
-      });
+ }
+ }
+ });
     // Clear sales and fitness radio groups and remove highlight
     document.querySelectorAll('input[name="salesRadio"]').forEach(r => r.checked = false);
     document.querySelectorAll('input[name="fitnessFluency"]').forEach(r => r.checked = false);
     document.querySelectorAll('.sme-radio-group').forEach(group => {
       group.querySelectorAll('label').forEach(l => l.classList.remove('checked'));
-    });
+ });
 
     ['communicationComment','professionalismComment','knowledgeComment','resolutionComment']
       .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -2409,7 +2395,7 @@ const CertificationScorecard = (function() {
     // Do not clear from/to; keep Get Case enabled if already set
     updateDateStatus();
     toggleGetCaseEnabled();
-  }
+ }
 
   function bindCalendarAndSelectAll() {
     const calIcon = document.getElementById('calendarIcon');
@@ -2427,12 +2413,12 @@ const CertificationScorecard = (function() {
         const val = single.value;
         if (!val) return;
         applySingleDateSelection(val);
-      });
-    }
+ });
+ }
 
     // Overlay picker bindings
     bindOverlayPicker();
-  }
+ }
   function bindOverlayPicker() {
     const modal = document.getElementById('rangePickerModal');
     const prev = document.getElementById('rpPrev');
@@ -2452,7 +2438,7 @@ const CertificationScorecard = (function() {
       const today = new Date();
       rpAnchorYear = today.getFullYear();
       rpAnchorMonth = today.getMonth();
-    }
+ }
     populateMonthYearSelects(monthL, yearL, rpAnchorMonth, rpAnchorYear);
     const rightMonth = (rpAnchorMonth + 1) % 12;
     const rightYear = rpAnchorMonth === 11 ? rpAnchorYear + 1 : rpAnchorYear;
@@ -2475,7 +2461,7 @@ const CertificationScorecard = (function() {
 
     // Close on outside click
     modal.addEventListener('click', (e) => { if (e.target === modal) closeRangePicker(); });
-  }
+ }
 
   function openRangePicker() {
     const modal = document.getElementById('rangePickerModal');
@@ -2489,26 +2475,26 @@ const CertificationScorecard = (function() {
       const fd = new Date(f);
       rpAnchorYear = fd.getFullYear();
       rpAnchorMonth = fd.getMonth();
-    } else if (rpAnchorYear === null || rpAnchorMonth === null) {
+ } else if (rpAnchorYear === null || rpAnchorMonth === null) {
       const today = new Date();
       rpAnchorYear = today.getFullYear();
       rpAnchorMonth = today.getMonth();
-    }
+ }
     renderBoth();
-  }
+ }
 
   function closeRangePicker() {
     const modal = document.getElementById('rangePickerModal');
     if (modal) modal.style.display = 'none';
     updateCollapsedLabel(document.getElementById('rpCollapsedLabel'));
-  }
+ }
 
   function shiftAnchor(delta) {
     rpAnchorMonth += delta;
     if (rpAnchorMonth < 0) { rpAnchorMonth = 11; rpAnchorYear -= 1; }
     if (rpAnchorMonth > 11) { rpAnchorMonth = 0; rpAnchorYear += 1; }
     renderBoth();
-  }
+ }
 
   function syncRightFromLeft() {
     const monthR = document.getElementById('rpMonthRight');
@@ -2516,7 +2502,7 @@ const CertificationScorecard = (function() {
     const rightMonth = (rpAnchorMonth + 1) % 12;
     const rightYear = rpAnchorMonth === 11 ? rpAnchorYear + 1 : rpAnchorYear;
     populateMonthYearSelects(monthR, yearR, rightMonth, rightYear);
-  }
+ }
 
   function setRightExplicit(y, m) {
     // Keep right always trailing left by +1 month when possible
@@ -2525,8 +2511,8 @@ const CertificationScorecard = (function() {
     if (rightDate.getTime() <= leftDate.getTime()) {
       const adj = new Date(rpAnchorYear, rpAnchorMonth + 1, 1);
       populateMonthYearSelects(document.getElementById('rpMonthRight'), document.getElementById('rpYearRight'), adj.getMonth(), adj.getFullYear());
-    }
-  }
+ }
+ }
 
   function renderBoth() {
     const monthL = document.getElementById('rpMonthLeft');
@@ -2538,7 +2524,7 @@ const CertificationScorecard = (function() {
     renderMonthGrid('rpDaysLeft', rpAnchorYear, rpAnchorMonth);
     renderMonthGrid('rpDaysRight', rightYear, rightMonth);
     updatePickerTitle(document.getElementById('rpTitle'));
-  }
+ }
 
   function populateMonthYearSelects(monthSel, yearSel, month, year) {
     if (!monthSel || !yearSel) return;
@@ -2547,7 +2533,7 @@ const CertificationScorecard = (function() {
     const base = new Date().getFullYear();
     for (let y = base - 5; y <= base + 5; y++) years.push(y);
     yearSel.innerHTML = years.map(y=>`<option value="${y}" ${y===year?'selected':''}>${y}</option>`).join('');
-  }
+ }
 
   function renderMonthGrid(containerId, year, month) {
     const cont = document.getElementById(containerId);
@@ -2565,19 +2551,19 @@ const CertificationScorecard = (function() {
       const dayNum = prevMonthDays - firstDayIdx + 1 + i;
       const d = new Date(year, month - 1, dayNum);
       html += rpDayCell(d, true, fromDate, toDate);
-    }
+ }
     // Current
     for (let d = 1; d <= daysInMonth; d++) {
       const dateObj = new Date(year, month, d);
       html += rpDayCell(dateObj, false, fromDate, toDate);
-    }
+ }
     // Trailing to complete rows
     const totalCells = firstDayIdx + daysInMonth;
     const trailing = ((Math.ceil(totalCells / 7) * 7) - totalCells);
     for (let i = 1; i <= trailing; i++) {
       const d = new Date(year, month + 1, i);
       html += rpDayCell(d, true, fromDate, toDate);
-    }
+ }
     cont.innerHTML = html;
     cont.querySelectorAll('.rp-day').forEach(el => {
       el.addEventListener('click', () => {
@@ -2592,9 +2578,9 @@ const CertificationScorecard = (function() {
         renderBoth();
         updatePickerTitle(document.getElementById('rpTitle'));
         updateCollapsedLabel(document.getElementById('rpCollapsedLabel'));
-      });
-    });
-  }
+ });
+ });
+ }
 
   function rpDayCell(dateObj, otherMonth, fromDate, toDate) {
     const yyyy = dateObj.getFullYear();
@@ -2611,11 +2597,11 @@ const CertificationScorecard = (function() {
     if (isEnd) classes.push('rp-selected-end');
     if (inRange && !isStart && !isEnd) classes.push('rp-in-range');
     return `<div class="${classes.join(' ')}" data-iso="${iso}">${dateObj.getDate()}</div>`;
-  }
+ }
 
   function stripTime(d) {
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
+ }
 
   function updatePickerTitle(el) {
     if (!el) return;
@@ -2623,12 +2609,12 @@ const CertificationScorecard = (function() {
     const toVal = (document.getElementById('dateTo') || {}).value || '';
     if (fromVal && toVal) {
       el.textContent = fromVal === toVal ? fromVal : `${fromVal} - ${toVal}`;
-    } else if (fromVal) {
+ } else if (fromVal) {
       el.textContent = fromVal;
-    } else {
+ } else {
       el.textContent = '—';
-    }
-  }
+ }
+ }
 
   function updateCollapsedLabel(el) {
     if (!el) return;
@@ -2636,12 +2622,12 @@ const CertificationScorecard = (function() {
     const toVal = (document.getElementById('dateTo') || {}).value || '';
     if (fromVal && toVal) {
       el.textContent = fromVal === toVal ? fromVal : `${fromVal} - ${toVal}`;
-    } else if (fromVal) {
+ } else if (fromVal) {
       el.textContent = fromVal;
-    } else {
+ } else {
       el.textContent = '';
-    }
-  }
+ }
+ }
 
   function updateDateStatus() {
     const from = document.getElementById('dateFrom');
@@ -2650,7 +2636,7 @@ const CertificationScorecard = (function() {
     const toDisp = document.getElementById('dateToDisplay');
     if (fromDisp) fromDisp.textContent = `From: ${from && from.value ? from.value : '—'}`;
     if (toDisp) toDisp.textContent = `To: ${to && to.value ? to.value : '—'}`;
-  }
+ }
 
   function applySingleDateSelection(ymd) {
     if (!ymd) return;
@@ -2664,7 +2650,7 @@ const CertificationScorecard = (function() {
     updateDateStatus();
     toggleGetCaseEnabled();
     applyInlineSelectionFromInputs();
-  }
+ }
 
   function applyTodayDateSelection() {
     const today = new Date();
@@ -2672,7 +2658,7 @@ const CertificationScorecard = (function() {
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     applySingleDateSelection(`${yyyy}-${mm}-${dd}`);
-  }
+ }
 
   function initializeDefaultDateRange() {
     const today = new Date();
@@ -2686,7 +2672,7 @@ const CertificationScorecard = (function() {
     if (from && !from.value) from.value = ymd;
     if (to && !to.value) to.value = ymd;
     if (single && !single.value) single.value = ymd;
-  }
+ }
 
   function toggleGetCaseEnabled() {
     const btn = document.getElementById('getCaseBtn');
@@ -2697,7 +2683,7 @@ const CertificationScorecard = (function() {
     // Keep button clickable so getCase() can show warnings when fields are missing
     btn.disabled = false;
     if (btn.classList) btn.classList.toggle('btn-disabled-look', !bothSet);
-  }
+ }
 
   function bindEvents() {
     const conv = document.getElementById('conversationIdInput');
@@ -2705,18 +2691,18 @@ const CertificationScorecard = (function() {
       const monSelect = document.getElementById('monitoringType');
       if (monSelect) {
         monSelect.addEventListener('change', updateConversationIdState);
-      }
+ }
 
       conv.addEventListener('blur', async () => {
         const ticketIconBtnBlur = document.getElementById('ticketIconBtn');
         if (ticketIconBtnBlur) ticketIconBtnBlur.style.display = (conv.value.trim()) ? 'inline-flex' : 'none';
-      });
+ });
       
       const agentLock = document.getElementById('agentNameSelect');
       if (agentLock) {
         agentLock.addEventListener('change', updateConversationIdState);
-      }
-    }
+ }
+ }
     const previewBtn = document.getElementById('previewEmailBtn');
     if (previewBtn) previewBtn.addEventListener('click', previewEmail);
     const closePreviewBtn = document.getElementById('emailPreviewCloseBtn');
@@ -2735,11 +2721,11 @@ const CertificationScorecard = (function() {
       const isEmpty = !teamSelect.value;
       teamSelect.classList.toggle('select-empty', isEmpty);
       teamSelect.classList.toggle('select-filled', !isEmpty);
-    };
+ };
     if (teamSelect) {
       applyTeamSelectState();
       teamSelect.addEventListener('change', applyTeamSelectState);
-    }
+ }
 
     const ticketIconBtnClick = document.getElementById('ticketIconBtn');
     if (ticketIconBtnClick) ticketIconBtnClick.addEventListener('click', () => {
@@ -2748,7 +2734,7 @@ const CertificationScorecard = (function() {
       const base = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/27/0/conversation/';
       const url = `${base}${encodeURIComponent(convId)}`;
       window.open(url, '_blank');
-    });
+ });
 
     const getCaseBtn = document.getElementById('getCaseBtn');
     if (getCaseBtn) getCaseBtn.addEventListener('click', getCase);
@@ -2761,25 +2747,15 @@ const CertificationScorecard = (function() {
   const skipActionNext = document.getElementById('skipActionNext');
   const skipNextCounterBadge = document.getElementById('skipNextCounterBadge');
     
-    console.log('DEBUG: Skip elements found:', {
-      skipBtn: !!skipBtn,
-      skipModal: !!skipModal,
-      skipCancel: !!skipCancel,
-      skipConfirm: !!skipConfirm,
-      skipReason: !!skipReason,
-      skipActionQAED: !!skipActionQAED,
-      skipActionNext: !!skipActionNext,
-      skipNextCounterBadge: !!skipNextCounterBadge
-    });
     const updateSkipNextBadge = () => {
       const userKey = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('userEmail') || localStorage.getItem('loggedInUserName') || '';
       const { allowed } = computeSkipWindow();
       const remain = remainingSkipNext(userKey);
       if (skipNextCounterBadge) {
         skipNextCounterBadge.textContent = allowed ? `Remaining: ${remain}/5` : `Available 17:00–06:00`;
-      }
+ }
       if (skipActionNext) skipActionNext.disabled = !allowed;
-    };
+ };
     const updateSkipReasonVisibility = () => {
       const sel = document.querySelector('input[name="skipAction"]:checked');
       const isQAED = sel ? sel.value === 'qaed' : true;
@@ -2787,19 +2763,16 @@ const CertificationScorecard = (function() {
         const wrapper = skipReason.closest('.field');
         if (wrapper) wrapper.style.display = isQAED ? '' : 'none';
         skipReason.disabled = !isQAED;
-      }
-    };
+ }
+ };
     if (skipActionQAED) skipActionQAED.addEventListener('change', updateSkipReasonVisibility);
     if (skipActionNext) skipActionNext.addEventListener('change', updateSkipReasonVisibility);
     const openSkipModal = () => { 
-      console.log('DEBUG: openSkipModal called, skipModal element:', skipModal);
       if (skipModal) {
-        console.log('DEBUG: Setting skipModal display to flex');
         skipModal.style.display = 'flex'; 
-      } else {
-        console.log('DEBUG: skipModal element not found!');
-      }
-    };
+ } else {
+ }
+ };
     const closeSkipModal = () => { if (skipModal) skipModal.style.display = 'none'; };
   // Inline restore helper for skip actions
   const restoreCaseInlineForSkip = async () => {
@@ -2814,28 +2787,28 @@ const CertificationScorecard = (function() {
         const u = new URL(window.location.href);
         cid = u.searchParams.get('cid') || '';
         rid = u.searchParams.get('rid') || '';
-      } catch(_) {}
+ } catch(_) {}
       // localStorage
       if (!cid || !rid) {
         try {
           const s = localStorage.getItem('t1_current_case');
           if (s) { const obj = JSON.parse(s); cid = cid || (obj && obj.conversation_id) || ''; rid = rid || (obj && obj.id) || ''; }
-        } catch(_) {}
-      }
+ } catch(_) {}
+ }
       // session/window.name
       if (!cid || !rid) {
         try { cid = cid || (sessionStorage.getItem('t1_last_cid') || ''); rid = rid || (sessionStorage.getItem('t1_last_rid') || ''); } catch(_) {}
         try { if ((!cid || !rid) && window.name) { const nm = JSON.parse(window.name || '{}'); cid = cid || nm.t1_last_cid || ''; rid = rid || nm.t1_last_rid || ''; } } catch(_) {}
-      }
+ }
       // cookie
       if (!cid || !rid) {
         try {
           document.cookie.split(';').map(s => s.trim()).forEach(c => {
             if (c.indexOf('t1cid=') === 0 && !cid) cid = decodeURIComponent(c.slice(6));
             if (c.indexOf('t1rid=') === 0 && !rid) rid = decodeURIComponent(c.slice(6));
-          });
-        } catch(_) {}
-      }
+ });
+ } catch(_) {}
+ }
       // If we have cid but still no rid, fetch Freshworks row by con_Id
       if (cid && !rid) {
         try {
@@ -2845,22 +2818,19 @@ const CertificationScorecard = (function() {
             const arr = await res.json();
             if (Array.isArray(arr) && arr.length > 0) {
               rid = arr[0].id || rid;
-            }
-          } else {
-            console.warn('Restore rid by con_Id failed:', await res.text());
-          }
-        } catch (e) { console.warn('Error fetching rid by con_Id:', e); }
-      }
+ }
+ } else {
+ }
+ } catch (e) {}
+ }
       if (conv && cid) { conv.value = cid; conv.setAttribute('value', cid); conv.dispatchEvent(new Event('input')); conv.dispatchEvent(new Event('change')); }
       if (ridEl && rid) { ridEl.value = rid; ridEl.setAttribute('value', rid); ridEl.dispatchEvent(new Event('input')); ridEl.dispatchEvent(new Event('change')); }
       if (icon && cid) icon.style.display = 'inline-flex';
-      console.log('DEBUG Skip inline restore:', { cid, rid });
       return { cid, rid };
-    } catch(e) { console.warn('Inline restore for skip failed:', e); return { cid: '', rid: '' }; }
-  };
+ } catch(e) {  return { cid: '', rid: '' }; }
+ };
 
   if (skipBtn) skipBtn.addEventListener('click', async () => {
-    console.log('DEBUG: Skip button clicked');
     // Collect conversation id from multiple sources
     let convId = (document.getElementById('conversationIdInput')||{value:''}).value.trim();
     const sources = { dom: convId };
@@ -2873,22 +2843,18 @@ const CertificationScorecard = (function() {
     if (!convId) {
       const restored = await restoreCaseInlineForSkip();
       convId = restored.cid || convId;
-    }
-    console.log('DEBUG: Conversation ID:', convId);
+ }
     if (!convId) { 
-      console.log('DEBUG: No conversation ID, showing alert');
       showAlert('Please get a case first.'); 
       return; 
-    }
-      console.log('DEBUG: Preparing skip modal');
+ }
       if (skipReason) skipReason.value = '';
       const defEl = document.getElementById('skipActionQAED');
       if (defEl) defEl.checked = true;
       updateSkipReasonVisibility();
       updateSkipNextBadge();
-      console.log('DEBUG: Opening skip modal');
       openSkipModal();
-    });
+ });
     if (skipCancel) skipCancel.addEventListener('click', () => { closeSkipModal(); });
   if (skipConfirm) skipConfirm.addEventListener('click', async () => {
     try {
@@ -2899,18 +2865,18 @@ const CertificationScorecard = (function() {
         try { const s = localStorage.getItem('t1_current_case'); if (s && !convId) { convId = (JSON.parse(s).conversation_id || ''); } } catch(_) {}
         try { if (!convId) convId = sessionStorage.getItem('t1_last_cid') || ''; } catch(_) {}
         try { if (!convId && window.name) convId = (JSON.parse(window.name||'{}').t1_last_cid || ''); } catch(_) {}
-      }
+ }
       if (!storedId) {
         try { const u = new URL(window.location.href); storedId = u.searchParams.get('rid') || storedId; } catch(_) {}
         try { const s = localStorage.getItem('t1_current_case'); if (s && !storedId) { storedId = (JSON.parse(s).id || ''); } } catch(_) {}
         try { if (!storedId) storedId = sessionStorage.getItem('t1_last_rid') || ''; } catch(_) {}
         try { if (!storedId && window.name) storedId = (JSON.parse(window.name||'{}').t1_last_rid || ''); } catch(_) {}
-      }
+ }
       if (!convId || !storedId) {
         const restored = await restoreCaseInlineForSkip();
         convId = restored.cid || convId;
         storedId = restored.rid || storedId;
-      }
+ }
       if (!convId) { showAlert('Please get a case first.'); return; }
         // Determine selected skip action
         const actionEl = document.querySelector('input[name="skipAction"]:checked');
@@ -2924,68 +2890,64 @@ const CertificationScorecard = (function() {
           const patchBody = { HAPPIO_Status: 'QAED', Skipped_by: auditorName, Skip_reason: reason };
           let pRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(patchBody) });
           if (!pRes.ok) {
-            console.warn('Skip patch failed (client):', await pRes.text());
             pRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders({ useServiceKey: true }), body: JSON.stringify(patchBody) });
             if (!pRes.ok) {
-              console.warn('Skip patch failed (service):', await pRes.text());
               showAlert('Failed to skip conversation.');
               return;
-            }
-          }
-        } else {
+ }
+ }
+ } else {
           // Move to next case with time-window and usage limit; no Freshworks updates
           const userKey = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('userEmail') || localStorage.getItem('loggedInUserName') || '';
           const { allowed } = computeSkipWindow();
           if (!allowed) {
             showAlert('This skip option is available daily from 17:00 to 06:00. Please try again starting 17:00.');
             return;
-          }
+ }
           const { used } = getSkipNextUsed(userKey);
           if (used >= SKIP_NEXT_LIMIT) {
             showAlert('You have used all 5 skips. Please try again tomorrow starting 17:00.');
             return;
-          }
+ }
           // Clear HAPPIO_Status (and assigned_qa) so the case re-enters the queue for others
           const keyFilter2 = storedId ? `id=eq.${encodeURIComponent(storedId)}` : `con_Id=eq.${encodeURIComponent(convId)}`;
           const clearUrl = `${config.restUrl}/Freshworks?${keyFilter2}`;
           const clearBody = { HAPPIO_Status: null, assigned_qa: null };
           let cRes = await fetch(clearUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(clearBody) });
           if (!cRes.ok) {
-            console.warn('Clear status failed (client):', await cRes.text());
             cRes = await fetch(clearUrl, { method: 'PATCH', headers: authHeaders({ useServiceKey: true }), body: JSON.stringify(clearBody) });
             if (!cRes.ok) {
-              console.warn('Clear status failed (service):', await cRes.text());
               showAlert('Failed to clear conversation status for skip.');
               return;
-            }
-        }
+ }
+ }
         incSkipNextUsed(userKey);
-        try { excludedFreshworksIds.add(storedId); } catch(e) { console.warn('Failed to track excluded id', e); }
-      }
+        try { excludedFreshworksIds.add(storedId); } catch(e) {}
+ }
         // Clear all persisted case references so refresh/intervals don't repopulate
         try {
           localStorage.removeItem('t1_current_case');
           localStorage.removeItem('t1_last_conv_id');
-        } catch(_) {}
+ } catch(_) {}
         try {
           sessionStorage.removeItem('t1_last_cid');
           sessionStorage.removeItem('t1_last_rid');
-        } catch(_) {}
+ } catch(_) {}
         try {
           const nm = JSON.parse(window.name || '{}');
           delete nm.t1_last_cid; delete nm.t1_last_rid;
           window.name = JSON.stringify(nm);
-        } catch(_) {}
+ } catch(_) {}
         try {
           document.cookie = 't1cid=; path=/; max-age=0';
           document.cookie = 't1rid=; path=/; max-age=0';
-        } catch(_) {}
+ } catch(_) {}
         try {
           const u = new URL(window.location.href);
           u.searchParams.delete('cid');
           u.searchParams.delete('rid');
           window.history.replaceState({}, '', u.origin + u.pathname);
-        } catch(_) {}
+ } catch(_) {}
         // Clear current conversation in the UI
         document.getElementById('conversationIdInput').value = '';
         document.getElementById('freshworksRowId').value = '';
@@ -3000,16 +2962,14 @@ const CertificationScorecard = (function() {
         const agentEmailVal = (document.getElementById('agentEmailInput')||{value:''}).value.trim();
         if (teamVal && dateFromVal && dateToVal && agentEmailVal) {
           await getCase();
-        } else {
-          console.log('INFO: Filters missing; not auto-fetching next case after skip.', {teamVal, dateFromVal, dateToVal, agentEmailVal});
+ } else {
           // Optional: surface a soft hint (no blocking modal)
           try { showAlert('Pick Team, Date Range, and Agent to fetch the next case.', { title: 'Filters needed', type: 'info' }); } catch(_) {}
-        }
-      } catch(e) {
-        console.warn('Skip confirm error:', e);
+ }
+ } catch(e) {
         showAlert('Unexpected error during skip.');
-      }
-    });
+ }
+ });
     const calibrationBtn = document.getElementById('calibrationBtn');
     if (calibrationBtn) calibrationBtn.addEventListener('click', loadCalibrationCase);
 
@@ -3028,19 +2988,19 @@ const CertificationScorecard = (function() {
         const evt = new Event('input');
         ddFilter.dispatchEvent(evt);
         ddFilter.focus();
-      }
-    };
+ }
+ };
     const closePanel = () => { if (ddPanel) ddPanel.hidden = true; };
     if (ddInput) ddInput.addEventListener('click', openPanel);
     if (ddToggle) ddToggle.addEventListener('click', () => {
       if (!ddPanel) return;
       ddPanel.hidden ? openPanel() : closePanel();
-    });
+ });
     document.addEventListener('click', (e) => {
       if (!ddRoot) return;
       if (!ddRoot.contains(e.target)) closePanel();
-    });
-  }
+ });
+ }
 
   // Initialize searchable dropdown for Interaction Related To
   async function initInteractionDropdown() {
@@ -3057,7 +3017,7 @@ const CertificationScorecard = (function() {
           try {
             const response = await fetch(`${config.restUrl}/intRltdTo?select=interactionRelateTo`, {
               headers: authHeaders({ useServiceKey: true })
-            });
+ });
             
             if (response.ok) {
         const data = await response.json();
@@ -3078,28 +3038,26 @@ const CertificationScorecard = (function() {
             el.value = opt;
             el.textContent = opt;
             sel.appendChild(el);
-        });
+ });
 
         // Restore value if it exists in new options
         if (options.includes(currentValue)) {
             sel.value = currentValue;
-        }
+ }
 
         sel._allTopics = options;
-      } else {
-        console.warn('Failed to fetch interaction related to values, using static options');
+ } else {
         const options = Array.from(sel.querySelectorAll('option'))
           .map(o => (o.textContent||'').trim())
           .filter(t => t && t !== 'Select option');
         sel._allTopics = options;
-      }
-    } catch (error) {
-      console.warn('Error in initInteractionDropdown, using static options:', error);
+ }
+ } catch (error) {
       const options = Array.from(sel.querySelectorAll('option'))
         .map(o => (o.textContent||'').trim())
         .filter(t => t && t !== 'Select option');
       sel._allTopics = options;
-    }
+ }
 
     function renderList(list) {
       ddList.innerHTML = '';
@@ -3111,17 +3069,17 @@ const CertificationScorecard = (function() {
           ddInput.value = label;
           sel.value = label;
           ddPanel.hidden = true;
-        });
+ });
         ddList.appendChild(li);
-      });
-    }
+ });
+ }
     renderList(sel._allTopics || []);
 
     // Keep input in sync when select changes programmatically
     sel.addEventListener('change', () => {
       const o = sel.selectedOptions[0];
       ddInput.value = o ? (o.textContent||'') : '';
-    });
+ });
 
     // Filter behavior
     if (ddFilter) {
@@ -3130,9 +3088,9 @@ const CertificationScorecard = (function() {
         const all = sel._allTopics || [];
         const filtered = q ? all.filter(t => t.toLowerCase().includes(q)) : all;
         renderList(filtered);
-      };
+ };
       ddFilter.addEventListener('input', applyFilter);
-    }
+ }
 
     // Open/close interactions panel
     const openPanel = () => {
@@ -3142,8 +3100,8 @@ const CertificationScorecard = (function() {
         const evt = new Event('input');
         ddFilter.dispatchEvent(evt);
         ddFilter.focus();
-      }
-    };
+ }
+ };
     const closePanel = () => { ddPanel.hidden = true; };
     ddInput.addEventListener('focus', openPanel);
     ddInput.addEventListener('click', openPanel);
@@ -3151,8 +3109,8 @@ const CertificationScorecard = (function() {
     document.addEventListener('click', (e) => {
       if (!ddRoot) return;
       if (!ddRoot.contains(e.target)) closePanel();
-    });
-  }
+ });
+ }
 
   // Size SME fields to match their label width (except interaction and comment textareas)
   function initSmeFieldWidths() {
@@ -3178,12 +3136,11 @@ const CertificationScorecard = (function() {
           field.style.width = width + 'px';
           const control = field.querySelector('select, input');
           if (control) control.style.width = '100%';
-        }
-      });
-    } catch(e) {
-      console.warn('initSmeFieldWidths error:', e);
-    }
-  }
+ }
+ });
+ } catch(e) {
+ }
+ }
 
   // Highlight selected SME radio labels consistently (fallback for browsers without :has)
   function initSmeRadioHighlight() {
@@ -3195,19 +3152,18 @@ const CertificationScorecard = (function() {
           const selected = group.querySelector('input[type="radio"]:checked');
           const lbl = selected ? selected.closest('label') : null;
           if (lbl) lbl.classList.add('checked');
-        };
+ };
         // Initialize current state
         update();
         // Bind update on interactions
         group.querySelectorAll('input[type="radio"]').forEach(input => {
           input.addEventListener('change', update);
           input.addEventListener('click', update);
-        });
-      });
-    } catch(e) {
-      console.warn('initSmeRadioHighlight error:', e);
-    }
-  }
+ });
+ });
+ } catch(e) {
+ }
+ }
 
   function initRightPaneSync() {
     const smePane = document.getElementById('smePane');
@@ -3216,16 +3172,16 @@ const CertificationScorecard = (function() {
 
     const syncHeight = () => {
        attributesPane.style.height = `${smePane.offsetHeight}px`;
-    };
+ };
 
     const observer = new ResizeObserver(() => {
       syncHeight();
-    });
+ });
     
     observer.observe(smePane);
     // Also sync immediately
     requestAnimationFrame(syncHeight);
-  }
+ }
 
   return {
     refreshRecent: fetchRecent,
@@ -3233,9 +3189,8 @@ const CertificationScorecard = (function() {
       // Ensure event bindings run even if config fails to load
       try {
         await loadConfig();
-      } catch (e) {
-        console.warn('Config load failed; continuing with limited functionality.', e);
-      }
+ } catch (e) {
+ }
       // Load recent submissions as soon as the page starts, independent of later init steps.
       await fetchRecent();
       setTimeout(() => { fetchRecent().catch(() => {}); }, 800);
@@ -3250,6 +3205,8 @@ const CertificationScorecard = (function() {
       await loadTakerName();
       // Load agents for dropdown and wire auto-fill
       await loadAgents();
+      // Load SME list for the SME dropdown
+      await loadSmeList();
       // Initialize searchable Interaction Related To dropdown
       await initInteractionDropdown();
       // Initialize static RTEs for SME/Sales comments
@@ -3265,8 +3222,8 @@ const CertificationScorecard = (function() {
       initSmeRadioHighlight();
       // Sync right pane height to match left pane
       initRightPaneSync();
-    }
-  };
+ }
+ };
 })();
 
 window.CertificationScorecard = CertificationScorecard;

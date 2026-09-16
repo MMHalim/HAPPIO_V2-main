@@ -12,7 +12,7 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-top: 20px;
-        }
+ }
         
         .scorecard-card {
             background: var(--bg-card);
@@ -22,31 +22,31 @@
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
             text-align: center;
-        }
+ }
         
         .scorecard-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-light);
             border-color: var(--border-hover);
-        }
+ }
         
         .card-icon {
             font-size: 48px;
             margin-bottom: 16px;
-        }
+ }
         
         .card-title {
             font-size: 20px;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 12px;
-        }
+ }
         
         .card-description {
             color: var(--text-secondary);
             margin-bottom: 20px;
             line-height: 1.5;
-        }
+ }
     </style>
 </head>
 <body>
@@ -97,16 +97,14 @@
     <script>
         // Page-specific JavaScript
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Scorecard page loaded with global theme system');
             
             // Check authentication
             const token = localStorage.getItem('login_token');
             if (!token) {
-                console.log('No authentication token found, redirecting to login');
             window.location.href = '/login.html';
                 return;
-            }
-        });
+ }
+ });
     </script>
 </body>
 </html>

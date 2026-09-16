@@ -16,7 +16,7 @@ function showAlert(msg, opts = {}) {
       else if (lowerMsg.includes('fail') || lowerMsg.includes('error') || lowerMsg.includes('not authenticated')) type = 'error';
       else if (lowerMsg.includes('duplicate') || lowerMsg.includes('please') || lowerMsg.includes('empty')) type = 'warning';
       else type = 'info';
-    }
+ }
     const title = options.title || (type === 'error' ? 'Error' : type === 'success' ? 'Success' : type === 'warning' ? 'Heads up' : 'Notice');
 
     let overlay = document.getElementById('appAlertOverlay');
@@ -30,7 +30,7 @@ function showAlert(msg, opts = {}) {
       overlay.style.justifyContent = 'center';
       overlay.style.zIndex = '9999';
       document.body.appendChild(overlay);
-    }
+ }
     overlay.style.background = ((type === 'warning' || type === 'success') ? 'transparent' : 'rgba(0, 0, 0, 0.45)');
     overlay.innerHTML = '';
 
@@ -60,7 +60,7 @@ function showAlert(msg, opts = {}) {
       warning: 'var(--warning-color)',
       error: 'var(--danger-color)',
       info: 'var(--primary-color)'
-    };
+ };
     accent.style.background = colorMap[type] || 'var(--primary-color)';
     card.appendChild(accent);
 
@@ -100,13 +100,13 @@ function showAlert(msg, opts = {}) {
         const li = document.createElement('li');
         li.textContent = line.replace(/^\-?\s*/, '');
         ul.appendChild(li);
-      });
+ });
       msgContainer.appendChild(ul);
-    } else {
+ } else {
       const p = document.createElement('p');
       p.textContent = msg || '';
       msgContainer.appendChild(p);
-    }
+ }
     card.appendChild(msgContainer);
 
     const footer = document.createElement('div');
@@ -121,9 +121,9 @@ function showAlert(msg, opts = {}) {
     card.appendChild(footer);
 
     overlay.appendChild(card);
-  } catch (e) {
+ } catch (e) {
     alert(msg);
-  }
+ }
 }
 
 // Attributes definition (aligned with DB columns)
@@ -201,27 +201,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loadBtn = document.getElementById('loadBtn');
   if (loadBtn) {
     loadBtn.addEventListener('click', loadResults);
-  }
+ }
   
   const clearBtn = document.getElementById('clearBtn');
   if (clearBtn) {
     clearBtn.addEventListener('click', clearResults);
-  }
+ }
   
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', exportResultsCSV);
-  }
+ }
 
   const completeBtn = document.getElementById('completeBtn');
   if (completeBtn) {
     completeBtn.addEventListener('click', completeCalibration);
-  }
+ }
   
   const queueSelect = document.getElementById('queueSelect');
   if (queueSelect) {
     queueSelect.addEventListener('change', handleQueueChange);
-  }
+ }
 
   const convIdSelect = document.getElementById('convIdSelect');
   if (convIdSelect) {
@@ -229,8 +229,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Sync to hidden input if needed, or just use the select value directly
       const input = document.getElementById('convIdInput');
       if (input) input.value = convIdSelect.value;
-    });
-  }
+ });
+ }
 
   // Auto-load if param exists
   const params = new URLSearchParams(window.location.search);
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // We might need to handle pre-populating the dropdown if we want to show it correctly
     // But for now, let's assume manual selection for the new flow
     // loadResults(); // Defer loading until queue is selected or logic updated
-  }
+ }
 
   initCalibrationSummaryModal();
   initEmailPreviewModal();
@@ -275,7 +275,7 @@ function initCalibrationSummaryModal() {
   const close = () => {
     modal.style.display = 'none';
     calibSummaryState = null;
-  };
+ };
 
   if (closeBtn) closeBtn.addEventListener('click', close);
   modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
@@ -286,7 +286,7 @@ function initCalibrationSummaryModal() {
       if (!calibSummaryState) {
         showAlert('Nothing to send. Please load results and try again.', { type: 'warning', title: 'Heads up' });
         return;
-      }
+ }
       const commentInput = document.getElementById('calibCommentInput');
       const comment = (commentInput && commentInput.value ? commentInput.value : '').toString();
 
@@ -297,7 +297,7 @@ function initCalibrationSummaryModal() {
       if (to.length === 0) {
         showAlert('No emails found for takers', { type: 'warning', title: 'Heads up' });
         return;
-      }
+ }
 
       const html = buildCalibrationMeetingSummaryEmailHTML({
         queue,
@@ -308,7 +308,7 @@ function initCalibrationSummaryModal() {
         noItems,
         takerNames,
         comment
-      });
+ });
       const subjectQueue = queue || 'Calibration';
       const subject = `Calibration Summary - ${subjectQueue}`;
 
@@ -318,36 +318,35 @@ function initCalibrationSummaryModal() {
         if (!ok) {
           showAlert('Email could not be sent.', { type: 'error', title: 'Email issue' });
           return;
-        }
+ }
         await markCalibrationCompleted(convId, queue);
         updateCompleteButtonState(true);
         await syncCalibrationCompletedState(convId, queue, false);
         showAlert('Email sent successfully.', { type: 'success', title: 'Success' });
         close();
-      } catch (e) {
-        console.warn('Calibration email send failed', e);
+ } catch (e) {
         showAlert('Failed to send email.', { type: 'error', title: 'Email issue' });
-      } finally {
+ } finally {
         sendBtn.disabled = false;
-      }
-    });
-  }
+ }
+ });
+ }
 
   if (previewBtn) {
     previewBtn.addEventListener('click', () => {
       if (!calibSummaryState) {
         showAlert('Nothing to preview. Please load results and try again.', { type: 'warning', title: 'Heads up' });
         return;
-      }
+ }
       const commentInput = document.getElementById('calibCommentInput');
       const comment = (commentInput && commentInput.value ? commentInput.value : '').toString();
       const { queue, convId, hebaName, alignmentScore, yesItems, noItems, takerNames } = calibSummaryState;
       const html = buildCalibrationMeetingSummaryEmailHTML({
         queue, convId, hebaName, alignmentScore, yesItems, noItems, takerNames, comment
-      });
+ });
       openEmailPreviewModal(html);
-    });
-  }
+ });
+ }
 }
 
 function isValidEmail(email) {
@@ -383,7 +382,7 @@ function renderEmailChips(container, chips, onRemove) {
     wrapper.appendChild(text);
     wrapper.appendChild(x);
     container.appendChild(wrapper);
-  });
+ });
 }
 
 function refreshToChips() {
@@ -394,7 +393,7 @@ function refreshToChips() {
     const updated = (calibSummaryState.toRecipients || []).filter((_, i) => i !== idx);
     calibSummaryState.toRecipients = updated;
     refreshToChips();
-  };
+ };
   renderEmailChips(toBox, calibSummaryState.toRecipients || [], removeAt);
   ensureToAddInput(toBox);
 }
@@ -407,7 +406,7 @@ function refreshCcChips() {
     const updated = (calibSummaryState.ccEmails || []).filter((_, i) => i !== idx);
     calibSummaryState.ccEmails = updated;
     refreshCcChips();
-  };
+ };
   renderEmailChips(ccBox, (calibSummaryState.ccEmails || []).map(e => ({ email: e, label: e })), removeAt);
   ensureCcAddInput(ccBox);
 }
@@ -418,8 +417,8 @@ function wireRecipientInput(input, commitFn) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       commitFn();
-    }
-  };
+ }
+ };
   input.onblur = () => { commitFn(); };
   input.onpaste = () => { setTimeout(() => commitFn(), 0); };
 }
@@ -434,7 +433,7 @@ function ensureCcAddInput(container) {
     input.type = 'text';
     input.placeholder = 'Add CC emails...';
     container.appendChild(input);
-  }
+ }
   wireRecipientInput(input, commitCcDraftIntoState);
   return input;
 }
@@ -449,7 +448,7 @@ function ensureToAddInput(container) {
     input.type = 'text';
     input.placeholder = 'Add To emails...';
     container.appendChild(input);
-  }
+ }
   wireRecipientInput(input, commitToDraftIntoState);
   return input;
 }
@@ -469,7 +468,7 @@ function commitToDraftIntoState() {
     if (existing.has(n)) return;
     next.push({ email: t.trim(), label: t.trim() });
     existing.add(n);
-  });
+ });
   calibSummaryState.toRecipients = next;
   input.value = '';
   refreshToChips();
@@ -490,7 +489,7 @@ function commitCcDraftIntoState() {
     if (existing.has(n)) return;
     next.push(t.trim());
     existing.add(n);
-  });
+ });
   calibSummaryState.ccEmails = next;
   input.value = '';
   refreshCcChips();
@@ -539,7 +538,7 @@ function buildCalibrationMeetingSummaryEmailHTML({ queue, convId, hebaName, alig
         </td>
       </tr>
     `;
-  };
+ };
 
   const yesRows = (yesItems || []).map(itemRow).join('') || `
     <tr><td colspan="3" style="padding:14px;color:#6b7280;">No Yes attributes found.</td></tr>`;
@@ -668,7 +667,7 @@ function openCalibrationSummaryModal({ queue, convId, hebaName, alignmentScore, 
         </div>
       </div>
     `;
-  };
+ };
 
   const yesList = (yesItems || []).map(renderItem).join('') || `<div style="color:var(--text-secondary);">No attributes marked Yes.</div>`;
   const noList = (noItems || []).map(renderItem).join('') || `<div style="color:var(--text-secondary);">No attributes marked No.</div>`;
@@ -710,7 +709,7 @@ function openCalibrationSummaryModal({ queue, convId, hebaName, alignmentScore, 
     if (toSeen.has(n)) return;
     toSeen.add(n);
     normalizedTo.push({ email: email.trim(), label: (r.label || '').toString() || email.trim() });
-  });
+ });
 
   const normalizedCc = [];
   const ccSeen = new Set();
@@ -720,7 +719,7 @@ function openCalibrationSummaryModal({ queue, convId, hebaName, alignmentScore, 
     if (ccSeen.has(n)) return;
     ccSeen.add(n);
     normalizedCc.push(e.trim());
-  });
+ });
   calibSummaryState = {
     toRecipients: normalizedTo,
     ccEmails: normalizedCc,
@@ -731,7 +730,7 @@ function openCalibrationSummaryModal({ queue, convId, hebaName, alignmentScore, 
     yesItems,
     noItems,
     takerNames
-  };
+ };
 
   refreshToChips();
   refreshCcChips();
@@ -743,10 +742,10 @@ function openCalibrationSummaryModal({ queue, convId, hebaName, alignmentScore, 
       if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
         commitToDraftIntoState();
-      }
-    };
+ }
+ };
     toInput.onblur = () => { commitToDraftIntoState(); };
-  }
+ }
 
   const ccBox = document.getElementById('calibCcChips');
   const ccInput = ensureCcAddInput(ccBox);
@@ -755,10 +754,10 @@ function openCalibrationSummaryModal({ queue, convId, hebaName, alignmentScore, 
       if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
         commitCcDraftIntoState();
-      }
-    };
+ }
+ };
     ccInput.onblur = () => { commitCcDraftIntoState(); };
-  }
+ }
 
   modal.style.display = 'flex';
 }
@@ -777,11 +776,11 @@ async function handleQueueChange() {
     
     if (queue === 'Order Support' || queue === 'Sales') {
       url = `${config.restUrl}/Assigning_Calibration?type=eq.${encodeURIComponent(queue)}&select=Conversation_Id,day,Score_card,type&order=day.desc`;
-    } else if (queue === 'SMS') {
+ } else if (queue === 'SMS') {
       url = `${config.restUrl}/Assigning_Calibration?Score_card=eq.SMS_Scorecard&select=Conversation_Id,day,Score_card,type&order=day.desc`;
-    } else if (queue === 'MX-T1') {
+ } else if (queue === 'MX-T1') {
       url = `${config.restUrl}/Assigning_Calibration?Score_card=eq.MX-T1_Scorecard&select=Conversation_Id,day,Score_card,type&order=day.desc`;
-    }
+ }
 
     if (url) {
       const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
@@ -794,13 +793,13 @@ async function handleQueueChange() {
         option.value = item.Conversation_Id;
         option.textContent = `${item.Conversation_Id} (${item.day || 'No Date'})`;
         convSelect.appendChild(option);
-      });
+ });
       convSelect.disabled = false;
-    }
-  } catch (e) {
+ }
+ } catch (e) {
     console.error('Error fetching conversations:', e);
     convSelect.innerHTML = '<option value="">Error loading</option>';
-  }
+ }
 }
 
 async function loadConfig() {
@@ -812,11 +811,10 @@ async function loadConfig() {
     config.restUrl = json.supabase.rest_url;
     config.apiKey = json.supabase.client_api_key;
     config.serviceKey = json.supabase.service_key || null;
-    console.log('Configuration loaded successfully.');
-  } catch (err) {
+ } catch (err) {
     console.error('Error loading config:', err);
     showAlert('Failed to load application configuration.', { type: 'error', title: 'Configuration error' });
-  }
+ }
 }
 
 function authHeaders(opts = {}) {
@@ -837,7 +835,7 @@ function authHeaders(opts = {}) {
     'Authorization': `Bearer ${useBearer}`,
     'Content-Type': 'application/json',
     'Prefer': 'count=exact'
-  };
+ };
 }
 
 async function loadResults() {
@@ -848,23 +846,23 @@ async function loadResults() {
   if (!convId) {
     showAlert('Please enter a Conversation ID', { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
 
   if (!queue) {
     showAlert('Please select a Queue', { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
   
   // Set current attributes based on queue
   if (queue === 'SMS') {
     currentAttributes = DB_ATTRIBUTES_SMS;
-  } else if (queue === 'MX-T1') {
+ } else if (queue === 'MX-T1') {
     currentAttributes = DB_ATTRIBUTES_T1;
-  } else if (queue === 'Order Support') {
+ } else if (queue === 'Order Support') {
     currentAttributes = DB_ATTRIBUTES_SALES_RET_CALIBRATION;
-  } else {
+ } else {
     currentAttributes = DB_ATTRIBUTES_T2;
-  }
+ }
 
   container.innerHTML = 'Loading...';
   
@@ -874,7 +872,7 @@ async function loadResults() {
       container.innerHTML = 'No results found for this Conversation ID and Queue.';
       updateCompleteButtonState(null);
       return;
-    }
+ }
     const takerNames = Array.from(new Set((data || []).map(r => (r.Taker_Name || '').toString().trim()).filter(Boolean)));
     const emailMap = new Map();
     if (takerNames.length > 0) {
@@ -884,23 +882,22 @@ async function loadResults() {
           const name = (u.Name || '').toString().trim().toLowerCase();
           const email = (u.email || '').toString().trim();
           if (name && email) emailMap.set(name, email);
-        });
-      } catch (e) {
-        console.warn('Failed to fetch user emails for rendering', e);
-      }
-    }
+ });
+ } catch (e) {
+ }
+ }
     renderTable(data, container, emailMap);
     await syncCalibrationCompletedState(convId, queue, true);
-  } catch (err) {
+ } catch (err) {
     console.error(err);
     if (err.message.includes('JWT expired') || err.message.includes('401')) {
        const doLogin = confirm('Your session has expired. Please log in again.');
        if (doLogin) {
          window.location.href = 'login.html';
-       }
-    }
+ }
+ }
     container.innerHTML = `Error loading results: ${err.message}`;
-  }
+ }
 }
 
 function clearResults() {
@@ -914,7 +911,7 @@ function clearResults() {
 async function fetchCalibrationData(convId, queue) {
   if (!config.restUrl) {
     throw new Error('Configuration not loaded');
-  }
+ }
 
   // Determine the table and URL based on the queue
   let tableName = 'calibration_T2_OS_NEW';
@@ -922,14 +919,14 @@ async function fetchCalibrationData(convId, queue) {
 
   if (queue === 'SMS') {
     tableName = 'calibration_sms';
-  } else if (queue === 'MX-T1') {
+ } else if (queue === 'MX-T1') {
     tableName = 'Calibration_T1_QA_New_Scorecards';
-  } else if (queue === 'Order Support') {
+ } else if (queue === 'Order Support') {
     tableName = 'sales_ret_calibration';
-  } else {
+ } else {
     // Default for Sales (T2 OS)
     tableName = 'calibration_T2_OS_NEW';
-  }
+ }
 
   // Construct URL
   // Note: Parameter naming might differ across tables, but assuming Conversation_ID standard
@@ -942,7 +939,7 @@ async function fetchCalibrationData(convId, queue) {
   
   if (queue === 'Sales' || queue === 'Order Support') {
     url += `&queue=eq.${encodeURIComponent(queue)}`;
-  }
+ }
   
   // Use Service Key to bypass RLS policies for calibration view
   const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
@@ -952,17 +949,17 @@ async function fetchCalibrationData(convId, queue) {
     // Check for specific JWT expiration or auth errors
     if (res.status === 401 || text.includes('JWT expired')) {
       throw new Error(`JWT expired: ${text}`);
-    }
+ }
     // Fallback: if column not found (e.g. Conversation_ID vs conversation_id), try lowercase?
     if (text.includes('Conversation_ID') && text.includes('column')) {
        // Retry with lowercase
        const retryUrl = `${config.restUrl}/${tableName}?conversation_id=eq.${encodeURIComponent(convId)}`;
        const res2 = await fetch(retryUrl, { headers: authHeaders({ useServiceKey: true }) });
        if (res2.ok) return await res2.json();
-    }
+ }
 
     throw new Error(text);
-  }
+ }
   return await res.json();
 }
 
@@ -978,14 +975,14 @@ function renderTable(data, container, emailMap) {
   const hebaRow = (data || []).find(row => {
     const name = (row.Taker_Name || '').toString().trim().toLowerCase();
     return name === normalizedTarget;
-  });
+ });
 
   const normalizeYesNo = (val) => {
     const v = (val || '').toString().trim().toLowerCase();
     if (v === 'yes') return 'Yes';
     if (v === 'no') return 'No';
     return '';
-  };
+ };
 
   const takerScores = new Map();
   data.forEach(row => {
@@ -996,17 +993,17 @@ function renderTable(data, container, emailMap) {
       if (val === 'Yes' || val === 'No') {
         answeredCount++;
         if (val === 'Yes') yesCount++;
-      }
-    });
+ }
+ });
     let label;
     if (answeredCount === 0) {
       label = 'Pending';
-    } else {
+ } else {
       const pct = Math.round((yesCount / answeredCount) * 100);
       label = `${pct}%`;
-    }
+ }
     takerScores.set(row.Taker_Name || 'Unknown', label);
-  });
+ });
   
   let html = '<table class="calib-table">';
   
@@ -1020,7 +1017,7 @@ function renderTable(data, container, emailMap) {
     const email = emailMap ? emailMap.get((name || '').toString().trim().toLowerCase()) : '';
     const emailLine = email ? `<div class="taker-email">${email}</div>` : '';
     html += `<th class="taker-header"><div>${headerText}</div>${emailLine}</th>`;
-  });
+ });
   html += '<th style="min-width: 80px; max-width: 80px;">Score</th>'; // New Score Column at the end
   html += '</tr></thead>';
   
@@ -1046,15 +1043,15 @@ function renderTable(data, container, emailMap) {
         const matchCount = data.reduce((acc, row) => {
           const v = normalizeYesNo(row[attr.key]);
           return acc + (v === hebaVal ? 1 : 0);
-        }, 0);
+ }, 0);
         scorePercent = totalCount > 0 ? Math.round((matchCount / totalCount) * 100) : 0;
-      }
-    }
+ }
+ }
 
     if (scorePercent != null) {
       totalScoreSum += scorePercent;
       scoreCount++;
-    }
+ }
 
     data.forEach(row => {
       const val = row[attr.key] || '-';
@@ -1064,7 +1061,7 @@ function renderTable(data, container, emailMap) {
       else if (val === 'N/A') cls = 'cell-na';
       
       html += `<td class="${cls}">${val}</td>`;
-    });
+ });
     
     // Add Score at the end of the row
     // If comments exist, rowspan=2 so it merges with the empty cell below
@@ -1074,9 +1071,9 @@ function renderTable(data, container, emailMap) {
       : 'font-weight: bold; background: #f0f9ff; color: #0284c7; vertical-align: middle;';
     if (hasAnyComment) {
         html += `<td rowspan="2" style="${scoreCellStyle}">${scoreCellText}</td>`;
-    } else {
+ } else {
         html += `<td style="${scoreCellStyle}">${scoreCellText}</td>`;
-    }
+ }
     html += '</tr>';
     
     if (hasAnyComment) {
@@ -1087,13 +1084,13 @@ function renderTable(data, container, emailMap) {
           const comment = (rawComment || '').toString().trim();
           if (comment) {
             html += `<td><div class="comment-cell-wrapper" tabindex="0">${comment}</div></td>`;
-          } else {
+ } else {
             html += '<td></td>';
-          }
-        });
+ }
+ });
         html += '</tr>';
-    }
-  });
+ }
+ });
   
   html += '</tbody></table>';
   container.innerHTML = html;
@@ -1113,7 +1110,7 @@ function updateAlignmentScore(data) {
   const hebaRow = (data || []).find(row => {
     const name = (row.Taker_Name || '').toString().trim().toLowerCase();
     return name === normalizedTarget;
-  });
+ });
 
   if (!hebaRow) {
     valueSpan.textContent = 'Pending';
@@ -1122,14 +1119,14 @@ function updateAlignmentScore(data) {
     widget.style.color = '#374151';
     widget.style.border = '1px solid #e5e7eb';
     return;
-  }
+ }
 
   const normalizeYesNo = (val) => {
     const v = (val || '').toString().trim().toLowerCase();
     if (v === 'yes') return 'Yes';
     if (v === 'no') return 'No';
     return '';
-  };
+ };
 
   let sum = 0;
   let count = 0;
@@ -1140,11 +1137,11 @@ function updateAlignmentScore(data) {
     const matchCount = (data || []).reduce((acc, row) => {
       const v = normalizeYesNo(row[attr.key]);
       return acc + (v === hebaVal ? 1 : 0);
-    }, 0);
+ }, 0);
     const pct = takerCount > 0 ? Math.round((matchCount / takerCount) * 100) : 0;
     sum += pct;
     count++;
-  });
+ });
 
   if (count === 0) {
     valueSpan.textContent = 'Pending';
@@ -1153,7 +1150,7 @@ function updateAlignmentScore(data) {
     widget.style.color = '#374151';
     widget.style.border = '1px solid #e5e7eb';
     return;
-  }
+ }
 
   const score = Math.round(sum / count);
   valueSpan.textContent = `${score}%`;
@@ -1163,11 +1160,11 @@ function updateAlignmentScore(data) {
     widget.style.backgroundColor = '#fee2e2';
     widget.style.color = '#991b1b';
     widget.style.border = '1px solid #fecaca';
-  } else {
+ } else {
     widget.style.backgroundColor = '#dcfce7';
     widget.style.color = '#166534';
     widget.style.border = '1px solid #bbf7d0';
-  }
+ }
 }
 
 function exportResultsCSV() {
@@ -1175,7 +1172,7 @@ function exportResultsCSV() {
   if (!table) {
     showAlert('No results to export', { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
 
   const rows = Array.from(table.rows);
   const csvLines = rows.map(tr => {
@@ -1183,8 +1180,8 @@ function exportResultsCSV() {
     return cells.map(td => {
       const text = (td.innerText || '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""');
       return `"${text}"`;
-    }).join(',');
-  });
+ }).join(',');
+ });
 
   const csvContent = csvLines.join('\r\n');
   const queue = document.getElementById('queueSelect') ? (document.getElementById('queueSelect').value || 'All') : 'All';
@@ -1207,7 +1204,7 @@ async function completeCalibration() {
   if (!Array.isArray(lastResults) || lastResults.length === 0) {
     showAlert('Please load calibration results first', { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
 
   const queueSelect = document.getElementById('queueSelect');
   const convInput = document.getElementById('convIdInput');
@@ -1220,44 +1217,43 @@ async function completeCalibration() {
   const hebaRow = lastResults.find(row => {
     const name = (row.Taker_Name || '').toString().trim().toLowerCase();
     return name === normalizedTarget;
-  });
+ });
 
   if (!hebaRow) {
     showAlert("The host haven't submit the calibration yet !", { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
 
   const takerNames = Array.from(new Set(lastResults.map(r => (r.Taker_Name || '').toString().trim()).filter(Boolean)));
   if (takerNames.length === 0) {
     showAlert('No taker names found for this calibration', { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
 
   let users = [];
   try {
     users = await fetchUserEmailsByNames(takerNames);
-  } catch (e) {
-    console.warn('Failed to fetch user emails for calibration', e);
-  }
+ } catch (e) {
+ }
 
   const emailMap = new Map();
   (users || []).forEach(u => {
     const name = (u.Name || '').toString().trim().toLowerCase();
     const email = (u.email || '').toString().trim();
     if (name && email) emailMap.set(name, email);
-  });
+ });
 
   const toList = [];
   takerNames.forEach(name => {
     const email = emailMap.get(name.toLowerCase());
     if (email) toList.push(email);
-  });
+ });
 
   const uniqueTo = Array.from(new Set(toList));
   if (uniqueTo.length === 0) {
     showAlert('No emails found for takers', { type: 'warning', title: 'Heads up' });
     return;
-  }
+ }
 
   const toRecipients = [];
   const toSeen = new Set();
@@ -1268,14 +1264,14 @@ async function completeCalibration() {
     if (toSeen.has(n)) return;
     toSeen.add(n);
     toRecipients.push({ email, label: email });
-  });
+ });
 
   const normalizeYesNo = (val) => {
     const v = (val || '').toString().trim().toLowerCase();
     if (v === 'yes') return 'Yes';
     if (v === 'no') return 'No';
     return '';
-  };
+ };
 
   const takerCount = lastResults.length;
   const yesItems = [];
@@ -1289,14 +1285,14 @@ async function completeCalibration() {
     const matchCount = (lastResults || []).reduce((acc, row) => {
       const v = normalizeYesNo(row[attr.key]);
       return acc + (v === hebaVal ? 1 : 0);
-    }, 0);
+ }, 0);
     const scorePercent = takerCount > 0 ? Math.round((matchCount / takerCount) * 100) : 0;
     const item = { label: attr.label, value: hebaVal, scorePercent, matchCount, totalCount: takerCount };
     if (hebaVal === 'Yes') yesItems.push(item);
     else noItems.push(item);
     sum += scorePercent;
     count++;
-  });
+ });
 
   const alignmentScore = count ? Math.round(sum / count) : null;
   const hebaName = hebaRow.Taker_Name || 'Heba El Sobky';
@@ -1311,7 +1307,7 @@ async function completeCalibration() {
     takerNames,
     toRecipients,
     ccDefaults: ['halim@tempo.fit', 'nancy@tempo.fit', 'khaledsabban@tempo.fit']
-  });
+ });
 }
 
 function updateCompleteButtonState(completed) {
@@ -1320,10 +1316,10 @@ function updateCompleteButtonState(completed) {
   let isDone = false;
   if (completed === true || completed === 1) {
     isDone = true;
-  } else if (typeof completed === 'string') {
+ } else if (typeof completed === 'string') {
     const v = completed.toLowerCase();
     if (v === 'true' || v === 't' || v === '1') isDone = true;
-  }
+ }
   btn.disabled = isDone;
 }
 
@@ -1333,11 +1329,10 @@ async function syncCalibrationCompletedState(convId, queue, showNotice = false) 
     updateCompleteButtonState(completed);
     if (completed && showNotice) {
       showAlert('Calibration has been sent already', { type: 'info', title: 'Already sent' });
-    }
-  } catch (e) {
-    console.warn('Failed to sync calibration completed state', e);
+ }
+ } catch (e) {
     updateCompleteButtonState(null);
-  }
+ }
 }
 
 async function fetchCalibrationCompleted(convId, queue) {
@@ -1347,19 +1342,19 @@ async function fetchCalibrationCompleted(convId, queue) {
   let typeFilter = '';
   if (queue === 'MX-T1') {
     scorecardValue = 'MX-T1_Scorecard';
-  } else if (queue === 'SMS') {
+ } else if (queue === 'SMS') {
     scorecardValue = 'SMS_Scorecard';
-  } else if (queue === 'Sales' || queue === 'Order Support') {
+ } else if (queue === 'Sales' || queue === 'Order Support') {
     scorecardValue = 'MX-T2_OS Scorecard';
     typeFilter = queue;
-  }
+ }
   let url = `${config.restUrl}/Assigning_Calibration?Conversation_Id=eq.${encodeURIComponent(convId)}&select=completed&limit=1`;
   if (scorecardValue) {
     url += `&Score_card=eq.${encodeURIComponent(scorecardValue)}`;
-  }
+ }
    if (typeFilter) {
      url += `&type=eq.${encodeURIComponent(typeFilter)}`;
-   }
+ }
   const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
   if (!res.ok) return false;
   const rows = await res.json();
@@ -1370,7 +1365,7 @@ async function fetchCalibrationCompleted(convId, queue) {
   if (typeof val === 'string') {
     const v = val.toLowerCase();
     if (v === 'true' || v === 't' || v === '1') return true;
-  }
+ }
   if (val === 1) return true;
   return false;
 }
@@ -1382,28 +1377,27 @@ async function markCalibrationCompleted(convId, queue) {
   let typeFilter = '';
   if (queue === 'MX-T1') {
     scorecardValue = 'MX-T1_Scorecard';
-  } else if (queue === 'SMS') {
+ } else if (queue === 'SMS') {
     scorecardValue = 'SMS_Scorecard';
-  } else if (queue === 'Sales' || queue === 'Order Support') {
+ } else if (queue === 'Sales' || queue === 'Order Support') {
     scorecardValue = 'MX-T2_OS Scorecard';
     typeFilter = queue;
-  }
+ }
   let url = `${config.restUrl}/Assigning_Calibration?Conversation_Id=eq.${encodeURIComponent(convId)}`;
   if (scorecardValue) {
     url += `&Score_card=eq.${encodeURIComponent(scorecardValue)}`;
-  }
+ }
   if (typeFilter) {
     url += `&type=eq.${encodeURIComponent(typeFilter)}`;
-  }
+ }
   const res = await fetch(url, {
     method: 'PATCH',
     headers: authHeaders({ useServiceKey: true }),
     body: JSON.stringify({ completed: true })
-  });
+ });
   if (!res.ok) {
     const text = await res.text();
-    console.warn('Failed to mark calibration completed', text);
-  }
+ }
 }
 
 async function fetchUserEmailsByNames(names) {
@@ -1416,21 +1410,18 @@ async function fetchUserEmailsByNames(names) {
   let res;
   try {
     res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-  } catch (e) {
-    console.warn('User email fetch error (network)', e);
+ } catch (e) {
     return [];
-  }
+ }
   if (!res || !res.ok) {
-    console.warn('User email fetch error (status)', res && res.status);
     return [];
-  }
+ }
   try {
     const rows = await res.json();
     return Array.isArray(rows) ? rows : [];
-  } catch (e) {
-    console.warn('User email fetch parse error', e);
+ } catch (e) {
     return [];
-  }
+ }
 }
 
 function buildCalibrationEmailHTML(row, queue, convId) {
@@ -1438,7 +1429,7 @@ function buildCalibrationEmailHTML(row, queue, convId) {
     const val = row[attr.key];
     const comment = row[attr.commentKey];
     return { label: attr.label, val, comment };
-  });
+ });
 
   let yesCount = 0;
   let answeredCount = 0;
@@ -1447,8 +1438,8 @@ function buildCalibrationEmailHTML(row, queue, convId) {
     if (v === 'Yes' || v === 'No') {
       answeredCount++;
       if (v === 'Yes') yesCount++;
-    }
-  });
+ }
+ });
   const score = answeredCount > 0 ? Math.round((yesCount / answeredCount) * 100) : null;
 
   const conv = convId || row.Conversation_Id || row.conversation_id || '';
@@ -1474,7 +1465,7 @@ function buildCalibrationEmailHTML(row, queue, convId) {
         <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#111827;">${attrScore}</td>
         <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#6b7280; white-space: pre-wrap;">${safeComment ? safeComment : ''}</td>
       </tr>`;
-  }).join('');
+ }).join('');
 
   const header = `
     <div style="background:#4f46e5; background-image:linear-gradient(135deg,#6366f1,#8b5cf6); padding:22px; border-radius:16px 16px 0 0; color:#fff; text-align:center;">
@@ -1522,14 +1513,14 @@ async function sendEmailSMTP({ html, to, cc = [], subject }) {
     cc,
     subject,
     html
-  };
+ };
   try {
     const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!res.ok) throw new Error(await res.text());
     try {
       const data = await res.json();
       if (data && data.ok === false) return false;
-    } catch (e) {}
+ } catch (e) {}
     return true;
-  } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
+ } catch (e) {  return false; }
 }

@@ -3,20 +3,19 @@ export default {
 	abuse: function(){
 		const caseId = Text119.text;
 		storeValue("caseT2OS", caseId);
-	},
+ },
 
 	onUserRefresh: function () {
-		console.log("Page refreshed by the user!");
 		Text119.setText(appsmith.store.caseT2OS);
 		showAlert('You have refreshed the page, Please complete the current assigned conversartion !')
 		Kustomer_Message.run();
-	},
+ },
 
 	f_order: async function () {
 
 		if(Text119.text > 0){
 			showAlert("Please submit the current Case before asking for a new one !")	
-		} else {
+ } else {
 
 			const emptyWidgets = [];
 			if (DatePicker1.formattedDate === "") emptyWidgets.push("Date From");
@@ -25,39 +24,34 @@ export default {
 			if (emptyWidgets.length > 0) {
 				const emptyWidgetNames = emptyWidgets.join(', ');
 				showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
-			} else {
+ } else {
 				try {
 					await get_T2_OS.run();
 					await assigned.run();
 					await Kustomer_Message.run();
 					await Channel.abuse();
-				} catch (error) {
+ } catch (error) {
 					console.error('An error occurred during execution:', error);
 					showAlert(`An error occurred: ${error.message}`);
-				}
-			}
-		}
+ }
+ }
+ }
 		Channel.onUserRefresh();
-	},
-
+ },
 
 	url: function () {
 		var txt1 = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/0/0/';
 		var txt2 = "conversation/";
 		var txt4 = Con_ID.text;
 		var combinedText = txt1.concat(txt2,txt4);
-		console.log(combinedText);
 		return Input4 = combinedText;
-	},
-
-
-
+ },
 
 	cid: function() {
 		if (Input1.value !== null) {
 			Kustomer_Message.run();
-		}
-	},
+ }
+ },
 	preview: function() {  
 		var messageCount = Kustomer_Message.data.data.length;
 		var previewMessages = [];
@@ -80,16 +74,16 @@ export default {
 					var userDetails = User_details.data.data.attributes.name;
 					var assignedUserName = userDetails;
 					messageWithAssignedUser += "\nAgent Name: " + assignedUserName;
-				}
+ }
 				previewMessages.push(messageWithAssignedUser);
-			}
-		}
+ }
+ }
 		// Update all previews with assigned user information
 		for (var k = 0; k < previewMessages.length; k++) {
 			Kustomer_Message.data.data[k].attributes.preview = previewMessages[k];
-		}
+ }
 		return previewMessages.join("\n\n");
-	},
+ },
 	assigneduserIndex: function() {
 		var messageCount = Kustomer_Message.data.data.length;
 		var previewMessages = [];
@@ -104,21 +98,20 @@ export default {
 				if (previewMessage.indexOf(targetText) !== -1) {
 					targetDataIndex = i;
 					break;
-				}
+ }
 				previewMessages.push(previewMessage);
-			}
-		}
+ }
+ }
 		for (var k = 0; k < previewMessages.length; k++) {
 			Kustomer_Message.data.data[k].attributes.preview = previewMessages[k];
-		}
+ }
 		return	Kustomer_Message.data.data[targetDataIndex].attributes.assignedUsers[0];
-	},
+ },
 	calculateTotal: function () {
 		const group1 = [RadioGroup1.selectedOptionValue, RadioGroup2.selectedOptionValue, RadioGroup3.selectedOptionValue, RadioGroup4.selectedOptionValue];
 		const group2 = [RadioGroup5.selectedOptionValue, RadioGroup6.selectedOptionValue, RadioGroup7.selectedOptionValue, RadioGroup13.selectedOptionValue];
 		const group3 = [RadioGroup9Verification.selectedOptionValue, RadioGroup10TempoValues.selectedOptionValue, RadioGroup11Resolution.selectedOptionValue, RadioGroup12Ownership.selectedOptionValue];
 		const group4 = [RadioGroup8.selectedOptionValue];
-
 
 		const valuesAssignedg1 = group1.map(value => value === "Yes" ? 5 : (value === "N/A" ? 5 : 0));
 		const valuesAssignedg2 = group2.map(value => value === "Yes" ? 15 : 0);
@@ -132,16 +125,16 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 	pass_fail: function () {
 		const text = Text4.text;
 		const parsed = typeof text === 'string' ? parseFloat(text.replace('%','')) : Number(text);
 		const score = isNaN(parsed) ? 0 : parsed;
 		return (score === 0 || score < 90) ? 'Failed' : 'Passed';
-	},
+ },
 	submit: async function () {
 		const emptyWidgets = [];
 		if (Con_ID.text === "") emptyWidgets.push("Conversation ID");
@@ -165,7 +158,7 @@ export default {
 		if (emptyWidgets.length > 0) {
 			const emptyWidgetNames = emptyWidgets.join(', ');
 			showAlert(`The following attributes are empty: ${emptyWidgetNames}. Please fill them in.`);
-		} else {
+ } else {
 			try {
 				await OS_Scorecard.run();
 				await Send_to_agent_passed.run();
@@ -173,16 +166,16 @@ export default {
 				await Channel.clean();
 				await Channel.reset();
 				await empty.run();
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred:', error);
-			}
-		}
-	},
+ }
+ }
+ },
 	clean: function(){
 		resetWidget(Text119.setText(""));
 		resetWidget(Input1.setValue(""));
 		resetWidget(Input4.setValue(""));
-	},
+ },
 	reset: function () {
 		resetWidget("Text5", true);
 		resetWidget("Container2", true);
@@ -191,39 +184,39 @@ export default {
 		resetWidget("Container4", true);
 		User_details.clear();
 		Input4.setValue("");
-	},
+ },
 	resetModal: async function(){
 		await Channel.reset();
 		await UJET.clear();
 		await closeModal("Modal1", true);
-	},
+ },
 	search: async function(){
 		await Kustomer_Message.run();
 		Channel.assigneduserIndex.run;
 		await User_details.run();
-	},
+ },
 	logOut: () => {
 		Object.keys(appsmith.store)
 			.map(key => storeValue(key, undefined));
 		navigateTo('Login_Modern')
-	},
+ },
 	skip_empty: function(){
 		if(!Text119.text){
 			showAlert("Please Get Case first to continue !")
-		}else{
+ }else{
 			showModal('Modal2');
-		}
-	},
+ }
+ },
 	skip: async function (){
 		if(!Input19.text){
 			showAlert("Please Add Skip Reason to continue !")
-		}else{
+ }else{
 			resetWidget('Input19')
 			closeModal(Modal2);
 			await Skip.run();
 			await get_T2_OS.run();
 			await Kustomer_Message.run();
-		}
-	},
+ }
+ },
 
 }

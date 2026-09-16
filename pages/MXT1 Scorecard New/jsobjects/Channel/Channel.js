@@ -13,23 +13,18 @@ export default {
 				.map(agent => ({
 					name: `${agent.first_name} ${agent.last_name}`,
 					email: agent.email,
-				}));
+ }));
 
-				console.log("Filtered Agents:", filteredAgents);
 				return filteredAgents;
-			} else {
+ } else {
 				console.error("Invalid response format");
 				return [];
-			}
-		} catch (error) {
+ }
+ } catch (error) {
 			console.error("Error fetching agent list:", error);
 			return [];
-		}
-	},
-
-
-
-
+ }
+ },
 
 	getCal: async function() {
 		Text119Copy.setVisibility(true);
@@ -47,11 +42,10 @@ export default {
 		if (calibration.data && calibration.data.length > 0 && calibration.data[0].Conversation_Id) {
 			const calData = calibration.data[0].Conversation_Id;
 			return calData;
-		} else {
+ } else {
 			return "No Data !";
-		}
-	},
-
+ }
+ },
 
 	// getThursdayOfCurrentWeek: function() {
 	// const currentDate = new Date();
@@ -75,26 +69,24 @@ export default {
 
 		const formattedThursday = thursdayDate.toISOString().slice(0, 10);
 		return formattedThursday;
-	},
+ },
 
 	// abuse: function(){
 	// const caseId = Text119.text;
 	// storeValue("caseMXT1", caseId);
 	// },
 
-
 	onUserRefresh: function () {
-		console.log("Page refreshed by the user!");
 		Text119.setText(appsmith.store.caseMXT1);
-	},
+ },
 
 	visi: function(){
 		if(1===1){
 			return true;
-		}else{
+ }else{
 			return false;
-		}
-	},
+ }
+ },
 
 	get_case: async function (){
 		// Check if an option is selected
@@ -102,15 +94,15 @@ export default {
 			await Channel.fa_order_RT();
 			await agentRT.run();
 			await Channel.visi();
-		} else { // If no option is selected or it's the default "Select Option"
+ } else { // If no option is selected or it's the default "Select Option"
 			await Channel.f_order();
-		}
-	},
+ }
+ },
 
 	fa_order_RT: async function(){
 		if(Text119.text > 0 ){
 			showAlert("Please submit the current Case before asking for a new one !");
-		} else {
+ } else {
 			const emptyWidgets = [];
 			if (Select2.selectedOptionLabel === "") emptyWidgets.push("Select Team");
 			if (DatePicker1.formattedDate === "") emptyWidgets.push("Date From");
@@ -121,22 +113,22 @@ export default {
 				const emptyWidgetNames = emptyWidgets.join(', ');
 				showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
 				return; // Exit the function if any widget is empty
-			} else {
+ } else {
 				try {
 					await get_mx_conRT.run();
 					await assigned.run();
-				} catch (error) {
+ } catch (error) {
 					console.error('An error occurred during execution:', error);
-				}
-			}
-		}
-	},
+ }
+ }
+ }
+ },
 
 	f_order: async function () {
 
 		if(Text119.text > 0 ){
 			showAlert("Please submit the current Case before asking for a new one !");
-		} else {
+ } else {
 			const emptyWidgets = [];
 			if (Select2.selectedOptionLabel === "") emptyWidgets.push("Select Team");
 			if (DatePicker1.formattedDate === "") emptyWidgets.push("Date From");
@@ -147,18 +139,17 @@ export default {
 				const emptyWidgetNames = emptyWidgets.join(', ');
 				showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
 				return; // Exit the function if any widget is empty
-			} else {
+ } else {
 				try {
 					await get_mx_con.run();
 					await assigned.run();
-				} catch (error) {
+ } catch (error) {
 					console.error('An error occurred during execution:', error);
-				}
-			}
-		}
+ }
+ }
+ }
 
-	},
-
+ },
 
 	// f_order: async function () {
 	// 
@@ -193,16 +184,15 @@ export default {
 		var txt4 = Text121Copy.text;
 		var combinedText = txt1.concat(txt2,txt4);
 		return combinedText;
-	},
+ },
 
 	url: function () {
 		var txt1 = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/0/0/';
 		var txt2 = "conversation/";
 		var txt4 = Con_ID.text;
 		var combinedText = txt1.concat(txt2,txt4);
-		console.log(combinedText);
 		return Input4 = combinedText;
-	},
+ },
 
 	calculateTotal: function () {
 		const group1 = [Introduction.selectedOptionValue, RadioGroup2.selectedOptionValue, RadioGroup14.selectedOptionValue];
@@ -219,10 +209,10 @@ export default {
 		const valuesAssignedg4 = group4.map(value => {
 			if (value === "Yes" || value === "N/A") {
 				return 10;
-			} else {
+ } else {
 				return 0;
-			}
-		});
+ }
+ });
 		const totalg1 = valuesAssignedg1.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg2 = valuesAssignedg2.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg3 = valuesAssignedg3.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
@@ -232,17 +222,17 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 
 	pass_fail: function () {
 		const text = Text4.text;
 		const parsed = typeof text === 'string' ? parseFloat(text.replace('%','')) : Number(text);
 		const score = isNaN(parsed) ? 0 : parsed;
 		return (score === 0 || score < 90) ? 'Failed' : 'Passed';
-	},
+ },
 
 	submit: async function () {
 		const emptyWidgets = [];
@@ -281,7 +271,7 @@ export default {
 		if (emptyWidgets.length > 0) {
 			const emptyWidgetNames = emptyWidgets.join(', ');
 			showAlert(`The following attributes are empty: ${emptyWidgetNames}. Please fill them in.`);
-		} else if (Calibration.selectedOptionValue === "Yes") {
+ } else if (Calibration.selectedOptionValue === "Yes") {
 			try {
 				await T1_Calibration.run();
 				await Send_to_agent_passed.run();
@@ -294,10 +284,10 @@ export default {
 				await	removeValue('Calibation');
 				Text119Copy.setVisibility(false);
 				Text121Copy.setVisibility(false);
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred while running Calibration:', error);
-			}
-		} else if (Calibration.selectedOptionValue === "No"){
+ }
+ } else if (Calibration.selectedOptionValue === "No"){
 			try {
 				await Chat_Scorecard.run();
 				await Send_to_agent_passed.run();
@@ -311,11 +301,11 @@ export default {
 				await	removeValue('Calibation');
 				Text119Copy.setVisibility(false);
 				Text121Copy.setVisibility(false);
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred:', error);
-			}
-		}
-	},
+ }
+ }
+ },
 
 	reset: function () {
 		resetWidget("Text5", true);
@@ -325,18 +315,18 @@ export default {
 		resetWidget("Container4", true);
 		resetWidget("Container4", true);
 		removeValue('calYesStore');
-	},
+ },
 
 	resetModal: async function(){
 		await Channel.reset();
 		await closeModal("Modal1", true);
-	},
+ },
 
 	logOut: () => {
 		Object.keys(appsmith.store)
 			.map(key => storeValue(key, undefined));
 		navigateTo('Login_Modern')
-	},
+ },
 
 	startCounter() {
 		let count = 60; 
@@ -347,49 +337,47 @@ export default {
 			if (count <= 0) {
 				clearInterval(timer);
 
-			}
-		}
-
+ }
+ }
 
 		timer = setInterval(() => {
 			updateCounter();
 
-
 			if (!appsmith.store.access_token || count % 60 === 0) {
 				if (!appsmith.store.access_token) {
 					Channel.logOut();
-				}
-			}
-		}, 1000);
+ }
+ }
+ }, 1000);
 
 		return timer;
-	},
+ },
 
 	deleteStore  ()  {
 		Object.keys(appsmith.store)
 			.map(key => storeValue(key, undefined));
-	},
+ },
 	clean: function(){
 		resetWidget(Text119.setText(""));
 		resetWidget(Input4.setValue(""));
-	},
+ },
 
 	skip_empty: function(){
 		if(!Text119.text){
 			showAlert("Please Get Case first to continue !")
-		}else{
+ }else{
 			showModal('Modal2');
-		}
-	},
+ }
+ },
 
 	skip: async function (){
 		if(!Input19.text){
 			showAlert("Please Add Skip Reason to continue !")
-		}else{
+ }else{
 			resetWidget('Input19');
 			closeModal(Modal2);
 			await Skip.run();
 			await get_mx_con.run();
-		}
-	}
+ }
+ }
 }

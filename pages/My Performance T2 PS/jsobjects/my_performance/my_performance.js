@@ -10,38 +10,38 @@ export default {
 				numbersuffix: "%",
 				theme: "fusion",
 				showtooltip: "0",
-			},
+ },
 			colorrange: {
 				color: [
 					{
 						minvalue: "0",
 						maxvalue: "25",
 						code: "#b91c1c",
-					},
+ },
 					{
 						minvalue: "25",
 						maxvalue: "50",
 						code: "#ef4444",
-					},
+ },
 					{
 						minvalue: "50",
 						maxvalue: "75",
 						code: "#fef08a",
-					},
+ },
 					{
 						minvalue: "75",
 						maxvalue: "100",
 						code: "#62B58F",
-					},
+ },
 				],
-			},
+ },
 			dials: {
 				dial: [
 					{
 						value: TextScore.text.replace('%',''),
-					},
+ },
 				],
-			},
+ },
 			trendpoints: {
 				point: [
 					{
@@ -52,17 +52,17 @@ export default {
 						usemarker: "1",
 						markerbordercolor: "#000000",
 						markertooltext: "80%",
-					},
+ },
 				],
-			},
-		};
+ },
+ };
 
 		return {
 			type: "angulargauge",
 			dataFormat: "json",
 			dataSource,
-		};
-	},
+ };
+ },
 
 	my_search: async function() {
 		await my_figures.run();
@@ -75,14 +75,13 @@ export default {
 			if (!isNaN(finalScore)) {
 				sum += finalScore;
 				count++;
-			}
-		}
+ }
+ }
 		let averageScore = 0;
 		if (count > 0) {
 			averageScore = (sum / count).toFixed(0); // Rounded to 2 decimal places
-		}
-		console.log("Average Score:", averageScore);
+ }
 		return averageScore + '%';
-	},
+ },
 }
 

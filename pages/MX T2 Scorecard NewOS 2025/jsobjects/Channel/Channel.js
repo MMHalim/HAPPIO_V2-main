@@ -3,10 +3,10 @@ export default {
 	calibration: function(){
 		if(Calibration.selectedOptionValue.length === 3){
 			return "false"
-		} else{
+ } else{
 			return "true"
-		}
-	},
+ }
+ },
 
 	startCounter() {
 		// Check both Appsmith store and localStorage for authentication
@@ -16,30 +16,29 @@ export default {
 		// If no token found in either location, logout
 		if (!storeToken && !localToken) {
 			Logout.logOut();
-		} else if (!storeToken && localToken) {
+ } else if (!storeToken && localToken) {
 			// Restore session from localStorage if store is empty
 			storeValue('login_token', localToken);
 			storeValue('user_id', localStorage.getItem('user_id'));
 			storeValue('user_role', localStorage.getItem('user_role'));
 			storeValue('loggedInUserEmail', localStorage.getItem('loggedInUserEmail'));
-		}
-	},
+ }
+ },
 
 	abuse: function(){
 		const caseId = Text119.text;
 		storeValue("caseMXT1", caseId);
-	},
+ },
 
 	onUserRefresh: function () {
-		console.log("Page refreshed by the user!");
 		Text119.setText(appsmith.store.caseMXT1);
-	},
+ },
 
 	f_order: async function () {
 
 		if(Text119.text > 0){
 			showAlert("Please submit the current Case before asking for a new one !");
-		} else {
+ } else {
 			const emptyWidgets = [];
 			if (DatePicker1.formattedDate === "") emptyWidgets.push("Date From");
 			if (DatePicker2.formattedDate === "") emptyWidgets.push("Date To");
@@ -49,19 +48,19 @@ export default {
 				const emptyWidgetNames = emptyWidgets.join(', ');
 				showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
 				return; // Exit the function if any widget is empty
-			}
+ }
 
 			try {
 				await get_mx_con.run();
 				await assigned.run();
 				await Channel.abuse();
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred during execution:', error);
 				showAlert(`An error occurred: ${error.message}`);
-			}
-		}
+ }
+ }
 		// Channel.onUserRefresh();
-	},
+ },
 
 	// f_order: async function () {
 	// 
@@ -96,15 +95,13 @@ export default {
 		var txt2 = "conversation/";
 		var txt4 = Con_ID.text;
 		var combinedText = txt1.concat(txt2,txt4);
-		console.log(combinedText);
 		return Input4 = combinedText;
-	},
+ },
 
 	cid: function() {
 		if (Input1.value !== null) {
-		}
-	},
-
+ }
+ },
 
 	calculateTotal: function () {
 		const group1 = [Interaction_Protocols.selectedOptionValue, CRM_Updates.selectedOptionValue];
@@ -121,10 +118,10 @@ export default {
 		const valuesAssignedg4 = group4.map(value => {
 			if (value === "Yes" || value === "N/A") {
 				return 15;
-			} else {
+ } else {
 				return 0;
-			}
-		});
+ }
+ });
 		const totalg1 = valuesAssignedg1.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg2 = valuesAssignedg2.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 		const totalg3 = valuesAssignedg3.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
@@ -134,17 +131,17 @@ export default {
 		const percentFinal = final.toFixed(2) + "%";
 		if (totalg3 > 0) {
 			return 0.00 + "%";
-		} else {
+ } else {
 			return percentFinal;
-		}
-	},
+ }
+ },
 
 	pass_fail: function () {
 		const text = Text4.text;
 		const parsed = typeof text === 'string' ? parseFloat(text.replace('%','')) : Number(text);
 		const score = isNaN(parsed) ? 0 : parsed;
 		return (score === 0 || score < 90) ? 'Failed' : 'Passed';
-	},
+ },
 
 	submit: async function () {
 		const emptyWidgets = [];
@@ -177,7 +174,7 @@ export default {
 		if (emptyWidgets.length > 0) {
 			const emptyWidgetNames = emptyWidgets.join(', ');
 			showAlert(`The following attributes are empty: ${emptyWidgetNames}. Please fill them in.`);
-		} else if (Calibration.selectedOptionValue === "Yes") {
+ } else if (Calibration.selectedOptionValue === "Yes") {
 			try {
 				await Calibration_T2.run();
 				await Send_to_agent_passed.run();
@@ -185,10 +182,10 @@ export default {
 				await Channel.clean();
 				await Channel.reset();
 				await empty.run();
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred while running Calibration:', error);
-			}
-		} else if (Calibration.selectedOptionValue === "No"){
+ }
+ } else if (Calibration.selectedOptionValue === "No"){
 			try {
 				await Chat_Scorecard.run();
 				await Send_to_agent_passed.run();
@@ -197,11 +194,11 @@ export default {
 				await Channel.reset();
 				await empty.run();
 				await new_sc_data.run();
-			} catch (error) {
+ } catch (error) {
 				console.error('An error occurred:', error);
-			}
-		}
-	},
+ }
+ }
+ },
 
 	reset: function () {
 		resetWidget("Text5", true);
@@ -210,47 +207,47 @@ export default {
 		resetWidget("MX_T1", true);
 		resetWidget("Container4", true);
 
-	},
+ },
 
 	resetModal: async function(){
 		await Channel.reset();
 		await UJET.clear();
 		await closeModal("Modal1", true);
-	},
+ },
 
 	logOut: () => {
 		removeValue("role");
 		removeValue('login_token');
 		navigateTo('Login_Modern');
-	},
+ },
 
 	deleteStore  ()  {
 		Object.keys(appsmith.store)
 			.map(key => storeValue(key, undefined));
-	},
+ },
 	clean: function(){
 		resetWidget(Text119.setText(""));
 		resetWidget(Input1.setValue(""));
 		resetWidget(Input4.setValue(""));
-	},
+ },
 
 	skip_empty: function(){
 		if(!Text119.text){
 			showAlert("Please Get Case first to continue !")
-		}else{
+ }else{
 			showModal('Modal2');
-		}
-	},
+ }
+ },
 
 	skip: async function (){
 		if(!Input19.text){
 			showAlert("Please Add Skip Reason to continue !")
-		}else{
+ }else{
 			resetWidget('Input19')
 			closeModal(Modal2);
 			await Skip.run();
 			await get_mx_con.run();
-		}
-	}
+ }
+ }
 
 }

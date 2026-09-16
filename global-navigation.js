@@ -3,71 +3,51 @@ class GlobalNavigation {
     constructor() {
         this.navigationItems = [];
         this.currentPage = this.getCurrentPage();
-        console.log('GlobalNavigation constructor called');
-    }
+ }
 
     // Initialize the navigation system
     async init() {
-        console.log('Initializing global navigation...');
         await this.loadNavigationItems();
-        console.log('Navigation items loaded:', this.navigationItems);
         this.createNavigationComponent();
-        console.log('Navigation component created');
         const hasNav = document.getElementById('global-navigation');
         if (hasNav) {
             this.setupEventListeners();
-            console.log('Event listeners setup complete');
-        } else {
-            console.log('Navigation not present; skipping event listeners');
-        }
-    }
+ } else {
+ }
+ }
 
     // Get current page from URL
     getCurrentPage() {
         const path = window.location.pathname;
         const page = path.split('/').pop().replace('.html', '');
         return page || 'dashboard';
-    }
+ }
 
     // Load navigation items from Supabase
     async loadNavigationItems() {
-        console.log('Loading navigation items from Supabase...');
         
         try {
             const url = 'https://kupaxfvjfobfdgtbfnnt.supabase.co/rest/v1/navigation_items?is_active=eq.true&order=order_index.asc';
-            console.log('Fetching from URL:', url);
             
             const response = await fetch(url, {
                 headers: {
                     'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw',
                     'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw'
-                }
-            });
+ }
+ });
             
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
 
             if (response.ok) {
                 this.navigationItems = await response.json();
-                console.log('Navigation items loaded from Supabase:', this.navigationItems);
-                console.log('Number of navigation items:', this.navigationItems.length);
                 
                 // Log each item for debugging
                 this.navigationItems.forEach((item, index) => {
-                    console.log(`Item ${index + 1}:`, {
-                        title: item.title,
-                        route: item.route,
-                        icon: item.icon,
-                        page_name: item.page_name,
-                        order_index: item.order_index
-                    });
-                });
-            } else {
+ });
+ } else {
                 const errorText = await response.text();
                 console.error('Failed to load navigation items:', response.status, errorText);
-                console.log('Falling back to hardcoded navigation items');
                 this.loadFallbackNavigation();
-            }
+ }
 
             // Ensure Admin Settings is present (Manual Injection)
             if (!this.navigationItems.some(i => i.page_name === 'admin-settings')) {
@@ -78,8 +58,8 @@ class GlobalNavigation {
                     page_name: 'admin-settings',
                     order_index: 100,
                     level: 'Admin,Super Admin,Manager' 
-                });
-            }
+ });
+ }
 
             // Ensure Calibration Results is present (Manual Injection)
             if (!this.navigationItems.some(i => i.page_name === 'calibration-meeting')) {
@@ -90,8 +70,8 @@ class GlobalNavigation {
                     page_name: 'calibration-meeting',
                     order_index: 101,
                     level: 'Admin,Super Admin,Manager' 
-                });
-            }
+ });
+ }
 
             // Ensure User Activities is present (Manual Injection)
             if (!this.navigationItems.some(i => i.page_name === 'users-activities')) {
@@ -102,19 +82,17 @@ class GlobalNavigation {
                     page_name: 'users-activities',
                     order_index: 102,
                     level: 'Admin,Super Admin,Manager' 
-                });
-            }
+ });
+ }
 
-        } catch (error) {
+ } catch (error) {
             console.error('Error loading navigation items:', error);
-            console.log('Falling back to hardcoded navigation items due to error');
             this.loadFallbackNavigation();
-        }
-    }
+ }
+ }
 
     // Fallback navigation if API fails
     loadFallbackNavigation() {
-        console.log('Loading fallback navigation...');
         this.navigationItems = [
             { title: 'Dashboard', icon: '📊', route: '/dashboard/', page_name: 'dashboard', order_index: 1 },
             { title: 'Scorecard', icon: '📝', route: '/scorecard.html', page_name: 'scorecard', order_index: 2 },
@@ -123,16 +101,10 @@ class GlobalNavigation {
             { title: 'Settings', icon: '⚙️', route: '/settings.html', page_name: 'settings', order_index: 5 },
             { title: 'Calibration Results', icon: '📊', route: '/calibration-meeting.html', page_name: 'calibration-meeting', order_index: 6 }
         ];
-        console.log('Fallback navigation loaded:', this.navigationItems);
-    }
+ }
 
     // Create the navigation component
     createNavigationComponent() {
-        console.log('Creating navigation component...');
-        console.log('Current URL:', window.location.href);
-        console.log('Login token:', localStorage.getItem('login_token'));
-        console.log('User ID:', localStorage.getItem('user_id'));
-        console.log('Navigation items available:', this.navigationItems.length);
 // Do not render global navigation on login page unless authenticated
         const currentUrl = new URL(window.location.href);
         const pageParam = currentUrl.searchParams.get('page');
@@ -152,39 +124,34 @@ class GlobalNavigation {
         const isDashboardView = window.location.pathname.includes('/dashboard');
         // Never render navigation on login page regardless of auth state
         if (isLoginPage) {
-            console.log('Login page detected; always clearing navigation and skipping render');
             GlobalNavigation.clearNavigation();
             return;
-        }
+ }
         
         // Check if user is logged in - only show navigation if logged in
         if (!isLoggedIn) {
-            console.log('User not logged in, skipping navigation and clearing if exists');
             // Make sure to remove any existing navigation
             const existingNav = document.getElementById('global-navigation');
             if (existingNav) {
-                console.log('Removing existing navigation from login page');
                 existingNav.remove();
-            }
+ }
             const existingStyles = document.getElementById('global-navigation-styles');
             if (existingStyles) {
                 existingStyles.remove();
-            }
+ }
             return;
-        }
+ }
         
         const existingNav = document.getElementById('global-navigation');
         if (existingNav) {
-            console.log('Removing existing navigation');
             existingNav.remove();
-        }
+ }
 
         // Final safety: never insert navigation on login page
         if (isLoginPage) {
-            console.log('Safety guard: abort inserting navigation on login page');
             GlobalNavigation.clearNavigation();
             return;
-        }
+ }
 
         const userRole = (
             localStorage.getItem('user_role') ||
@@ -215,14 +182,13 @@ class GlobalNavigation {
                                 </div>
                                 <div class="dropdown-divider"></div>
                                 ${filteredItems.map(item => {
-                                    console.log('Creating dropdown item:', { title: item.title, route: item.route, icon: item.icon });
                                     return `
                                     <a href="${item.route}" class="dropdown-item" data-page="${item.page_name}">
                                         <span class="dropdown-icon">${item.icon}</span>
                                         <span class="dropdown-label">${item.title}</span>
                                     </a>
                                     `;
-                                }).join('')}
+ }).join('')}
                                 <div class="dropdown-divider"></div>
                                 <a href="#" class="dropdown-item" data-action="logout">
                                     <span class="dropdown-icon">🚪</span>
@@ -237,16 +203,14 @@ class GlobalNavigation {
 
         // Insert at the beginning of body
         document.body.insertAdjacentHTML('afterbegin', navigationHTML);
-        console.log('Navigation HTML inserted into body');
         
         // Add CSS styles
         this.addNavigationStyles();
-        console.log('Navigation styles added');
         
         // Initialize theme and user info
         this.initializeTheme();
         this.initializeUserInfo();
-    }
+ }
     
     // Filter navigation items by user role using optional 'level' column
     filterNavigationByRole(items, userRole) {
@@ -259,9 +223,9 @@ class GlobalNavigation {
                 try {
                     const parsed = JSON.parse(s);
                     if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
-                } catch (_) {}
+ } catch (_) {}
                 return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
-            };
+ };
             const norm = (s) => (s ?? '')
                 .toString()
                 .toLowerCase()
@@ -278,7 +242,7 @@ class GlobalNavigation {
                 const required = (requiredRoles || []).map(norm).filter(Boolean);
                 if (!required.length) return true;
                 return required.some(r => userRoles.includes(r));
-            };
+ };
 
             const inferRequiredRolesForItem = (item) => {
                 const title = String(item?.title || '').toLowerCase();
@@ -299,7 +263,7 @@ class GlobalNavigation {
                 if (isSm) return ['MX-SM User', 'Administrator'];
 
                 return null;
-            };
+ };
 
             return (items || []).filter(item => {
                 const forced = inferRequiredRolesForItem(item);
@@ -308,28 +272,27 @@ class GlobalNavigation {
                 // If no level is specified, item is visible to all
                 if (level === undefined || level === null || (typeof level === 'string' && level.trim() === '')) {
                     return true;
-                }
+ }
                 if (Array.isArray(level)) {
                     return hasAnyRole(level);
-                }
+ }
                 if (typeof level === 'string') {
                     return hasAnyRole(parseRoleList(level));
-                }
+ }
                 // Unknown format: do not restrict
                 return true;
-            });
-        } catch (err) {
-            console.log('Error filtering navigation by role:', err);
+ });
+ } catch (err) {
             return items || [];
-        }
-    }
+ }
+ }
 
     // Add navigation styles
     addNavigationStyles() {
         const existingStyles = document.getElementById('global-navigation-styles');
         if (existingStyles) {
             existingStyles.remove();
-        }
+ }
 
         const styles = `
             <style id="global-navigation-styles">
@@ -347,7 +310,7 @@ class GlobalNavigation {
                     display: block !important;
                     visibility: visible !important;
                     opacity: 1 !important;
-                }
+ }
 
                 .nav-container {
                     max-width: 1400px;
@@ -357,7 +320,7 @@ class GlobalNavigation {
                     justify-content: space-between;
                     align-items: center;
                     height: 60px;
-                }
+ }
 
                 .nav-title {
                     font-size: 20px;
@@ -368,12 +331,12 @@ class GlobalNavigation {
                     background-clip: text;
                     color: transparent;
                     user-select: none;
-                }
+ }
 
                 .nav-items {
                     display: flex;
                     gap: 8px;
-                }
+ }
 
                 .nav-item {
                     display: flex;
@@ -388,32 +351,32 @@ class GlobalNavigation {
                     transition: all 0.3s ease;
                     background: var(--bg-nav-item);
                     border: 1px solid transparent;
-                }
+ }
 
                 .nav-item:hover {
                     background: var(--bg-nav-item-hover);
                     transform: translateY(-1px);
-                }
+ }
 
                 .nav-item.active {
                     background: var(--bg-nav-item-active);
                     border-color: var(--border-hover);
                     color: var(--text-primary);
-                }
+ }
 
                 .nav-icon {
                     font-size: 16px;
-                }
+ }
 
                 .nav-label {
                     white-space: nowrap;
-                }
+ }
 
                 .nav-controls {
                     display: flex;
                     align-items: center;
                     gap: 16px;
-                }
+ }
 
                 .theme-toggle {
                     background: var(--bg-theme-toggle);
@@ -429,12 +392,12 @@ class GlobalNavigation {
                     justify-content: center;
                     width: 44px;
                     height: 44px;
-                }
+ }
 
                 .theme-toggle:hover {
                     background: var(--bg-nav-item-hover);
                     transform: scale(1.05);
-                }
+ }
 
                 .user-menu {
                     position: relative;
@@ -447,7 +410,7 @@ class GlobalNavigation {
                     background: transparent;
                     border: none;
                     outline: none;
-                }
+ }
 
                 .user-avatar {
                     width: 44px;
@@ -466,11 +429,11 @@ class GlobalNavigation {
                     margin: 0;
                     padding: 0;
                     box-sizing: border-box;
-                }
+ }
 
                 .user-avatar:hover {
                     transform: scale(1.05);
-                }
+ }
 
                 .user-dropdown {
                     position: absolute;
@@ -490,63 +453,63 @@ class GlobalNavigation {
                     display: none;
                     animation: dropdownFadeIn 0.2s ease-out;
                     padding: 8px 0;
-                }
+ }
 
                 .user-dropdown.show {
                     display: block;
-                }
+ }
 
                 /* Light theme: ensure dropdown is nearly opaque */
                 [data-theme="light"] .user-dropdown {
                     background: rgba(255, 255, 255, 0.98);
-                }
+ }
 
                 /* Custom scrollbar for dropdown */
                 .user-dropdown::-webkit-scrollbar {
                     width: 6px;
-                }
+ }
 
                 .user-dropdown::-webkit-scrollbar-track {
                     background: var(--bg-secondary);
                     border-radius: 3px;
-                }
+ }
 
                 .user-dropdown::-webkit-scrollbar-thumb {
                     background: var(--border-color);
                     border-radius: 3px;
-                }
+ }
 
                 .user-dropdown::-webkit-scrollbar-thumb:hover {
                     background: var(--text-secondary);
-                }
+ }
 
                 @keyframes dropdownFadeIn {
                     from {
                         opacity: 0;
                         transform: translateY(-10px);
-                    }
+ }
                     to {
                         opacity: 1;
                         transform: translateY(0);
-                    }
-                }
+ }
+ }
 
                 .user-info {
                     padding: 16px;
                     border-bottom: 1px solid var(--border-color);
-                }
+ }
 
                 .user-name {
                     font-weight: 600;
                     color: var(--text-primary);
                     font-size: 16px;
-                }
+ }
 
                 .user-email {
                     color: var(--text-secondary);
                     font-size: 14px;
                     margin-top: 4px;
-                }
+ }
 
                 .dropdown-item {
                     display: flex;
@@ -557,64 +520,64 @@ class GlobalNavigation {
                     text-decoration: none;
                     transition: all 0.3s ease;
                     border-bottom: 1px solid var(--border-color);
-                }
+ }
 
                 .dropdown-item:last-child {
                     border-bottom: none;
-                }
+ }
 
                 .dropdown-item:hover {
                     background: var(--bg-nav-item-hover);
-                }
+ }
 
                 .dropdown-icon {
                     font-size: 16px;
                     width: 20px;
                     text-align: center;
-                }
+ }
 
                 .dropdown-label {
                     font-size: 14px;
                     font-weight: 500;
-                }
+ }
 
                 .dropdown-divider {
                     height: 1px;
                     background: var(--border-color);
                     margin: 4px 0;
-                }
+ }
 
                 /* Responsive design */
                 @media (max-width: 768px) {
                     .nav-container {
                         padding: 0 16px;
                         height: 60px;
-                    }
+ }
 
                     .nav-label {
                         display: none;
-                    }
+ }
 
                     .nav-item {
                         padding: 10px 12px;
-                    }
+ }
 
                     .nav-controls {
                         gap: 12px;
-                    }
+ }
 
                     .theme-toggle {
                         width: 40px;
                         height: 40px;
                         padding: 10px;
-                    }
+ }
 
                     .user-menu {
                         width: fit-content;
                         height: fit-content;
                         margin: 0;
                         padding: 0;
-                    }
+ }
 
                     .user-avatar {
                         width: 40px;
@@ -622,32 +585,31 @@ class GlobalNavigation {
                         font-size: 14px;
                         margin: 0;
                         padding: 0;
-                    }
-                }
+ }
+ }
 
                 /* Add top margin to body content to account for fixed navigation */
                 body {
                     padding-top: 60px;
-                }
+ }
 
                 @media (max-width: 768px) {
                     body {
                         padding-top: 50px;
-                    }
-                }
+ }
+ }
             </style>
         `;
 
         document.head.insertAdjacentHTML('beforeend', styles);
-    }
+ }
 
     // Initialize theme system
     initializeTheme() {
         const themeToggle = document.getElementById('global-theme-toggle');
         if (!themeToggle) {
-            console.log('Theme toggle not found; skipping theme initialization');
             return;
-        }
+ }
         const themeIcon = themeToggle.querySelector('.theme-icon');
         
         // Get current theme
@@ -655,7 +617,7 @@ class GlobalNavigation {
         document.documentElement.setAttribute('data-theme', currentTheme);
         if (themeIcon) {
             themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
-        }
+ }
 
         // Theme toggle functionality
         themeToggle.addEventListener('click', () => {
@@ -666,11 +628,10 @@ class GlobalNavigation {
             localStorage.setItem('theme', newTheme);
             if (themeIcon) {
                 themeIcon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
-            }
+ }
             
-            console.log('Theme switched to:', newTheme);
-        });
-    }
+ });
+ }
 
     // Initialize user info
     initializeUserInfo() {
@@ -678,7 +639,6 @@ class GlobalNavigation {
         const userName = localStorage.getItem('userName') || 'User';
         const userProfilePhoto = localStorage.getItem('userProfilePhoto') || '';
         
-        console.log('Initializing user info:', { userEmail, userName, userProfilePhoto });
         
         document.getElementById('global-user-name').textContent = userName;
         document.getElementById('global-user-email').textContent = userEmail;
@@ -689,21 +649,19 @@ class GlobalNavigation {
         
         if (userProfilePhoto && userProfilePhoto.trim() !== '' && 
             (userProfilePhoto.startsWith('http') || userProfilePhoto.startsWith('data:'))) {
-            console.log('Setting profile photo:', userProfilePhoto);
             // Show profile photo
             avatarElement.innerHTML = `
                 <img src="${userProfilePhoto}" alt="${userName}" 
-                     onerror="console.log('Profile photo failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                     onload="console.log('Profile photo loaded successfully:', this.src); this.nextElementSibling.style.display='none';"
+                     onerror=" this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                     onload=" this.nextElementSibling.style.display='none';"
                      style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                 <span id="global-user-initials" style="display: none;">${userName.charAt(0).toUpperCase()}</span>
             `;
-        } else {
-            console.log('Using initials fallback for user:', userName);
+ } else {
             // Show initials
             initialsElement.textContent = userName.charAt(0).toUpperCase();
-        }
-    }
+ }
+ }
 
     // Setup event listeners
     setupEventListeners() {
@@ -714,14 +672,14 @@ class GlobalNavigation {
             userAvatar.addEventListener('click', (e) => {
                 e.stopPropagation();
                 userDropdown.classList.toggle('show');
-            });
+ });
 
             // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
                 if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
                     userDropdown.classList.remove('show');
-                }
-            });
+ }
+ });
 
             // Dropdown item actions
             userDropdown.addEventListener('click', (e) => {
@@ -735,46 +693,40 @@ class GlobalNavigation {
                 // Handle navigation items (from Supabase table)
                 if (page && href && href !== '#') {
                     e.preventDefault();
-                    console.log('Navigating to page:', page, 'URL:', href);
                     window.location.href = href;
                     userDropdown.classList.remove('show');
                     return;
-                }
+ }
                 
                 // Handle action items
                 switch (action) {
                     case 'add-user':
                         if (typeof addNewUser === 'function') {
                             addNewUser();
-                        } else {
-                            console.log('Add new user function not available');
-                        }
+ } else {
+ }
                         break;
                     case 'add-bulk-users':
                         if (typeof addBulkUsers === 'function') {
                             addBulkUsers();
-                        } else {
-                            console.log('Add bulk users function not available');
-                        }
+ } else {
+ }
                         break;
                     case 'profile':
-                        console.log('Navigate to profile');
                         // You can add profile page navigation here
                         break;
                     case 'settings':
-                        console.log('Navigate to settings');
                         // You can add settings page navigation here
                         break;
                     case 'logout':
                         this.handleLogout();
                         break;
-                }
+ }
                 
                 userDropdown.classList.remove('show');
-            });
-        } else {
-            console.log('User avatar or dropdown not found; skipping dropdown listeners');
-        }
+ });
+ } else {
+ }
 
         // Navigation item clicks
         document.addEventListener('click', (e) => {
@@ -782,21 +734,21 @@ class GlobalNavigation {
             if (navItem) {
                 const page = navItem.dataset.page;
                 this.setActivePage(page);
-            }
-        });
-    }
+ }
+ });
+ }
 
     // Set active page
     setActivePage(pageName) {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
-        });
+ });
         
         const activeItem = document.querySelector(`[data-page="${pageName}"]`);
         if (activeItem) {
             activeItem.classList.add('active');
-        }
-    }
+ }
+ }
 
     // Record logout
     async recordLogout() {
@@ -809,11 +761,8 @@ class GlobalNavigation {
             const token = localStorage.getItem('login_token');
             
             if (!token) {
-                console.log('Cannot record logout: missing token');
                 return;
-            }
-
-            console.log('Recording logout for user:', userName);
+ }
 
             await fetch(`${SUPABASE_URL}/rest/v1/LoginData`, {
                 method: 'POST',
@@ -823,23 +772,21 @@ class GlobalNavigation {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                     'Prefer': 'return=minimal'
-                },
+ },
                 body: JSON.stringify({
                     agent_name: userName,
                     agent_email: email,
                     status: 'Logout',
                     created_at: new Date().toISOString()
-                })
-            });
-            console.log('Logout recorded successfully');
-        } catch (error) {
+ })
+ });
+ } catch (error) {
             const msg = (error && error.message) ? error.message : String(error || '');
             const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
             if (!abortLike) {
-                console.warn('Logout record skipped:', error);
-            }
-        }
-    }
+ }
+ }
+ }
 
     // Handle logout
     async handleLogout() {
@@ -856,16 +803,15 @@ class GlobalNavigation {
                         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQwNjAwOTgsImV4cCI6MTk5OTYzNjA5OH0.C-6VUYI6VT0qr39K5rTSLt_hq6Y-dRBjIm6Dr-OGsaw',
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    }
-                });
-            }
-        } catch (error) {
+ }
+ });
+ }
+ } catch (error) {
             const msg = (error && error.message) ? error.message : String(error || '');
             const abortLike = (error && error.name === 'AbortError') || /aborted|cancelled|canceled|failed to fetch/i.test(msg);
             if (!abortLike) {
-                console.warn('Supabase logout API error:', error);
-            }
-        }
+ }
+ }
         
         // Clear localStorage
         localStorage.removeItem('login_token');
@@ -880,17 +826,16 @@ class GlobalNavigation {
         
         // Redirect to login
         window.location.href = '/login.html';
-    }
+ }
 
     // Refresh navigation (useful for dynamic updates)
     async refresh() {
         await this.loadNavigationItems();
         this.createNavigationComponent();
-    }
+ }
 
     // Show navigation after login
     showNavigation() {
-        console.log('Showing navigation after login...');
         const isLoginPage = window.location.pathname.endsWith('/login.html');
         const token = localStorage.getItem('login_token');
         const userId = localStorage.getItem('user_id');
@@ -905,97 +850,87 @@ class GlobalNavigation {
         const isLoggedIn = Boolean(token || userId || roleHints);
         // Never show navigation on login page regardless of auth state
         if (isLoginPage) {
-            console.log('Abort showNavigation: login page detected');
             GlobalNavigation.clearNavigation();
             return;
-        }
+ }
         
         // Only create navigation if it doesn't already exist
         const existingNav = document.getElementById('global-navigation');
         if (!existingNav) {
-            console.log('Creating navigation component...');
             this.createNavigationComponent();
-        } else {
-            console.log('Navigation already exists, skipping creation');
-        }
+ } else {
+ }
         
         const hasNav = document.getElementById('global-navigation');
         if (hasNav) {
             this.setupEventListeners();
-            console.log('Event listeners setup after showing navigation');
-        }
-    }
+ }
+ }
 
     // Hide navigation after logout
     hideNavigation() {
-        console.log('Hiding navigation after logout...');
         const existingNav = document.getElementById('global-navigation');
         if (existingNav) {
             existingNav.remove();
-        }
-    }
+ }
+ }
 
     // Force clear navigation (for login page)
     static clearNavigation() {
-        console.log('Force clearing navigation...');
         const existingNav = document.getElementById('global-navigation');
         if (existingNav) {
             existingNav.remove();
-        }
+ }
         // Also remove any navigation styles
         const existingStyles = document.getElementById('global-navigation-styles');
         if (existingStyles) {
             existingStyles.remove();
-        }
-    }
+ }
+ }
 
     // Update user profile photo
     updateUserProfilePhoto(profilePhotoUrl) {
         if (profilePhotoUrl) {
             localStorage.setItem('userProfilePhoto', profilePhotoUrl);
-        } else {
+ } else {
             localStorage.removeItem('userProfilePhoto');
-        }
+ }
         
         // Re-initialize user info to update avatar
         this.initializeUserInfo();
-    }
+ }
 
     // Update user name
     updateUserName(userName) {
         if (userName) {
             localStorage.setItem('userName', userName);
-        } else {
+ } else {
             localStorage.removeItem('userName');
-        }
+ }
         
         // Re-initialize user info to update display
         this.initializeUserInfo();
-    }
+ }
 }
 
 // Initialize global navigation when DOM is loaded
 async function bootstrapGlobalNavigation() {
-    console.log('Bootstrapping global navigation...');
     try {
         const path = window.location.pathname;
         const token = localStorage.getItem('login_token');
         const userId = localStorage.getItem('user_id');
         const isLoggedIn = Boolean(token && userId);
         if (path.endsWith('/login.html')) {
-            console.log('Login page detected; skipping navigation init regardless of auth');
             GlobalNavigation.clearNavigation();
             return;
-        }
+ }
 
         window.globalNav = new GlobalNavigation();
-        console.log('Global navigation instance created');
 
         await window.globalNav.init();
-        console.log('Global navigation initialized successfully');
-    } catch (error) {
+ } catch (error) {
         console.error('Error initializing global navigation:', error);
-    }
+ }
 }
 
 // Initialize immediately if DOM is already ready; otherwise wait for DOMContentLoaded

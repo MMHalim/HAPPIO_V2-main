@@ -18,22 +18,22 @@
             font-weight: 800;
             text-align: center;
             margin-bottom: 12px;
-        }
+ }
         .scorecard-subtitle {
             text-align: center;
             color: var(--text-secondary);
             margin-bottom: 24px;
-        }
+ }
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 16px;
-        }
+ }
         .field {
             display: flex;
             flex-direction: column;
             gap: 8px;
-        }
+ }
         .field label { color: var(--text-primary); font-weight: 600; }
         .field input, .field select, .field textarea {
             padding: 12px 14px;
@@ -41,7 +41,7 @@
             border-radius: 12px;
             background: var(--bg-card);
             color: var(--text-primary);
-        }
+ }
         .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .date-range { display: flex; align-items: center; gap: 8px; }
         .calendar-icon { cursor: pointer; font-size: 18px; color: var(--text-primary); }
@@ -55,7 +55,7 @@
             box-shadow: var(--shadow-light);
             padding: 12px;
             max-width: 320px;
-        }
+ }
         .irc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
         .irc-month-label { font-weight: 700; color: var(--text-primary); }
         .irc-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
@@ -66,11 +66,11 @@
         .rc-selected-start, .rc-selected-end { 
             background: var(--primary-color); 
             color: #fff; 
-        }
+ }
         .rc-in-range { 
             background: rgba(96, 165, 250, 0.25); 
             border: 1px solid var(--border-hover); 
-        }
+ }
         .rc-disabled { pointer-events: none; opacity: 0.3; }
         .radio-pill {
             padding: 8px 12px;
@@ -78,7 +78,7 @@
             border: 1px solid var(--border-color);
             background: var(--bg-nav-item);
             cursor: pointer;
-        }
+ }
         .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; }
         .notice {
             margin-top: 6px;
@@ -88,7 +88,7 @@
             background: rgba(255, 153, 0, 0.08);
             color: #f59e0b;
             display: none;
-        }
+ }
         /* Attributes Scoring */
         .attributes-card { margin-top: 16px; }
         .attributes-header { display: flex; align-items: center; justify-content: space-between; }
@@ -110,7 +110,7 @@
             background: transparent;
             color: var(--text-primary);
             resize: vertical;
-        }
+ }
         .attr-comment textarea::placeholder { color: var(--text-secondary); }
         .attr-comment label { font-weight: 600; color: var(--text-primary); }
         /* Color zero scores red in the attributes pane */
@@ -123,7 +123,7 @@
             width: 100%; 
             column-gap: 24px; 
             row-gap: 12px; 
-        }
+ }
         .sme-list .full-span { grid-column: 1 / -1; }
         /* Fields match their label width and align top */
         .sme-list .field { display: inline-flex; flex-direction: column; align-items: flex-start; width: 100%; }
@@ -153,7 +153,7 @@
         @media (max-width: 900px) {
           .sme-list { grid-template-columns: 1fr; }
           .sme-list .field { width: 100%; }
-        }
+ }
         .sme-radio-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .sme-radio-group label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; }
         .sme-radio-group input { accent-color: var(--primary-color); }
@@ -196,10 +196,10 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
-        }
+ }
         .rte-editor li {
             margin-bottom: 4px;
-        }
+ }
         /* RTE Component Styles */
         .rte-container {
             border: 1px solid var(--border-color);
@@ -209,14 +209,14 @@
             margin-top: 4px;
             width: 100%;
             box-sizing: border-box;
-        }
+ }
         .rte-toolbar {
             display: flex;
             gap: 4px;
             padding: 6px;
             border-bottom: 1px solid var(--border-color);
             background: var(--bg-card);
-        }
+ }
         .rte-btn {
             background: transparent;
             border: 1px solid transparent;
@@ -228,11 +228,11 @@
             display: flex;
             align-items: center;
             gap: 4px;
-        }
+ }
         .rte-btn:hover {
             background: var(--bg-nav-item-hover);
             border-color: var(--border-color);
-        }
+ }
         .rte-btn.active { background: var(--bg-nav-item-active); border-color: var(--border-hover); }
         .rte-editor {
             min-height: 80px;
@@ -242,20 +242,20 @@
             font-family: inherit;
             font-size: 14px;
             overflow-y: auto;
-        }
+ }
         .rte-editor[contenteditable]:empty:before {
             content: attr(data-placeholder);
             color: var(--text-secondary);
             opacity: 0.6;
             pointer-events: none;
             display: block; /* For Firefox */
-        }
+ }
 
         .recent-table th, .recent-table td {
             border: 1px solid var(--border-color);
             padding: 8px 10px;
             text-align: left;
-        }
+ }
         /* Compact case picker styles */
         .compact-grid { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)) auto; gap: 10px; align-items: center; justify-items: center; justify-content: center; }
         .compact-grid .field { align-items: flex-start; }
@@ -275,7 +275,7 @@
             justify-content: center;
             background: rgba(0,0,0,0.55);
             z-index: 100000;
-        }
+ }
         .global-modal {
             width: 520px;
             max-width: 95vw;
@@ -285,14 +285,14 @@
             border-radius: 16px;
             box-shadow: var(--shadow);
             padding: 16px;
-        }
+ }
         /* Position the Skip modal near the top area, match Heads up style */
         #skipModalOverlay {
             align-items: flex-start;
             justify-content: center;
             padding-top: 10vh;
             background: transparent; /* Heads up style: no dim */
-        }
+ }
         #skipModalOverlay .global-modal {
             transform: none;
             position: relative;
@@ -300,10 +300,10 @@
             color: var(--text-primary);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
-        }
+ }
         [data-theme="light"] #skipModalOverlay .global-modal {
             background: #ffffff; /* Solid light background */
-        }
+ }
         #skipModalOverlay .skip-accent {
             position: absolute;
             top: 0;
@@ -311,16 +311,16 @@
             height: 4px;
             width: 100%;
             background: var(--warning-color);
-        }
+ }
         #skipModalOverlay .global-card-subtitle,
         #skipModalOverlay label {
             color: var(--text-secondary);
-        }
+ }
         #skipModalOverlay textarea {
             background: var(--bg-nav-item);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
-        }
+ }
         #skipModalOverlay .skip-counter-badge {
             margin-left: 8px;
             padding: 2px 8px;
@@ -329,7 +329,7 @@
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             background: var(--bg-nav-item);
-        }
+ }
         [data-theme="light"] .global-modal { background: var(--bg-card); color: var(--text-primary); }
 
         /* Make the first form section more compact */
@@ -338,7 +338,7 @@
             max-width: 320px;
             width: 100%;
             padding: 8px 10px;
-        }
+ }
         .compact-form .radio-group { gap: 6px; }
         .compact-form .radio-pill { padding: 6px 10px; font-size: 12px; border-radius: 10px; }
         /* Restore original look for Certification/Calibration radios */
@@ -366,7 +366,7 @@
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 12px;
             align-items: start;
-        }
+ }
         /* Two-up row to place fields side by side within details grid */
         .details-two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
         .details-grid .field input,
@@ -374,7 +374,7 @@
             width: 100%;
             max-width: 100%;
             padding: 8px 10px;
-        }
+ }
 
         /* Placeholder color for agent dropdown */
         #agentDropdownInput::placeholder { color: var(--text-secondary); }
@@ -753,13 +753,12 @@
               .replace(/[0-9]+/g, '')
               .trim()
               .replace(/\b\w/g, c => c.toUpperCase());
-          };
+ };
           const initialName = cachedName || deriveFromEmail(email);
           if (initialName) {
             takerInput.value = initialName;
-            console.log('Taker name set to:', initialName);
-          }
-        }, 500);
+ }
+ }, 500);
             
             const token = localStorage.getItem('login_token');
              const uid = localStorage.getItem('user_id');
@@ -767,12 +766,12 @@
              if (!token || !uid) {
                  window.location.href = '/login.html';
                  return;
-             }
+ }
             
             // Initialize page logic
             if (window.MXT1Scorecard && typeof MXT1Scorecard.init === 'function') {
                 await MXT1Scorecard.init();
-            }
+ }
             
             // Additional fallback: prefer cached full name; improve email parsing
              setTimeout(() => {
@@ -787,21 +786,19 @@
                      .replace(/[0-9]+/g, '')
                      .trim()
                      .replace(/\b\w/g, c => c.toUpperCase());
-                 };
+ };
                  const current = (takerInput.value || '').trim();
                  if (cachedName && (!current || cachedName.length > current.length || cachedName.toLowerCase() !== current.toLowerCase())) {
                    takerInput.value = cachedName;
-                   console.log('Taker name updated from cache:', cachedName);
-                 } else if (!current && email) {
+ } else if (!current && email) {
                    const nameFromEmail = deriveFromEmail(email) || 'Unknown User';
                    takerInput.value = nameFromEmail;
                    localStorage.setItem('userName', nameFromEmail);
-                   console.log('Taker name derived from email:', nameFromEmail);
-                 } else if (!current) {
+ } else if (!current) {
                    takerInput.value = 'Unknown User';
-                 }
-             }, 1500);
-        });
+ }
+ }, 1500);
+ });
     </script>
     <!-- Email Preview Modal -->
     <div id="emailPreviewOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:9999;">

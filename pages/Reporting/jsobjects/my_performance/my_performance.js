@@ -10,15 +10,14 @@ export default {
 			if (!isNaN(finalScore)) {
 				sum += finalScore;
 				count++;
-			}
-		}
+ }
+ }
 		let averageScore = 0;
 		if (count > 0) {
 			averageScore = (sum / count).toFixed(0); 
-		}
-		console.log("Average Score:", averageScore);
+ }
 		return averageScore + '%';
-	},
+ },
 	my_search_allusers: async function() {
 		await my_figures_T1_alluser.run()();
 		const responseData = my_figures_T1_user.data;
@@ -30,21 +29,20 @@ export default {
 			if (!isNaN(finalScore)) {
 				sum += finalScore;
 				count++;
-			}
-		}
+ }
+ }
 		let averageScore = 0;
 		if (count > 0) {
 			averageScore = (sum / count).toFixed(0); 
-		}
-		console.log("Average Score:", averageScore);
+ }
 		return averageScore + '%';
-	},
+ },
 
 	run: function () {
 		if (Input2Copy.filterText === "") {
 			return my_figures_T1_alluser.run();
-		} else {
+ } else {
 			return my_figures_T1_user.run();
-		}
-	}
+ }
+ }
 }

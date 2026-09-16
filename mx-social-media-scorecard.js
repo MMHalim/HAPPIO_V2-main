@@ -4,8 +4,6 @@
     window.__DUPLICATE_TABLE_OVERRIDE = 'MX_Social_Media_Scorecard';
     window.__DUPLICATE_COLUMN_OVERRIDE = 'Post_url';
 
-    console.log('Social Media Scorecard loaded');
-
     // --- RTE Implementation ---
     function createRTEComponent(placeholder) {
       const container = document.createElement('div');
@@ -20,9 +18,9 @@
         btn.onmousedown = (e) => {
           e.preventDefault();
           document.execCommand(cmd, false, null);
-        };
+ };
         return btn;
-      };
+ };
       toolbar.appendChild(createBtn('• Bullet', 'insertUnorderedList'));
       toolbar.appendChild(createBtn('1. Number', 'insertOrderedList'));
       const editor = document.createElement('div');
@@ -32,7 +30,7 @@
       container.appendChild(toolbar);
       container.appendChild(editor);
       return { container, editor };
-    }
+ }
 
     function extractTextFromRTE(editor) {
       if (!editor) return '';
@@ -46,28 +44,28 @@
           node.childNodes.forEach(child => {
             if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
               content += '\n• ' + getText(child).trim();
-            } else {
+ } else {
               content += getText(child);
-            }
-          });
-        } else if (tag === 'ol') {
+ }
+ });
+ } else if (tag === 'ol') {
           let idx = 0;
           node.childNodes.forEach(child => {
             if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
               idx++;
               content += `\n${idx}. ` + getText(child).trim();
-            } else {
+ } else {
               content += getText(child);
-            }
-          });
-        } else {
+ }
+ });
+ } else {
           node.childNodes.forEach(c => content += getText(c));
-        }
+ }
         if (tag === 'div' || tag === 'p') return '\n' + content;
         return content;
-      }
+ }
       return getText(editor).replace(/\n\s*\n/g, '\n').trim();
-    }
+ }
 
     // --- UI Helpers ---
     function showAlert(msg, opts = {}) {
@@ -80,7 +78,7 @@
                 else if (lowerMsg.includes('fail') || lowerMsg.includes('error') || lowerMsg.includes('not authenticated')) type = 'error';
                 else if (lowerMsg.includes('duplicate') || lowerMsg.includes('please') || lowerMsg.includes('empty')) type = 'warning';
                 else type = 'info';
-            }
+ }
             const title = options.title || (type === 'error' ? 'Error' : type === 'success' ? 'Success' : type === 'warning' ? 'Heads up' : 'Notice');
 
             // Build overlay
@@ -95,7 +93,7 @@
                 overlay.style.justifyContent = 'center';
                 overlay.style.zIndex = '9999';
                 document.body.appendChild(overlay);
-            }
+ }
             // Make Heads up/Warning and Success overlays transparent so page remains visible
             overlay.style.background = ((type === 'warning' || type === 'success') ? 'transparent' : 'rgba(0, 0, 0, 0.45)');
             overlay.innerHTML = '';
@@ -128,7 +126,7 @@
                 warning: 'var(--warning-color)',
                 error: 'var(--danger-color)',
                 info: 'var(--primary-color)'
-            };
+ };
             accent.style.background = colorMap[type] || 'var(--primary-color)';
             card.appendChild(accent);
 
@@ -169,13 +167,13 @@
                     const li = document.createElement('li');
                     li.textContent = line.replace(/^\-?\s*/, '');
                     ul.appendChild(li);
-                });
+ });
                 msgContainer.appendChild(ul);
-            } else {
+ } else {
                 const p = document.createElement('p');
                 p.textContent = msg || '';
                 msgContainer.appendChild(p);
-            }
+ }
             card.appendChild(msgContainer);
 
             const footer = document.createElement('div');
@@ -190,11 +188,11 @@
             card.appendChild(footer);
 
             overlay.appendChild(card);
-        } catch (e) {
+ } catch (e) {
             // As a fallback, use default alert
             alert(msg);
-        }
-    }
+ }
+ }
 
     // --- DB & Auth Helpers ---
     let __dbCfg = null;
@@ -208,13 +206,13 @@
                 restUrl: json?.supabase?.rest_url || '',
                 apiKey: json?.supabase?.client_api_key || '',
                 serviceKey: json?.supabase?.service_key || ''
-            };
+ };
             return __dbCfg;
-        } catch (e) {
+ } catch (e) {
             console.error('Failed to load database_config.json', e);
             return {};
-        }
-    }
+ }
+ }
 
     function makeAuthHeaders(cfg, opts = {}) {
         const useServiceKey = !!opts.useServiceKey;
@@ -224,14 +222,14 @@
         if (useServiceKey && cfg.serviceKey) {
             bearer = cfg.serviceKey;
             apiHeader = cfg.serviceKey;
-        }
+ }
         return {
             apikey: apiHeader,
             Authorization: `Bearer ${bearer}`,
             'Content-Type': 'application/json',
             Prefer: 'return=representation'
-        };
-    }
+ };
+ }
 
     // --- State ---
     let allAttributes = [];
@@ -249,7 +247,7 @@
         loadTakerName();
         // Retry after a moment in case GlobalNavigation is slow
         setTimeout(loadTakerName, 1000);
-    });
+ });
 
     function loadTakerName() {
         const takerInput = document.getElementById('takerNameInput');
@@ -264,9 +262,9 @@
                 if (name) {
                     takerInput.value = name;
                     return;
-                }
-            }
-        } catch (e) {}
+ }
+ }
+ } catch (e) {}
 
         // 2. Try GlobalNavigation keys / standard keys
         const getVal = (k) => localStorage.getItem(k);
@@ -274,7 +272,7 @@
         if (cachedName) {
             takerInput.value = cachedName;
             return;
-        }
+ }
 
         // 3. Derive from email
         const email = getVal('loggedInUserEmail') || getVal('user_email') || getVal('email') || '';
@@ -287,10 +285,10 @@
                 .replace(/\b\w/g, c => c.toUpperCase());
             takerInput.value = derived;
             return;
-        }
+ }
 
         if (!takerInput.value) takerInput.value = 'Unknown';
-    }
+ }
 
     // --- Agents Loading ---
     async function loadAgents() {
@@ -304,31 +302,31 @@
                 try {
                     const parsed = JSON.parse(s);
                     if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
-                } catch (_) {}
+ } catch (_) {}
                 return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
-            };
+ };
             const hasAnyRole = (value, required) => {
                 const roles = normalizeRoles(value).map(r => r.toLowerCase());
                 return required.some(r => roles.includes(String(r).toLowerCase()));
-            };
+ };
 
             const urlAll = `${cfg.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
             
             let res = await fetch(urlAll, { headers: makeAuthHeaders(cfg) });
             if (!res.ok) {
                 res = await fetch(urlAll, { headers: makeAuthHeaders(cfg, { useServiceKey: true }) });
-            }
+ }
             
             if (res.ok) {
                 const rows = await res.json();
                 const requiredRoles = ['Administrator', 'QA Coach', 'MX-SM User'];
                 agentList = rows.filter(r => hasAnyRole(r.user_role, requiredRoles));
                 renderAgentSelect();
-            }
-        } catch (e) {
+ }
+ } catch (e) {
             console.error('Error loading agents:', e);
-        }
-    }
+ }
+ }
 
     function renderAgentSelect() {
         const sel = document.getElementById('agentNameSelect');
@@ -361,10 +359,10 @@
                     if (ddPanel) ddPanel.hidden = true;
                     const ddInput = document.getElementById('agentDropdownInput');
                     if (ddInput) ddInput.value = name;
-                });
+ });
                 ddList.appendChild(li);
-            }
-        });
+ }
+ });
 
         // Filter logic for dropdown
         const filterInput = document.getElementById('agentDropdownFilter');
@@ -373,15 +371,15 @@
                 const val = e.target.value.toLowerCase();
                 Array.from(ddList.children).forEach(li => {
                     li.style.display = li.textContent.toLowerCase().includes(val) ? 'block' : 'none';
-                });
-            });
-        }
-    }
+ });
+ });
+ }
+ }
 
     function updateAgentDetails(agent) {
         const emailInput = document.getElementById('agentEmailInput');
         if (emailInput) emailInput.value = agent.email || '';
-    }
+ }
 
     // --- Attributes Loading ---
     async function loadAttributes() {
@@ -390,28 +388,27 @@
             // Fetch from social_attributes
             let res = await fetch(`${cfg.restUrl}/social_attributes?select=*&order=id.asc`, {
                 headers: makeAuthHeaders(cfg)
-            });
+ });
             
             if (!res.ok) {
-                console.warn('Failed to fetch attributes with client key, retrying with service key...');
                 res = await fetch(`${cfg.restUrl}/social_attributes?select=*&order=id.asc`, {
                     headers: makeAuthHeaders(cfg, { useServiceKey: true })
-                });
-            }
+ });
+ }
 
             if (res.ok) {
                 allAttributes = await res.json();
                 renderAttributes();
-            } else {
+ } else {
                 const txt = await res.text();
                 console.error('Failed to fetch attributes', res.status, txt);
                 document.getElementById('attributesContainer').innerHTML = `<div style="color:red">Failed to load attributes: ${res.status} <br> ${txt}</div>`;
-            }
-        } catch (e) {
+ }
+ } catch (e) {
             console.error('Error loading attributes:', e);
             document.getElementById('attributesContainer').innerHTML = `<div style="color:red">Error loading attributes: ${e.message}</div>`;
-        }
-    }
+ }
+ }
 
     function renderAttributes() {
         const container = document.getElementById('attributesContainer');
@@ -434,11 +431,11 @@
         
         allAttributes.forEach((item, idx) => {
             list.appendChild(buildAttrRow(item, idx));
-        });
+ });
 
         groupDiv.appendChild(list);
         container.appendChild(groupDiv);
-    }
+ }
 
     function buildAttrRow(item, idx) {
         const row = document.createElement('div');
@@ -450,7 +447,7 @@
         // Remove trailing colon if present (to avoid DB column errors like 'Resolution:' vs 'Resolution')
         if (rawName.endsWith(':')) {
             rawName = rawName.slice(0, -1);
-        }
+ }
         row.dataset.name = rawName;
 
         // Title Section
@@ -507,7 +504,7 @@
         if (sNum === 0) {
             scoreDiv.classList.add('zero');
             scoreDiv.textContent = '0';
-        }
+ }
 
         row.appendChild(titleDiv);
         row.appendChild(controls);
@@ -531,7 +528,7 @@
         const { container, editor } = createRTEComponent('Add context...');
         editor.addEventListener('input', () => {
             commentArea.value = extractTextFromRTE(editor);
-        });
+ });
 
         commentWrap.appendChild(commentLabel);
         commentWrap.appendChild(container);
@@ -543,12 +540,12 @@
         const onChange = () => {
             commentWrap.style.display = 'block';
             updateAttrSubtotal();
-        };
+ };
         yesInput.addEventListener('change', onChange);
         noInput.addEventListener('change', onChange);
 
         return row;
-    }
+ }
 
     function updateAttrSubtotal() {
         let currentScore = 0;
@@ -566,26 +563,26 @@
                 maxScore += score;
                 if (yesInput.checked) {
                     currentScore += score;
-                }
-            } 
+ }
+ } 
             // If score == 0: Critical attribute
             else {
                 // If NO is selected, it's a critical failure
                 // Assuming YES is Pass, NO is Fail for criticals too
                 if (noInput.checked) {
                     criticalFailure = true;
-                }
-            }
-        });
+ }
+ }
+ });
 
         let finalPercent = 0;
         if (maxScore > 0) {
             finalPercent = (currentScore / maxScore) * 100;
-        }
+ }
         
         if (criticalFailure) {
             finalPercent = 0;
-        }
+ }
 
         const subtotalEl = document.getElementById('attrSubtotal');
         if (subtotalEl) {
@@ -593,11 +590,11 @@
             if (criticalFailure) {
                 subtotalEl.textContent += ' (Critical Failure)';
                 subtotalEl.style.color = 'var(--danger-color)';
-            } else {
+ } else {
                 subtotalEl.style.color = 'var(--text-primary)';
-            }
-        }
-    }
+ }
+ }
+ }
 
     // --- Interaction Dropdown ---
     async function setupInteractionDropdown() {
@@ -632,23 +629,23 @@
                 if (!res.ok) return [];
                 rows = await res.json().catch(() => []);
                 len = Array.isArray(rows) ? rows.length : 0;
-            }
+ }
 
             fetchedCount = len;
             return (Array.isArray(rows) ? rows : [])
                 .map(r => (r.interactionRelateTo || '').trim())
                 .filter(Boolean);
-        };
+ };
 
         let topics = [];
         try {
             topics = await fetchFromSupabase();
-        } catch (e) {
+ } catch (e) {
             topics = [];
-        }
+ }
         if (!topics || topics.length === 0) {
             topics = loadFromHiddenSelect();
-        }
+ }
         topics = Array.from(new Set(topics)).sort((a, b) => a.localeCompare(b));
 
         window.__intRltdToDebug = {
@@ -656,7 +653,7 @@
             shown: topics.length,
             source: fetchedCount > 0 ? 'supabase' : 'fallback',
             at: new Date().toISOString()
-        };
+ };
 
         const currentValue = (hiddenSelect.value || '').trim();
         hiddenSelect.innerHTML = '<option value="">Select option</option>';
@@ -665,7 +662,7 @@
             opt.value = t;
             opt.textContent = t;
             hiddenSelect.appendChild(opt);
-        });
+ });
         if (topics.includes(currentValue)) hiddenSelect.value = currentValue;
 
         const renderList = (items) => {
@@ -678,10 +675,10 @@
                     input.value = label;
                     hiddenSelect.value = label;
                     panel.hidden = true;
-                });
+ });
                 list.appendChild(li);
-            });
-        };
+ });
+ };
 
         hiddenSelect._allTopics = topics;
         renderList(topics);
@@ -692,7 +689,7 @@
             filter.value = '';
             Array.from(list.children).forEach(li => { li.style.display = ''; });
             try { filter.focus(); } catch (_) {}
-        };
+ };
         const closePanel = () => { panel.hidden = true; };
         input.addEventListener('click', () => { panel.hidden ? openPanel() : closePanel(); });
         toggle.addEventListener('click', () => { panel.hidden ? openPanel() : closePanel(); });
@@ -702,16 +699,16 @@
             const val = e.target.value.toLowerCase();
             Array.from(list.children).forEach(li => {
                 li.style.display = li.textContent.toLowerCase().includes(val) ? '' : 'none';
-            });
-        });
+ });
+ });
 
         // Close on outside click
         document.addEventListener('click', (e) => {
             if (!document.getElementById('interactionDropdownRoot').contains(e.target)) {
                 panel.hidden = true;
-            }
-        });
-    }
+ }
+ });
+ }
 
     // --- Event Listeners ---
     function setupEventListeners() {
@@ -722,13 +719,13 @@
                 const id = agentSel.value;
                 const agent = agentList.find(a => a.id == id);
                 if (agent) updateAgentDetails(agent);
-            });
-        }
+ });
+ }
 
         // Reset Btn
         document.getElementById('resetBtn').addEventListener('click', () => {
             if(confirm('Reset all fields?')) window.location.reload();
-        });
+ });
 
         // Select All Btn
         document.getElementById('selectAllBtn').addEventListener('click', () => {
@@ -737,9 +734,9 @@
                 if (yes) {
                     yes.checked = true;
                     yes.dispatchEvent(new Event('change'));
-                }
-            });
-        });
+ }
+ });
+ });
 
         // Submit Btn
         document.getElementById('submitBtn').addEventListener('click', submitScorecard);
@@ -749,7 +746,7 @@
         
         // Post URL duplicate check (simple version)
         document.getElementById('postUrlInput').addEventListener('blur', checkDuplicate);
-    }
+ }
 
     async function checkDuplicate() {
         const url = document.getElementById('postUrlInput').value.trim();
@@ -761,17 +758,17 @@
             // Check if URL exists in MX_Social_Media_Scorecard
             const res = await fetch(`${cfg.restUrl}/MX_Social_Media_Scorecard?select=id&Post_url=eq.${encodeURIComponent(url)}`, {
                 headers: makeAuthHeaders(cfg)
-            });
+ });
             if (res.ok) {
                 const data = await res.json();
                 if (data.length > 0) {
                     notice.style.display = 'block';
-                } else {
+ } else {
                     notice.style.display = 'none';
-                }
-            }
-        } catch (e) { console.error(e); }
-    }
+ }
+ }
+ } catch (e) { console.error(e); }
+ }
 
     // --- Submission ---
     function resetForm() {
@@ -801,7 +798,7 @@
         if (subtotalEl) {
             subtotalEl.textContent = 'Final Score: 0.00%';
             subtotalEl.style.color = 'var(--text-primary)';
-        }
+ }
         
         // Hide duplicate notice
         const notice = document.getElementById('duplicateNotice');
@@ -809,7 +806,7 @@
 
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+ }
 
     // --- Data Gathering Helper ---
     function getScorecardData() {
@@ -862,13 +859,13 @@
                 if (yes) {
                     currentScore += score;
                     scoreVal = score;
-                }
-            } else {
+ }
+ } else {
                 if (no) criticalFail = true;
-            }
+ }
             
             attrList.push({ name, desc, val: val || 'N/A', score: scoreVal, max: score, comment: comm });
-        });
+ });
 
         let finalPercent = (maxScore > 0) ? (currentScore / maxScore) * 100 : 0;
         if (criticalFail) finalPercent = 0;
@@ -879,8 +876,8 @@
             attributesData, commentsData, attrList,
             currentScore, maxScore, criticalFail, allAnswered,
             finalPercent: finalPercent.toFixed(2)
-        };
-    }
+ };
+ }
 
     async function submitScorecard() {
         const btn = document.getElementById('submitBtn');
@@ -896,14 +893,14 @@
                 btn.disabled = false;
                 btn.textContent = 'Submit';
                 return;
-            }
+ }
 
             if (!data.allAnswered) {
                 showAlert('Please answer all attributes', { type: 'warning' });
                 btn.disabled = false;
                 btn.textContent = 'Submit';
                 return;
-            }
+ }
 
             // Construct Payload for DB
             const payload = {
@@ -922,7 +919,7 @@
                 created_at: new Date().toISOString(),
                 ...data.attributesData,
                 ...data.commentsData
-            };
+ };
 
             // Email Data Payload
             const emailData = {
@@ -937,25 +934,22 @@
                 ff: data.ff,
                 finalPercent: data.finalPercent,
                 attributes: data.attrList
-            };
-
-            console.log('Submitting payload:', payload);
+ };
 
             const cfg = await getDbConfig();
             let res = await fetch(`${cfg.restUrl}/MX_Social_Media_Scorecard`, {
                 method: 'POST',
                 headers: makeAuthHeaders(cfg),
                 body: JSON.stringify(payload)
-            });
+ });
 
             if (!res.ok && (res.status === 401 || res.status === 403)) {
-                console.warn('Submit failed with client key, retrying with service key...');
                 res = await fetch(`${cfg.restUrl}/MX_Social_Media_Scorecard`, {
                     method: 'POST',
                     headers: makeAuthHeaders(cfg, { useServiceKey: true }),
                     body: JSON.stringify(payload)
-                });
-            }
+ });
+ }
 
             if (res.ok) {
                 showAlert('Scorecard submitted successfully!', { type: 'success' });
@@ -964,29 +958,28 @@
                 const userEmail = localStorage.getItem('loggedInUserEmail') || '';
                 try {
                     await sendScorecardEmail(emailData, data.agentEmail, userEmail);
-                } catch (emailErr) {
-                    console.warn('Auto-email failed:', emailErr);
+ } catch (emailErr) {
                     showAlert('Scorecard saved, but failed to send email.', { type: 'warning' });
-                }
+ }
 
                 resetForm();
                 await loadRecentSubmissions();
-            } else {
+ } else {
                 const err = await res.text();
                 throw new Error(`Submit failed: ${err}`);
-            }
+ }
 
-        } catch (e) {
+ } catch (e) {
             console.error(e);
             showAlert(`Error submitting: ${e.message}`, { type: 'error' });
             btn.disabled = false;
             btn.textContent = 'Submit';
-        } finally {
+ } finally {
             if (!document.getElementById('submitBtn').disabled) return;
             btn.disabled = false;
             btn.textContent = 'Submit';
-        }
-    }
+ }
+ }
 
     async function loadRecentSubmissions() {
         try {
@@ -994,20 +987,18 @@
             if (!cfg.restUrl) {
                 console.error('Missing DB config for recent submissions');
                 return;
-            }
+ }
             
             const url = `${cfg.restUrl}/MX_Social_Media_Scorecard?select=id,Post_url,Agent_Name,Final_Score,created_at&order=id.desc&limit=10`;
             
             let res = await fetch(url, { headers: makeAuthHeaders(cfg), cache: 'no-store' });
             
             if (!res.ok) {
-                console.warn(`Recent submissions fetch error (client): ${res.status}`);
                 // Fallback to service key if client key fails (RLS)
                 if (cfg.serviceKey) {
-                    console.warn('Retrying with service key...');
                     res = await fetch(url, { headers: makeAuthHeaders(cfg, { useServiceKey: true }), cache: 'no-store' });
-                }
-            }
+ }
+ }
 
             if (res.ok) {
                 const rows = await res.json();
@@ -1018,7 +1009,7 @@
                 if (rows.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:12px; color:var(--text-secondary);">No recent submissions found</td></tr>';
                     return;
-                }
+ }
                 
                 rows.forEach(r => {
                     const tr = document.createElement('tr');
@@ -1030,20 +1021,20 @@
                         <td>${new Date(r.created_at).toLocaleString()}</td>
                     `;
                     tbody.appendChild(tr);
-                });
-            } else {
+ });
+ } else {
                 const txt = await res.text();
                 console.error('Recent submissions fetch failed:', txt);
                 // If it fails, we might want to show a small error in the table
                 const tbody = document.querySelector('#recentTable tbody');
                 if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger-color);">Error loading data: ${res.status}</td></tr>`;
-            }
-        } catch (e) { 
+ }
+ } catch (e) { 
             console.error('Error loading recent submissions:', e);
             const tbody = document.querySelector('#recentTable tbody');
             if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger-color);">Error: ${e.message}</td></tr>`;
-        }
-    }
+ }
+ }
 
     // --- Email Preview & Sending ---
     
@@ -1057,19 +1048,19 @@
                 port: 587,
                 user: 'happio.softs@gmail.com',
                 pass: 'yinyeqhnfihainsi'
-            },
+ },
             to,
             cc,
             bcc,
             subject,
             html
-        };
+ };
         try {
             const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) throw new Error(await res.text());
             return true;
-        } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
-    }
+ } catch (e) {  return false; }
+ }
 
     async function sendScorecardEmail(emailData, agentEmail, userEmail) {
         try {
@@ -1081,14 +1072,12 @@
             
             if (!success) {
                 throw new Error('Email server error');
-            } else {
-                console.log('Email sent successfully');
-            }
-        } catch (e) {
-            console.warn('Email send error:', e);
+ } else {
+ }
+ } catch (e) {
             throw e;
-        }
-    }
+ }
+ }
 
     async function handleSendEmailBtn() {
         const btn = document.getElementById('emailSendBtn');
@@ -1108,17 +1097,17 @@
             if (success) {
                 alert('Email sent successfully!');
                 closePreview();
-            } else {
+ } else {
                 throw new Error('Email sending failed (check console)');
-            }
-        } catch (e) {
+ }
+ } catch (e) {
             console.error(e);
             alert(`Failed to send email: ${e.message}`);
-        } finally {
+ } finally {
             btn.disabled = false;
             btn.textContent = 'Send Email';
-        }
-    }
+ }
+ }
 
     function setupEmailHandlers() {
         const previewBtn = document.getElementById('previewEmailBtn');
@@ -1132,12 +1121,12 @@
         
         const sendBtn = document.getElementById('emailSendBtn');
         if (sendBtn) sendBtn.addEventListener('click', handleSendEmailBtn);
-    }
+ }
 
     function closePreview() {
         const overlay = document.getElementById('emailPreviewOverlay');
         if (overlay) overlay.style.display = 'none';
-    }
+ }
     
     function copyEmailHTML() {
         const iframe = document.getElementById('emailPreviewIframe');
@@ -1145,9 +1134,9 @@
             const html = iframe.contentDocument.documentElement.outerHTML;
             navigator.clipboard.writeText(html).then(() => {
                 alert('Email HTML copied to clipboard!');
-            });
-        }
-    }
+ });
+ }
+ }
 
     function previewEmail() {
         const data = getScorecardData();
@@ -1157,7 +1146,7 @@
         const emailData = {
             ...data,
             attributes: data.attrList
-        };
+ };
         
         const html = buildEmailHTML(emailData);
         const iframe = document.getElementById('emailPreviewIframe');
@@ -1165,7 +1154,7 @@
         
         const overlay = document.getElementById('emailPreviewOverlay');
         overlay.style.display = 'flex';
-    }
+ }
 
     function buildEmailHTML(d) {
         const passed = parseFloat(d.finalPercent) >= 90; // Assuming 90 is pass
@@ -1237,6 +1226,6 @@
             </div>
         </body>
         </html>`;
-    }
+ }
 
 })();

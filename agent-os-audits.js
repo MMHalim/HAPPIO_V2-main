@@ -18,11 +18,11 @@
       el.appendChild(msg);
       tray.appendChild(el);
       setTimeout(() => { try { el.remove(); } catch(_) {} }, 2200);
-    } catch(e) { console.log('[INFO]', message); }
-  }
+ } catch(e) {}
+ }
   if (typeof window !== 'undefined' && typeof window.showAlert !== 'function') {
     window.showAlert = (msg, opts) => createAppAlert(msg, opts);
-  }
+ }
   let osAttributes = [];
   const SALES_RET_DB_MAPPING = {
     'Interaction Protocols': 'interaction_protocols',
@@ -45,7 +45,7 @@
     'CRM Updates': 'documentation_crm',
     'Workflow': 'workflow',
     'Ownership': 'ownership'
-  };
+ };
   const SALES_RET_COMMENT_MAPPING = {
     interaction_protocols: 'comment_interaction_protocols',
     understanding: 'comment_Understanding',
@@ -60,7 +60,7 @@
     documentation_crm: 'comment_Documentation_crm',
     workflow: 'comment_Workflow',
     ownership: 'comment_ownership'
-  };
+ };
 
   async function loadDatabaseConfig() {
     try {
@@ -71,33 +71,33 @@
       config.apiKey = json.supabase.client_api_key;
       config.serviceKey = json.supabase.service_key || null;
       config.emailLogoUrl = (json.email && json.email.logo_url) || null;
-    } catch (e) { console.error('Failed to load database config', e); }
-  }
+ } catch (e) { console.error('Failed to load database config', e); }
+ }
   function authHeaders(opts = {}) {
     const useServiceKey = !!opts.useServiceKey;
     return {
       apikey: config.apiKey,
       Authorization: `Bearer ${useServiceKey ? config.serviceKey : config.apiKey}`
-    };
-  }
+ };
+ }
   function getLogoUrl() {
     try { if (typeof window !== 'undefined' && window.EMAIL_LOGO_URL) return String(window.EMAIL_LOGO_URL); } catch(e) {}
     try { if (config.emailLogoUrl) return String(config.emailLogoUrl); } catch(e) {}
     return null;
-  }
+ }
   async function sendEmailSMTP({ html, to, cc = [], subject }) {
     const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
     const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
     const payload = {
       smtp: { host: 'smtp.gmail.com', port: 587, user: 'happio.softs@gmail.com', pass: 'yinyeqhnfihainsi' },
       to, cc, subject, html
-    };
+ };
     try {
       const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
       return true;
-    } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
-  }
+ } catch (e) {  return false; }
+ }
 
   function buildAppealEmailHTML({ caseId, conversationId, userName, items, scorecardName = 'MX T2 Order Support' }) {
     const base = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/search/0/conversation/';
@@ -121,7 +121,7 @@
           ${agentBlock}
         </div>
       `;
-    }).join('');
+ }).join('');
     return `<!DOCTYPE html><html><head><meta charset="utf-8" />
       <style>
         :root { --bg: #ffffff; --text: #111827; --muted: #374151; --border: #e5e7eb; --accent: #7c3aed; --pill: #f3f4f6; }
@@ -155,7 +155,7 @@
         </div>
       </div>
     </body></html>`;
-  }
+ }
 
   function normalizeToken(value) {
     return String(value || '')
@@ -164,7 +164,7 @@
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/_+/g, '_')
       .replace(/^_|_$/g, '');
-  }
+ }
 
   function parseAttributeScoreValue(value) {
     if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -172,7 +172,7 @@
     if (!match) return 0;
     const parsed = Number(match[0]);
     return Number.isFinite(parsed) ? parsed : 0;
-  }
+ }
 
   function pickMappedValue(row, candidates, fallback = '') {
     const keys = Object.keys(row || {});
@@ -183,9 +183,9 @@
       const normalized = normalize(candidate);
       const fuzzy = keys.find((key) => normalize(key) === normalized);
       if (fuzzy && row[fuzzy] != null) return row[fuzzy];
-    }
+ }
     return fallback;
-  }
+ }
 
   function pickRowKey(row, candidates) {
     const keys = Object.keys(row || {});
@@ -196,9 +196,9 @@
       const normCandidate = normalizeToken(candidate);
       const fuzzy = keys.find((key) => normalizeToken(key) === normCandidate);
       if (fuzzy) return fuzzy;
-    }
+ }
     return null;
-  }
+ }
 
   function buildSalesRetAttributesFromRow(row) {
     const attrs = [];
@@ -223,7 +223,7 @@
           'documentation_crm',
           'verfication'
         ].filter(Boolean));
-      }
+ }
       const value = valueKey ? row[valueKey] : '';
 
       let commentKey = dbColName && SALES_RET_COMMENT_MAPPING[dbColName] && row[SALES_RET_COMMENT_MAPPING[dbColName]] !== undefined
@@ -242,7 +242,7 @@
           `comment_${normalizeToken(label)}`,
           `comments_${normalizeToken(label)}`
         ].filter(Boolean));
-      }
+ }
       const comment = commentKey ? String(row[commentKey] || '') : '';
 
       attrs.push({
@@ -254,16 +254,16 @@
         valueKey,
         comment,
         commentKey
-      });
-    });
+ });
+ });
     return attrs;
-  }
+ }
 
   function isTruthyValue(value) {
     if (value === true) return true;
     const s = String(value ?? '').trim().toLowerCase();
     return s === 'yes' || s === 'true' || s === '1' || s === String(parseAttributeScoreValue(value));
-  }
+ }
 
   let currentRow = null;
   let currentAttrs = [];
@@ -280,9 +280,9 @@
         Subcategory: String(pickMappedValue(row, ['Subcategory', 'subcategory', 'subcategor'], '') || ''),
         Criteria: String(pickMappedValue(row, ['Criteria', 'criteria', 'description'], '') || ''),
         Score: parseAttributeScoreValue(pickMappedValue(row, ['Score', 'score'], 0))
-      })) : [];
-    } catch (e) { console.warn('Failed to fetch attributes', e); osAttributes = []; }
-  }
+ })) : [];
+ } catch (e) {  osAttributes = []; }
+ }
 
   async function fetchAgentAudits() {
     try {
@@ -293,8 +293,8 @@
       if (!res.ok) { res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) }); if (!res.ok) throw new Error(await res.text()); }
       const rows = await res.json();
       renderAgentAudits(rows || []);
-    } catch (e) { console.error('Failed to fetch agent audits', e); }
-  }
+ } catch (e) { console.error('Failed to fetch agent audits', e); }
+ }
 
   async function fetchAuditsByRange(startISO, endISO) {
     try {
@@ -305,32 +305,32 @@
       if (!res.ok) { res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) }); if (!res.ok) throw new Error(await res.text()); }
       const rows = await res.json();
       return rows || [];
-    } catch (e) { console.error('Failed to fetch ranged audits', e); return []; }
-  }
+ } catch (e) { console.error('Failed to fetch ranged audits', e); return []; }
+ }
 
   function parseScoreNumber(finalScore) {
     if (finalScore == null) return NaN;
     const s = String(finalScore).trim();
     const n = parseFloat(s.replace('%',''));
     return Number.isFinite(n) ? n : NaN;
-  }
+ }
   function computeInsights(rows) {
     const getScore = (r) => {
       const keys = ['Final_Score','final_score','total_score','score_total','score'];
       for (const k of keys) { const v = r && r[k]; if (v !== undefined && v !== null && String(v).trim() !== '') return v; }
       return null;
-    };
+ };
     const nums = rows.map(r => parseScoreNumber(getScore(r))).filter(n => Number.isFinite(n));
     const count = rows.length;
     const avg = nums.length ? (nums.reduce((a,b)=>a+b,0) / nums.length) : 0;
     return { avgScore: Math.round(avg), count };
-  }
+ }
   function renderInsights({ avgScore, count }) {
     const avgEl = document.getElementById('insightsAvgScore');
     const cntEl = document.getElementById('insightsCount');
     if (avgEl) avgEl.textContent = `${avgScore}%`;
     if (cntEl) cntEl.textContent = String(count);
-  }
+ }
 
   async function applyInsights() {
     try {
@@ -343,8 +343,8 @@
       renderAgentAudits(rows);
       const stats = computeInsights(rows);
       renderInsights(stats);
-    } catch(e) { console.warn('applyInsights failed', e); }
-  }
+ } catch(e) {}
+ }
 
   function renderAgentAudits(rows) {
     const tbody = document.querySelector('#agentPsAuditsTable tbody');
@@ -371,8 +371,8 @@
       const btn = tr.querySelector('.viewAuditBtn');
       if (btn) btn.addEventListener('click', () => openAuditModal(r));
       tbody.appendChild(tr);
-    });
-  }
+ });
+ }
 
   async function openAuditModal(row) {
     try {
@@ -382,8 +382,8 @@
         const arr = await res.json();
         if (Array.isArray(arr) && arr.length > 0) { currentRow = arr[0]; }
         else { currentRow = row; }
-      } else { currentRow = row; }
-    } catch (e) { console.warn('Failed to load full audit row, using table row', e); currentRow = row; }
+ } else { currentRow = row; }
+ } catch (e) {  currentRow = row; }
     currentAttrs = buildSalesRetAttributesFromRow(currentRow || {});
     const meta = document.getElementById('agentPsMeta');
     if (meta) {
@@ -414,7 +414,7 @@
           <div><strong>Appealed:</strong> ${isAppealed ? 'Yes' : 'No'}</div>
         </div>
       `;
-    }
+ }
     const container = document.getElementById('agentPsAttributes');
     if (container) {
       const rows = (currentAttrs || []).map(a => {
@@ -464,9 +464,9 @@
             <div class="${scoreClass}">${score}</div>
           </div>
         `;
-      }).join('');
+ }).join('');
       container.innerHTML = rows;
-    }
+ }
     const ackBtn = document.getElementById('agentPsAckBtn');
     const appealBtn = document.getElementById('agentPsAppealBtn');
     {
@@ -474,7 +474,7 @@
       const ackVal = pick(currentRow, ['Agent_Acknowledge','agent_acknowledge','acknowledged','is_acknowledged']);
       const isAck = (String(ackVal||'').toLowerCase()==='yes' || String(ackVal||'').toLowerCase()==='true' || ackVal===true);
       if (ackBtn) ackBtn.disabled = isAck;
-    }
+ }
     if (appealBtn) appealBtn.disabled = ((currentRow.appealed || '').toString().toLowerCase() === 'yes');
     const rightPanel = document.getElementById('agentPsRightPanel');
     if (rightPanel) {
@@ -483,11 +483,11 @@
       const isAcked = (String(ackVal||'').toLowerCase()==='yes' || String(ackVal||'').toLowerCase()==='true' || ackVal===true);
       if (isAcked) { rightPanel.classList.add('locked-panel'); }
       else { rightPanel.classList.remove('locked-panel'); }
-    }
+ }
     const overlay = document.getElementById('agentPsModal');
     if (overlay) overlay.style.display = 'flex';
     try { document.body.style.overflow = 'hidden'; } catch(_) {}
-  }
+ }
 
   async function acknowledgeAudit() {
     try {
@@ -509,8 +509,8 @@
       const appealForm = document.getElementById('agentPsAppealForm');
       if (appealForm) appealForm.style.display = 'none';
       await fetchAgentAudits();
-    } catch (e) { console.warn('acknowledge failed', e); safeAlert('Failed to acknowledge'); }
-  }
+ } catch (e) {  safeAlert('Failed to acknowledge'); }
+ }
 
   function startAppeal() {
     if (!currentRow) return;
@@ -537,14 +537,14 @@
             <div class="${scoreClass}">${score}</div>
           </div>
         `;
-      }).join('');
+ }).join('');
       list.innerHTML = `
         <div class="appeal-group">
           <div class="appeal-list">${rows}</div>
         </div>
       `;
-    }
-  }
+ }
+ }
 
   async function submitAppeal() {
     try {
@@ -556,7 +556,7 @@
         const agentComment = (ta && ta.value || '').trim();
         const coachComment = '';
         return { key, label, agentComment, coachComment };
-      });
+ });
       if (!items.length) { showAlert('Please select attributes to appeal', { title: 'No attributes', type: 'warning' }); return; }
       const pick = (rw, keys) => { for (const k of keys) { const v = rw && rw[k]; if (v !== undefined && v !== null && String(v).trim() !== '') return v; } return ''; };
       const userName = (localStorage.getItem('loggedInUserName') || localStorage.getItem('userName') || '').trim() || 'User';
@@ -573,16 +573,16 @@
         const body = { appealed: true, Agent_Acknowledge: true };
         const headersService = Object.assign({ 'Content-Type': 'application/json' }, authHeaders({ useServiceKey: true }));
         let pRes = await fetch(patchUrl, { method: 'PATCH', headers: headersService, body: JSON.stringify(body) });
-        if (!pRes.ok) console.warn('Appeal patch failed:', await pRes.text());
-      } catch (pErr) { console.warn('Failed to mark appeal + acknowledge', pErr); }
-    } catch (e) { console.warn('submitAppeal failed', e); showAlert('Failed to submit appeal', { title:'Appeal failed', type:'error' }); }
+        if (!pRes.ok) {}
+      } catch (pErr) {}
+    } catch (e) {  showAlert('Failed to submit appeal', { title:'Appeal failed', type:'error' }); }
   }
 
   function closeModal() {
     const overlay = document.getElementById('agentPsModal');
     if (overlay) overlay.style.display = 'none';
     try { document.body.style.overflow = 'auto'; } catch(_) {}
-  }
+ }
 
   function bindEvents() {
     const closeBtn = document.getElementById('agentPsCloseBtn');
@@ -636,7 +636,7 @@
         const inrange = isBetween(cur, startSel || cur, endSel || cur);
         const cls = `rp-day${sel ? ' rp-day-selected' : ''}${inrange ? ' rp-day-inrange' : ''}`;
         days.push(`<div class="${cls}" data-d="${fmtYMD(cur)}">${d}</div>`);
-      }
+ }
       daysEl.innerHTML = days.join('');
       Array.from(daysEl.querySelectorAll('.rp-day')).forEach(el => {
         el.addEventListener('click', () => {
@@ -647,15 +647,15 @@
           else if (picked.getTime() < startSel.getTime()) { endSel = startSel; startSel = picked; }
           else { endSel = picked; }
           renderAll();
-        });
-      });
-    }
+ });
+ });
+ }
     function renderAll() {
       renderMonth(rpMonthLeft, rpYearLeft, rpDaysLeft, left);
       renderMonth(rpMonthRight, rpYearRight, rpDaysRight, right);
       if (startSel && endSel && rpCollapsedLabel) { rpCollapsedLabel.textContent = `${fmtYMD(startSel)} → ${fmtYMD(endSel)}`; rpCollapsedLabel.style.display = 'inline-block'; }
       else if (rpCollapsedLabel) { rpCollapsedLabel.textContent = ''; rpCollapsedLabel.style.display = 'none'; }
-    }
+ }
     if (rpPrev) rpPrev.addEventListener('click', () => { left = new Date(left.getFullYear(), left.getMonth()-1, 1); right = new Date(right.getFullYear(), right.getMonth()-1, 1); renderAll(); });
     if (rpNext) rpNext.addEventListener('click', () => { left = new Date(left.getFullYear(), left.getMonth()+1, 1); right = new Date(right.getFullYear(), right.getMonth()+1, 1); renderAll(); });
     if (rpCancel) rpCancel.addEventListener('click', () => { if (rpModal) rpModal.style.display = 'none'; });
@@ -666,19 +666,19 @@
       if (sEl) sEl.value = fmtYMD(startSel);
       if (eEl) eEl.value = fmtYMD(endSel);
       if (rpModal) rpModal.style.display = 'none';
-    });
+ });
     if (calIcon) calIcon.addEventListener('click', () => { if (rpModal) rpModal.style.display = 'flex'; renderAll(); });
     if (rpMonthLeft) rpMonthLeft.addEventListener('change', (e) => { left = new Date(left.getFullYear(), parseInt(e.target.value,10), 1); renderAll(); });
     if (rpYearLeft) rpYearLeft.addEventListener('change', (e) => { left = new Date(parseInt(e.target.value,10), left.getMonth(), 1); renderAll(); });
     if (rpMonthRight) rpMonthRight.addEventListener('change', (e) => { right = new Date(right.getFullYear(), parseInt(e.target.value,10), 1); renderAll(); });
     if (rpYearRight) rpYearRight.addEventListener('change', (e) => { right = new Date(parseInt(e.target.value,10), right.getMonth(), 1); renderAll(); });
-  }
+ }
 
   async function init() {
     await loadDatabaseConfig();
     await fetchOsAttributes();
     await fetchAgentAudits();
     bindEvents();
-  }
+ }
   document.addEventListener('DOMContentLoaded', init);
 })();

@@ -18,22 +18,22 @@
             font-weight: 800;
             text-align: center;
             margin-bottom: 12px;
-        }
+ }
         .scorecard-subtitle {
             text-align: center;
             color: var(--text-secondary);
             margin-bottom: 24px;
-        }
+ }
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 16px;
-        }
+ }
         .field {
             display: flex;
             flex-direction: column;
             gap: 8px;
-        }
+ }
         .field label { color: var(--text-primary); font-weight: 600; }
         .field input, .field select, .field textarea {
             padding: 12px 14px;
@@ -41,7 +41,7 @@
             border-radius: 12px;
             background: var(--bg-card);
             color: var(--text-primary);
-        }
+ }
         .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .date-range { display: flex; align-items: center; gap: 8px; }
         .calendar-icon { cursor: pointer; font-size: 18px; color: var(--text-primary); }
@@ -55,7 +55,7 @@
             box-shadow: var(--shadow-light);
             padding: 12px;
             max-width: 320px;
-        }
+ }
         .irc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
         .irc-month-label { font-weight: 700; color: var(--text-primary); }
         .irc-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
@@ -66,11 +66,11 @@
         .rc-selected-start, .rc-selected-end { 
             background: var(--primary-color); 
             color: #fff; 
-        }
+ }
         .rc-in-range { 
             background: rgba(96, 165, 250, 0.25); 
             border: 1px solid var(--border-hover); 
-        }
+ }
         .rc-disabled { pointer-events: none; opacity: 0.3; }
         .radio-pill {
             padding: 8px 12px;
@@ -78,7 +78,7 @@
             border: 1px solid var(--border-color);
             background: var(--bg-nav-item);
             cursor: pointer;
-        }
+ }
         .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; }
         .notice {
             margin-top: 6px;
@@ -88,7 +88,7 @@
             background: rgba(255, 153, 0, 0.08);
             color: #f59e0b;
             display: none;
-        }
+ }
         /* Attributes Scoring */
         .attributes-card { margin-top: 16px; }
         .attributes-header { display: flex; align-items: center; justify-content: space-between; }
@@ -102,7 +102,7 @@
             position: sticky;
             top: 20px;
             overflow-y: auto;
-        }
+ }
 
         /* Scroll is handled by pane; lists inherit */
         .attributes-groups { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -118,7 +118,7 @@
             z-index: 5;
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 8px;
-        }
+ }
         .attributes-list { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
         .attr-row { display: grid; grid-template-columns: 1fr auto 80px; gap: 12px; align-items: start; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; background: var(--bg-card); }
         .attr-comment { grid-column: 1 / -1; margin-top: 8px; }
@@ -130,7 +130,7 @@
             background: transparent;
             color: var(--text-primary);
             resize: vertical;
-        }
+ }
         .attr-comment textarea::placeholder { color: var(--text-secondary); }
         .attr-comment label { font-weight: 600; color: var(--text-primary); }
         .sme-title { font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
@@ -141,7 +141,7 @@
             width: 100%; 
             column-gap: 24px; 
             row-gap: 12px; 
-        }
+ }
         .sme-list .full-span { grid-column: 1 / -1; }
         /* Fields match their label width and align top */
         .sme-list .field { display: inline-flex; flex-direction: column; align-items: flex-start; width: max-content; }
@@ -159,7 +159,7 @@
              max-width: 100%;
              resize: none;
              box-sizing: border-box;
-         }
+ }
          /* Keep interaction dropdown full width of its field */
          #interactionDropdownRoot { max-width: none; min-width: 400px; }
 
@@ -172,14 +172,14 @@
             margin-top: 4px;
             width: 100%;
             box-sizing: border-box;
-        }
+ }
          .rte-toolbar {
              display: flex;
              gap: 4px;
              padding: 6px;
              border-bottom: 1px solid var(--border-color);
              background: var(--bg-card);
-         }
+ }
          .rte-btn {
              background: transparent;
              border: 1px solid transparent;
@@ -191,10 +191,10 @@
              display: flex;
              align-items: center;
              gap: 4px;
-         }
+ }
          .rte-btn:hover {
              background: var(--hover-bg);
-         }
+ }
          .rte-editor {
              min-height: 80px;
              padding: 8px;
@@ -202,11 +202,11 @@
              color: var(--text-primary);
              font-family: inherit;
              font-size: 14px;
-         }
+ }
          .rte-editor ul, .rte-editor ol {
              padding-left: 20px;
              margin: 4px 0;
-         }
+ }
         /* Keep SME select wide enough to show selected name */
         #smeName { min-width: 240px; }
         /* Keep Ticket Status wide enough to show hint */
@@ -218,7 +218,7 @@
         @media (max-width: 900px) {
           .sme-list { grid-template-columns: 1fr; }
           .sme-list .field { width: 100%; }
-        }
+ }
         .sme-radio-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .sme-radio-group label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; }
         .sme-radio-group input { accent-color: var(--primary-color); }
@@ -261,12 +261,12 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
-        }
+ }
         .recent-table th, .recent-table td {
             border: 1px solid var(--border-color);
             padding: 8px 10px;
             text-align: left;
-        }
+ }
         /* Compact case picker styles */
         .compact-grid { display: grid; grid-template-columns: 1.1fr 0.9fr 0.9fr 1.3fr auto; gap: 10px; align-items: center; justify-items: center; justify-content: center; }
         .compact-grid .field { align-items: flex-start; }
@@ -286,7 +286,7 @@
             justify-content: center;
             background: rgba(0,0,0,0.55);
             z-index: 100000;
-        }
+ }
         .global-modal {
             width: 520px;
             max-width: 95vw;
@@ -296,14 +296,14 @@
             border-radius: 16px;
             box-shadow: var(--shadow);
             padding: 16px;
-        }
+ }
         /* Position the Skip modal near the top area, match Heads up style */
         #skipModalOverlay {
             align-items: flex-start;
             justify-content: center;
             padding-top: 10vh;
             background: transparent; /* Heads up style: no dim */
-        }
+ }
         #skipModalOverlay .global-modal {
             transform: none;
             position: relative;
@@ -311,10 +311,10 @@
             color: var(--text-primary);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
-        }
+ }
         [data-theme="light"] #skipModalOverlay .global-modal {
             background: #ffffff; /* Solid light background */
-        }
+ }
         #skipModalOverlay .skip-accent {
             position: absolute;
             top: 0;
@@ -322,16 +322,16 @@
             height: 4px;
             width: 100%;
             background: var(--warning-color);
-        }
+ }
         #skipModalOverlay .global-card-subtitle,
         #skipModalOverlay label {
             color: var(--text-secondary);
-        }
+ }
         #skipModalOverlay textarea {
             background: var(--bg-nav-item);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
-        }
+ }
         #skipModalOverlay .skip-counter-badge {
             margin-left: 8px;
             padding: 2px 8px;
@@ -340,7 +340,7 @@
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             background: var(--bg-nav-item);
-        }
+ }
         [data-theme="light"] .global-modal { background: var(--bg-card); color: var(--text-primary); }
 
         /* Make the first form section more compact */
@@ -349,7 +349,7 @@
             max-width: 320px;
             width: 100%;
             padding: 8px 10px;
-        }
+ }
         .compact-form .radio-group { gap: 6px; }
         .compact-form .radio-pill { padding: 6px 10px; font-size: 12px; border-radius: 10px; }
         /* Restore original look for Certification/Calibration radios */
@@ -377,13 +377,13 @@
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 12px;
             align-items: start;
-        }
+ }
         .details-grid .field input,
         .details-grid .field select {
             width: 100%;
             max-width: 100%;
             padding: 8px 10px;
-        }
+ }
         /* Placeholder color for agent dropdown */
         #agentDropdownInput::placeholder { color: var(--text-secondary); }
         /* Team select color based on selection state */
@@ -810,7 +810,7 @@
     </div>
 
     <script src="global-navigation.js?v=20260421-02"></script>
-    <script src="wins-scorecard.js?v=20260903-01"></script>
+    <script src="wins-scorecard.js?v=20260915-01"></script>
 <script>
   // Use the exact logo you shared
   window.EMAIL_LOGO_URL = "https://kupaxfvjfobfdgtbfnnt.supabase.co/storage/v1/object/sign/ChatData/tempo_logo-removebg-preview.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJDaGF0RGF0YS90ZW1wb19sb2dvLXJlbW92ZWJnLXByZXZpZXcucG5nIiwiaWF0IjoxNzQyODQ1NTQzLCJleHAiOjE3NzQzODE1NDN9.cTQWItBzs3CK6vfv7A0owkDVhjX-_K1Yfw_XGF-_8Yo";
@@ -822,12 +822,11 @@
             if (!token || !uid) {
                 window.location.href = '/login.html';
                 return;
-            }
+ }
             // Debug: navigation type (reload vs navigate)
             try {
               const navType = (performance && performance.getEntriesByType && performance.getEntriesByType('navigation')[0] && performance.getEntriesByType('navigation')[0].type) || 'unknown';
-              console.log('DEBUG Wins DOMContentLoaded: navType=', navType);
-            } catch(_) {}
+ } catch(_) {}
             // Fallback restore removed
             // try {
             //   var conv = document.getElementById('conversationIdInput');
@@ -842,9 +841,8 @@
             // } catch (_) {}
             // Initialize page logic
             if (window.WinsScorecard && typeof WinsScorecard.init === 'function') {
-                console.log('DEBUG Wins Init: calling WinsScorecard.init');
                 await WinsScorecard.init();
-            }
+ }
             // Persist current conversation id removed
             // try {
             //   window.addEventListener('beforeunload', function(){
@@ -853,7 +851,7 @@
             //     if (v) localStorage.setItem('t1_last_conv_id', v);
             //   });
             // } catch(_) {}
-        });
+ });
     </script>
     <!-- Email Preview Modal -->
     <div id="emailPreviewOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:9999;">
@@ -870,6 +868,6 @@
   // Late-stage restore removed
   (function(){
     // logic removed
-  })();
+ })();
 </script>
 </html>

@@ -7,12 +7,11 @@ async function checkColumns() {
     'apikey': config.supabase.service_key,
     'Authorization': `Bearer ${config.supabase.service_key}`,
     'Content-Type': 'application/json'
-  };
+ };
 
   const tables = ['Calibration_T1_QA_New_Scorecards', 'calibration_sms'];
 
   for (const table of tables) {
-    console.log(`\n--- Checking table: ${table} ---`);
     try {
       const res = await fetch(`${config.supabase.rest_url}/${table}?limit=1`, { headers });
       if (!res.ok) {
@@ -20,17 +19,15 @@ async function checkColumns() {
         const txt = await res.text();
         console.error(txt);
         continue;
-      }
+ }
       const data = await res.json();
       if (data.length > 0) {
-        console.log('Columns found:', Object.keys(data[0]).sort());
-      } else {
-        console.log('Table is empty, cannot inspect columns from data.');
-      }
-    } catch (e) {
+ } else {
+ }
+ } catch (e) {
       console.error(e);
-    }
-  }
+ }
+ }
 }
 
 checkColumns();

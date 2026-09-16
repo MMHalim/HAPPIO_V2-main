@@ -5,14 +5,14 @@ class GlobalThemeManager {
         this.currentTheme = localStorage.getItem('theme') || 'dark';
         this.currentPage = this.getCurrentPage();
         this.init();
-    }
+ }
 
     init() {
         this.loadTheme();
         this.setupThemeToggle();
         this.setupNavigation();
         this.setupActiveNavItem();
-    }
+ }
 
     getCurrentPage() {
         const path = window.location.pathname;
@@ -21,7 +21,7 @@ class GlobalThemeManager {
         if (path.includes('login')) return 'login';
         if (path.includes('reporting')) return 'reporting';
         return 'dashboard';
-    }
+ }
 
     loadTheme() {
         const body = document.body;
@@ -31,17 +31,16 @@ class GlobalThemeManager {
             body.setAttribute('data-theme', 'light');
             if (themeIcon) {
                 themeIcon.textContent = '☀️';
-            }
-        } else {
+ }
+ } else {
             body.removeAttribute('data-theme');
             if (themeIcon) {
                 themeIcon.textContent = '🌙';
-            }
-        }
-    }
+ }
+ }
+ }
 
     toggleTheme() {
-        console.log('toggleTheme called, current theme:', this.currentTheme);
         const body = document.body;
         const themeIcon = document.getElementById('themeIcon');
         
@@ -50,25 +49,21 @@ class GlobalThemeManager {
             this.currentTheme = 'dark';
             if (themeIcon) {
                 themeIcon.textContent = '🌙';
-            }
-            console.log('Switched to dark theme');
-        } else {
+ }
+ } else {
             body.setAttribute('data-theme', 'light');
             this.currentTheme = 'light';
             if (themeIcon) {
                 themeIcon.textContent = '☀️';
-            }
-            console.log('Switched to light theme');
-        }
+ }
+ }
         
         localStorage.setItem('theme', this.currentTheme);
-        console.log('Theme saved to localStorage:', this.currentTheme);
-    }
+ }
 
     setupThemeToggle() {
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
-            console.log('Setting up theme toggle for element:', themeToggle);
             // Clone the element to remove all event listeners
             const newThemeToggle = themeToggle.cloneNode(true);
             themeToggle.parentNode.replaceChild(newThemeToggle, themeToggle);
@@ -77,13 +72,11 @@ class GlobalThemeManager {
             newThemeToggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Theme toggle clicked!');
                 this.toggleTheme();
-            });
-        } else {
-            console.log('Theme toggle element not found');
-        }
-    }
+ });
+ } else {
+ }
+ }
 
     setupNavigation() {
         // Setup dropdown toggle
@@ -94,8 +87,8 @@ class GlobalThemeManager {
             userMenu.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleDropdown();
-            });
-        }
+ });
+ }
 
         // Setup dropdown items
         const dropdownItems = document.querySelectorAll('.global-dropdown-item');
@@ -105,43 +98,43 @@ class GlobalThemeManager {
                 const page = item.dataset.page;
                 if (page && page !== this.currentPage) {
                     this.navigateToPage(page);
-                }
+ }
                 this.closeDropdown();
-            });
-        });
+ });
+ });
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.global-user-menu') && !e.target.closest('.global-user-dropdown-content')) {
                 this.closeDropdown();
-            }
-        });
-    }
+ }
+ });
+ }
 
     toggleDropdown() {
         const dropdown = document.querySelector('.global-user-dropdown-content');
         if (dropdown) {
             dropdown.classList.toggle('show');
-        }
-    }
+ }
+ }
 
     closeDropdown() {
         const dropdown = document.querySelector('.global-user-dropdown-content');
         if (dropdown) {
             dropdown.classList.remove('show');
-        }
-    }
+ }
+ }
 
     setupActiveNavItem() {
         const dropdownItems = document.querySelectorAll('.global-dropdown-item');
         dropdownItems.forEach(item => {
             if (item.dataset.page === this.currentPage) {
                 item.classList.add('active');
-            } else {
+ } else {
                 item.classList.remove('active');
-            }
-        });
-    }
+ }
+ });
+ }
 
     navigateToPage(page) {
         // Define page routes
@@ -151,13 +144,13 @@ class GlobalThemeManager {
             'login': '/login.html',
             'reporting': '/reporting.html',
             'manage-users': '/manage-users.html'
-        };
+ };
 
         const route = routes[page];
         if (route) {
             window.location.href = route;
-        }
-    }
+ }
+ }
 
     // Method to create global header HTML
     createGlobalHeader() {
@@ -264,12 +257,12 @@ class GlobalThemeManager {
                 </div>
             </div>
         `;
-    }
+ }
 
     // Method to create global navigation HTML (now handled by dropdown)
     createGlobalNavigation() {
         return ''; // Navigation is now in the dropdown menu
-    }
+ }
 
     // Method to initialize global components on any page
     initGlobalComponents() {
@@ -284,25 +277,22 @@ class GlobalThemeManager {
                     this.setupThemeToggle();
                     this.setupNavigation();
                     this.setupActiveNavItem();
-                }, 100);
-            }
-        } else {
+ }, 100);
+ }
+ } else {
             // If header already exists, just setup event listeners
             this.setupThemeToggle();
             this.setupNavigation();
             this.setupActiveNavItem();
-        }
-    }
+ }
+ }
 }
 
 // Global functions for backward compatibility
 function toggleTheme() {
-    console.log('Global toggleTheme function called');
     if (window.globalTheme) {
-        console.log('Using globalTheme instance');
         window.globalTheme.toggleTheme();
-    } else {
-        console.log('Using fallback theme toggle');
+ } else {
         // Fallback for when global theme isn't loaded yet
         const body = document.body;
         const themeIcon = document.getElementById('themeIcon');
@@ -312,19 +302,16 @@ function toggleTheme() {
             body.removeAttribute('data-theme');
             if (themeIcon) themeIcon.textContent = '🌙';
             localStorage.setItem('theme', 'dark');
-            console.log('Fallback: Switched to dark theme');
-        } else {
+ } else {
             body.setAttribute('data-theme', 'light');
             if (themeIcon) themeIcon.textContent = '☀️';
             localStorage.setItem('theme', 'light');
-            console.log('Fallback: Switched to light theme');
-        }
-    }
+ }
+ }
 }
 
 function showLogin() {
     // This function should be implemented per page
-    console.log('Show login function called');
 }
 
 // Initialize global theme manager when DOM is loaded
@@ -332,9 +319,9 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         window.globalTheme = new GlobalThemeManager();
         window.globalTheme.initGlobalComponents();
-    } catch (error) {
+ } catch (error) {
         console.error('Error initializing global theme:', error);
-    }   
+ }   
 });
 
 // Export for module usage

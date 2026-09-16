@@ -6,8 +6,8 @@
   <title>Admin Settings</title>
   <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="global-theme.css" />
-  <script src="global-navigation.js?v=2" defer></script>
-  <script src="admin-settings-v2.js?v=20260701-01" defer></script>
+  <script src="global-navigation.js?v=20260916-03" defer></script>
+  <script src="admin-settings-v2.js?v=20260915-02" defer></script>
   <style>
     .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
     .page-header { 
@@ -270,22 +270,30 @@
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(2, 6, 23, 0.72);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 10010;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(6px);
     }
     .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
     .modal-content {
-      background: var(--bg-card);
+      background: var(--bg-popup, #0f172a);
       padding: 24px;
       border-radius: 12px;
-      border: 1px solid var(--border-color);
+      border: 1px solid rgba(148, 163, 184, 0.22);
       width: 400px;
       max-width: 90%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+    [data-theme="light"] .modal-overlay {
+      background: rgba(15, 23, 42, 0.35);
+    }
+    [data-theme="light"] .modal-content {
+      background: #ffffff;
+      border-color: rgba(148, 163, 184, 0.28);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
     }
     .modal-content h3 { margin-top: 0; color: var(--text-primary); margin-bottom: 12px; }
     .modal-content p { color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; margin-top: 0; }
@@ -345,6 +353,7 @@
         <button class="tab-btn" data-tab="t2osnew">T2 OS New Attributes</button>
         <button class="tab-btn" data-tab="sms">SMS Attributes</button>
         <button class="tab-btn" data-tab="social">Social Attributes</button>
+        <button class="tab-btn" data-tab="smeList">SME List</button>
         <button class="tab-btn" data-tab="intRel">Interaction Related To</button>
         <button class="tab-btn" data-tab="calibration">Calibration</button>
         <button class="tab-btn" data-tab="etlLogs">Data Sync Logs</button>
@@ -434,6 +443,23 @@
           </div>
         </div>
         <div id="socialTableContainer">Loading...</div>
+      </div>
+    </div>
+
+    <!-- SME List -->
+    <div id="smeList" class="tab-content">
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3>SME List</h3>
+          <div class="editor-actions">
+            <button class="global-btn btn-secondary" onclick="AdminSettings.discardSmeListChanges()">Discard</button>
+            <button class="global-btn" onclick="AdminSettings.saveSmeListChanges()">Save Changes</button>
+          </div>
+        </div>
+        <div style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+          Manage the SME names shown in the scorecard SME dropdowns. Choose names directly from the users table, then control order and active status here.
+        </div>
+        <div id="smeListTableContainer">Loading...</div>
       </div>
     </div>
 

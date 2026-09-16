@@ -18,9 +18,9 @@ const MXT1Scorecard = (function() {
       btn.onmousedown = (e) => {
         e.preventDefault();
         document.execCommand(cmd, false, null);
-      };
+ };
       return btn;
-    };
+ };
 
     toolbar.appendChild(createBtn('• Bullet', 'insertUnorderedList'));
     toolbar.appendChild(createBtn('1. Number', 'insertOrderedList'));
@@ -34,7 +34,7 @@ const MXT1Scorecard = (function() {
     container.appendChild(editor);
 
     return { container, editor };
-  }
+ }
 
   function extractTextFromRTE(editor) {
     if (!editor) return '';
@@ -51,30 +51,30 @@ const MXT1Scorecard = (function() {
         node.childNodes.forEach(child => {
           if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
             content += '\n• ' + getText(child).trim();
-          } else {
+ } else {
             content += getText(child);
-          }
-        });
-      } else if (tag === 'ol') {
+ }
+ });
+ } else if (tag === 'ol') {
         let idx = 0;
         node.childNodes.forEach(child => {
           if (child.nodeType === 1 && child.tagName.toLowerCase() === 'li') {
             idx++;
             content += `\n${idx}. ` + getText(child).trim();
-          } else {
+ } else {
             content += getText(child);
-          }
-        });
-      } else {
+ }
+ });
+ } else {
         node.childNodes.forEach(c => content += getText(c));
-      }
+ }
       
       if (tag === 'div' || tag === 'p') return '\n' + content;
       return content;
-    }
+ }
     
     return getText(editor).replace(/\n\s*\n/g, '\n').trim();
-  }
+ }
 
   function initStaticRTEs() {
     const ids = [
@@ -91,13 +91,13 @@ const MXT1Scorecard = (function() {
 
       editor.addEventListener('input', () => {
         ta.value = extractTextFromRTE(editor);
-      });
+ });
 
       ta.parentNode.insertBefore(container, ta);
       ta.style.display = 'none';
       ta.dataset.hasRte = 'true';
-    });
-  }
+ });
+ }
 
   // Skip-next window and usage counter helpers
 const SKIP_NEXT_LIMIT = 5;
@@ -122,7 +122,7 @@ async function sendEmailSMTP({ html, to, cc = [], bcc = [], subject }) {
     const raw = await res.text();
     if (!res.ok) throw new Error(raw || `HTTP ${res.status}`);
     return true;
-  } catch (e) { console.warn('sendEmailSMTP error:', e); return false; }
+ } catch (e) {  return false; }
 }
 function getSkipNextKey(userKey) {
   const { id } = computeSkipWindow();
@@ -152,7 +152,7 @@ function showAlert(msg, opts = {}) {
       else if (lowerMsg.includes('fail') || lowerMsg.includes('error') || lowerMsg.includes('not authenticated')) type = 'error';
       else if (lowerMsg.includes('duplicate') || lowerMsg.includes('please') || lowerMsg.includes('empty')) type = 'warning';
       else type = 'info';
-    }
+ }
     const title = options.title || (type === 'error' ? 'Error' : type === 'success' ? 'Success' : type === 'warning' ? 'Heads up' : 'Notice');
 
     // Build overlay
@@ -167,7 +167,7 @@ function showAlert(msg, opts = {}) {
       overlay.style.justifyContent = 'center';
       overlay.style.zIndex = '9999';
       document.body.appendChild(overlay);
-    }
+ }
     // Make Heads up/Warning and Success overlays transparent so page remains visible
     overlay.style.background = ((type === 'warning' || type === 'success') ? 'transparent' : 'rgba(0, 0, 0, 0.45)');
     overlay.innerHTML = '';
@@ -189,7 +189,6 @@ function showAlert(msg, opts = {}) {
     card.style.position = 'relative';
     // Solid/darker background removed to respect theme
 
-
     // Accent bar
     const accent = document.createElement('div');
     accent.style.position = 'absolute';
@@ -202,7 +201,7 @@ function showAlert(msg, opts = {}) {
       warning: 'var(--warning-color)',
       error: 'var(--danger-color)',
       info: 'var(--primary-color)'
-    };
+ };
     accent.style.background = colorMap[type] || 'var(--primary-color)';
     card.appendChild(accent);
 
@@ -243,13 +242,13 @@ function showAlert(msg, opts = {}) {
         const li = document.createElement('li');
         li.textContent = line.replace(/^\-?\s*/, '');
         ul.appendChild(li);
-      });
+ });
       msgContainer.appendChild(ul);
-    } else {
+ } else {
       const p = document.createElement('p');
       p.textContent = msg || '';
       msgContainer.appendChild(p);
-    }
+ }
     card.appendChild(msgContainer);
 
     const footer = document.createElement('div');
@@ -264,10 +263,10 @@ function showAlert(msg, opts = {}) {
     card.appendChild(footer);
 
     overlay.appendChild(card);
-  } catch (e) {
+ } catch (e) {
     // As a fallback, use default alert
     alert(msg);
-  }
+ }
 }
 function buildEmailHTML(p, opts = {}) {
   const pill = (label, value) => `
@@ -281,8 +280,8 @@ function buildEmailHTML(p, opts = {}) {
       const item = arr.find(a => ((a.Subcategory || '').trim().toLowerCase() === (lbl || '').trim().toLowerCase()));
       const s = item ? item.Score : 0;
       return Number.isFinite(Number(s)) ? Number(s) : 0;
-    } catch (_) { return 0; }
-  };
+ } catch (_) { return 0; }
+ };
   const row = (label, value, score, comment) => {
     const safeVal = (value || '').toString();
     let sc = Number.isFinite(Number(score)) ? Number(score) : null;
@@ -298,7 +297,7 @@ function buildEmailHTML(p, opts = {}) {
         <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#111827;">${displayVal}</td>
         <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb; color:#6b7280;">${safeComment ? safeComment : ''}</td>
       </tr>`;
-  };
+ };
   const uiRows = Array.from(document.querySelectorAll('.attr-row'));
   const attrs = uiRows.map(r => {
     const labelEl = r.querySelector('.attr-name');
@@ -318,11 +317,11 @@ function buildEmailHTML(p, opts = {}) {
         // We can either extract text again or trust the textarea value if synced on input
         // Since we bind input event, textarea.value should be up-to-date
         comment = commentEl.value;
-      }
-    }
+ }
+ }
 
     return [label, val, score, comment];
-  });
+ });
   const attrRows = attrs.map(([label, val, score, com]) => row(label, val, score, com)).join('');
   const logoHtml = (() => {
     const src = opts.logoUrl || opts.logoDataUri || '';
@@ -333,7 +332,7 @@ function buildEmailHTML(p, opts = {}) {
         <span style="font-weight:800; font-size:20px; color:#111827; letter-spacing:0.02em;">Tempo</span>
       </div>
     </div>`;
-  })();
+ })();
   const header = `
     ${logoHtml}
     <div style="background:#4f46e5; background-image:linear-gradient(135deg,#6366f1,#8b5cf6); padding:22px; border-radius:16px 16px 0 0; color:#fff; text-align:center;">
@@ -399,8 +398,8 @@ function loadConfig() {
         config.restUrl = json.supabase.rest_url;
         config.apiKey = json.supabase.client_api_key;
         config.serviceKey = json.supabase.service_key || null;
-      });
-  } catch (e) { console.error('Failed to load config', e); }
+ });
+ } catch (e) { console.error('Failed to load config', e); }
 }
 
 async function loadDatabaseConfig() {
@@ -412,10 +411,10 @@ async function loadDatabaseConfig() {
     config.apiKey = json.supabase.client_api_key;
     config.serviceKey = json.supabase.service_key || null;
     return true;
-  } catch (err) {
+ } catch (err) {
     console.error('❌ Failed to load database config:', err);
     return false;
-  }
+ }
 }
 
 function authHeaders(opts = {}) {
@@ -430,7 +429,7 @@ function authHeaders(opts = {}) {
     'Authorization': `Bearer ${useBearer}`,
     'Content-Type': 'application/json',
     'Prefer': 'count=exact'
-  };
+ };
 }
 
 // Global attribute helpers accessible across the module
@@ -441,7 +440,7 @@ function findAttrRowByLabel(label) {
     const displayText = nameEl ? (nameEl.textContent || '').trim() : '';
     const dataText = (row.dataset && row.dataset.subcategory ? row.dataset.subcategory : '').trim();
     if (displayText === label || dataText === label) return row;
-  }
+ }
   return null;
 }
 const getAttrComment = (label) => {
@@ -469,18 +468,18 @@ async function blobToDataURI(blob) {
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(blob);
-  });
+ });
 }
 
 function getLogoUrl() {
   try {
     // Allow setting via page script: window.EMAIL_LOGO_URL = 'https://...'
     if (typeof window !== 'undefined' && window.EMAIL_LOGO_URL) return String(window.EMAIL_LOGO_URL);
-  } catch (e) {}
+ } catch (e) {}
   try {
     // Allow via config object if present: config.emailLogoUrl
     if (typeof config !== 'undefined' && config.emailLogoUrl) return String(config.emailLogoUrl);
-  } catch (e) {}
+ } catch (e) {}
   return null;
 }
 
@@ -492,8 +491,8 @@ async function fetchLogoAsDataURI() {
       if (!res.ok) continue;
       const blob = await res.blob();
       return await blobToDataURI(blob);
-    } catch (e) { /* ignore */ }
-  }
+ } catch (e) { /* ignore */ }
+ }
   return null;
 }
 
@@ -506,14 +505,13 @@ async function sendEmail({ html, to, subject, cc, bcc }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to, subject, html, cc, bcc })
-    });
+ });
     if (!res.ok) throw new Error(await res.text());
     return true;
-  } catch (e) {
+ } catch (e) {
     // Log and continue; email is auxiliary
-    console.warn('sendEmail error:', e);
     return false;
-  }
+ }
 }
 
 function totalFromRadios() {
@@ -526,13 +524,12 @@ function totalFromRadios() {
     const no = document.querySelector(`input[name="${name}"][value="No"]:checked`);
     if (yes) total += score;
     if (no && score === 0) anyZeroNo = true;
-  });
+ });
   return anyZeroNo ? 0 : total;
 }
 
 async function previewEmail() {
   try {
-    console.log('attributes loaded', (attributes || []).length);
     // Build payload from current form values (no validation)
     const getSelectVal = (id) => { const el = document.getElementById(id); return el ? (el.value || '') : ''; };
     const getRadioVal = (name) => { const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; };
@@ -547,26 +544,25 @@ async function previewEmail() {
         if (displayText === label || dataText === label) {
           const s = row.querySelector('.attr-score');
           const n = s ? parseInt((s.textContent || '').trim(), 10) : NaN;
-          if (Number.isFinite(n)) { console.log('getAttrScore UI', label, n); return n; }
+          if (Number.isFinite(n)) {  return n; }
           break;
-        }
-      }
+ }
+ }
       // Fallback to attributes dataset
       try {
         const item = (attributes || []).find(a => (a.Subcategory || '').trim() === label);
         const v = item && (item.Score != null ? item.Score : 0);
         const n = parseInt(String(v), 10);
-        console.log('getAttrScore fallback', label, n);
         return Number.isFinite(n) ? n : 0;
-      } catch (e) { return 0; }
-    };
+ } catch (e) { return 0; }
+ };
     const getAttrComment = (label) => {
       const row = findAttrRowByLabel(label);
       const ta = row ? row.querySelector('textarea') : null;
       if (!ta) return '';
       // If RTE is active (textarea hidden), use value as it's synced on input
       return (ta.value || '').trim();
-    };
+ };
     const convId = (document.getElementById('conversationIdInput') || { value: '' }).value.trim();
     const selectedAgentLabel = (function(){ const s = document.getElementById('agentNameSelect'); return s && s.value ? s.selectedOptions[0].textContent.trim() : ''; })();
     const ticketUrl = convId ? `https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/27/0/conversation/${encodeURIComponent(convId)}` : '';
@@ -628,13 +624,7 @@ async function previewEmail() {
       Comments_Documentation: getAttrComment('Documentation'),
       Comments_CRM_Updates: getAttrComment('CRM Updates'),
       Comments_Workflow: getAttrComment('Workflow'),
-    };
-    console.log('Email payload scores', {
-      Interaction_Protocols: payload.Score_Interaction_Protocols,
-      Correctly_Diagnose: payload.Score_Correctly_Diagnose,
-      Responsiveness: payload.Score_Responsiveness,
-      Effectiveness: payload.Score_Effectiveness,
-    });
+ };
     const logoUrl = getLogoUrl();
     const logoDataUri = logoUrl ? null : await fetchLogoAsDataURI();
     const html = buildEmailHTML(payload, { logoDataUri, logoUrl });
@@ -642,17 +632,17 @@ async function previewEmail() {
     const iframe = document.getElementById('emailPreviewIframe');
     if (iframe) iframe.srcdoc = html;
     if (overlay) overlay.style.display = 'flex';
-  } catch (e) {
+ } catch (e) {
     console.error('Failed to render email preview', e);
     showAlert('Failed to render email preview', { title: 'Preview error', type: 'error' });
-  }
+ }
 }
 
 function reset() {
   calibrationOsMode = false;
   ['conversationIdInput'].forEach(id => {
     const el = document.getElementById(id); if (el) { el.value = ''; el.disabled = true; }
-  });
+ });
   const monSelectReset = document.getElementById('monitoringType');
   if (monSelectReset) {
     monSelectReset.disabled = false;
@@ -660,7 +650,7 @@ function reset() {
     monSelectReset.dataset.pasteLocked = 'false';
     monSelectReset.title = '';
     monSelectReset.value = '';
-  }
+ }
   // Clear persisted case so a new Get Case fetches a different one
   try { localStorage.removeItem('os_current_case'); } catch(e) {}
   // Also clear URL params for case persistence
@@ -669,7 +659,7 @@ function reset() {
     u.searchParams.delete('cid');
     u.searchParams.delete('rid');
     window.history.replaceState({}, '', u.origin + u.pathname);
-  } catch(urlErr) { console.warn('OS URL clear failed:', urlErr); }
+ } catch(urlErr) {}
   const agentNameSelectEl = document.getElementById('agentNameSelect');
   if (agentNameSelectEl) agentNameSelectEl.selectedIndex = 0;
   const agentDropdownInputEl = document.getElementById('agentDropdownInput');
@@ -691,8 +681,8 @@ function reset() {
     if (certNoInput) {
       const lbl = certNoInput.closest('label');
       if (lbl) lbl.classList.add('checked');
-    }
-  }
+ }
+ }
   const calibGroup = document.querySelector('.sme-radio-group[data-group="calibration"]');
   if (calibGroup) {
     calibGroup.querySelectorAll('label').forEach(l => l.classList.remove('checked'));
@@ -700,8 +690,8 @@ function reset() {
     if (calibNoInput) {
       const lbl = calibNoInput.closest('label');
       if (lbl) lbl.classList.add('checked');
-    }
-  }
+ }
+ }
 
   // Clear left-side SME/Sales fields (preserve filters used by Get Case)
   ['smeAnswerProvided','smeName','smeFollowingProcess','ticketStatus','monitoringType','interactionRelatedTo']
@@ -750,13 +740,13 @@ async function loadAgents() {
       try {
         const parsed = JSON.parse(s);
         if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
-      } catch (_) {}
+ } catch (_) {}
       return s.replace(/\s*\+\s*/g, ',').split(/[,;|]/).map(v => v.trim()).filter(Boolean);
-    };
+ };
     const hasAnyRole = (value, required) => {
       const roles = normalizeRoles(value).map(r => r.toLowerCase());
       return required.some(r => roles.includes(String(r).toLowerCase()));
-    };
+ };
 
     const urlAll = `${config.restUrl}/users?select=id,Name,email,user_role&order=Name.asc`;
     let res = await fetch(urlAll, { headers: authHeaders() });
@@ -787,8 +777,8 @@ async function loadAgents() {
         opt.textContent = u.name;
         if (u.email) opt.setAttribute('data-email', u.email);
         sel.appendChild(opt);
-      });
-    }
+ });
+ }
 
     function renderDropdown(list) {
       if (!ddList) return;
@@ -804,10 +794,10 @@ async function loadAgents() {
           if (emailInput) emailInput.value = u.email || '';
           if (ddInput) ddInput.value = u.name || '';
           if (ddPanel) ddPanel.hidden = true;
-        });
+ });
         ddList.appendChild(li);
-      });
-    }
+ });
+ }
 
     renderSelect(allAgents);
     renderDropdown(allAgents);
@@ -819,43 +809,43 @@ async function loadAgents() {
       const emailInput = document.getElementById('agentEmailInput');
       if (emailInput) emailInput.value = email;
       if (ddInput) ddInput.value = label;
-    });
+ });
 
     if (ddFilter) {
       const applyFilter = () => {
         const q = ddFilter.value.trim().toLowerCase();
         const filtered = q ? (sel._allAgents || []).filter(a => (a.name||'').toLowerCase().includes(q) || (a.email||'').toLowerCase().includes(q)) : (sel._allAgents || []);
         renderDropdown(filtered);
-      };
+ };
       ddFilter.removeEventListener('input', ddFilter.__applyFilter);
       ddFilter.addEventListener('input', applyFilter);
       ddFilter.__applyFilter = applyFilter;
-    }
+ }
 
     if (ddToggle && ddPanel) {
       ddToggle.addEventListener('click', () => {
         ddPanel.hidden = !ddPanel.hidden;
         if (!ddPanel.hidden && ddFilter) ddFilter.focus();
-      });
-    }
+ });
+ }
 
     if (ddInput && ddPanel) {
       ddInput.addEventListener('click', () => {
         ddPanel.hidden = false;
         if (ddFilter) ddFilter.focus();
-      });
-    }
+ });
+ }
 
     document.addEventListener('click', (e) => {
       if (!ddPanel || ddPanel.hidden) return;
       const dropdown = ddPanel.closest('.agent-dropdown');
       if (dropdown && !dropdown.contains(e.target)) {
         ddPanel.hidden = true;
-      }
-    });
-  } catch (err) {
+ }
+ });
+ } catch (err) {
     console.error('❌ Failed to load agents', err);
-  }
+ }
 }
 
   // T1 SBS Config Sync
@@ -885,19 +875,18 @@ async function loadAgents() {
         ms.disabled = true;
         ms.setAttribute('data-sbs-locked', 'true');
         ms.title = "Monitoring Type is locked. Refresh page to reset.";
-      }
-    } else {
+ }
+ } else {
       input.disabled = true;
-    }
-  }
+ }
+ }
 
   async function syncT1Config() {
     try {
       const url = `${config.restUrl}/T1SBS?id=eq.3&select=sbs_disabled,allowed_users`;
       const res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (!res.ok) {
-        console.warn('Failed to read T1SBS.sbs_disabled');
-      }
+ }
       const rows = await res.json().catch(() => []);
 
       let sbsDisabled = true;
@@ -913,14 +902,14 @@ async function loadAgents() {
         if (record && record.allowed_users !== undefined && record.allowed_users !== null) {
           if (Array.isArray(record.allowed_users)) {
             allowedUsers = record.allowed_users.map(x => String(x));
-          } else {
+ } else {
             allowedUsers = String(record.allowed_users)
               .split(',')
               .map(s => s.trim())
               .filter(s => s.length > 0);
-          }
-        }
-      }
+ }
+ }
+ }
 
       const emailKey = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('userEmail') || localStorage.getItem('user_email') || '';
       const currentEmail = emailKey ? String(emailKey).toLowerCase() : '';
@@ -928,8 +917,8 @@ async function loadAgents() {
       if (allowedUsers.length > 0) {
         if (currentEmail) {
           allowedForUser = allowedUsers.some(e => String(e).toLowerCase() === currentEmail);
-        }
-      }
+ }
+ }
 
       const effectiveDisabled = sbsDisabled || !allowedForUser;
       currentSbsDisabled = effectiveDisabled;
@@ -943,33 +932,33 @@ async function loadAgents() {
       if (icon) {
         const hasValue = (input && input.value && input.value.trim().length > 0);
         icon.style.display = hasValue ? 'inline-flex' : 'none';
-      }
+ }
 
       const monSelect = document.getElementById('monitoringType');
       if (monSelect) {
         if (monSelect.getAttribute('data-sbs-locked') === 'true') {
             monSelect.disabled = true;
             return; 
-        }
+ }
         const isPasteLocked = monSelect.dataset.pasteLocked === 'true';
         
         if (!effectiveDisabled) {
            if (!monSelect.value) monSelect.value = 'SBS';
            // monSelect.disabled = true;
-        } else {
+ } else {
            if (isPasteLocked) {
              if (!monSelect.value) monSelect.value = 'SBS';
              // monSelect.disabled = true;
-           } else {
+ } else {
              monSelect.disabled = false;
-           }
-        }
-      }
+ }
+ }
+ }
 
-    } catch (e) {
+ } catch (e) {
       console.error('Error syncing T1 config', e);
-    }
-  }
+ }
+ }
 
 function focusDateRange() {
   const single = document.getElementById('dateRangeSingle');
@@ -985,7 +974,7 @@ function bindCalendarAndSelectAll() {
   const calIcon = document.getElementById('calendarIcon');
   if (calIcon) {
     calIcon.addEventListener('click', openRangePicker);
-  }
+ }
   const selectAllBtn = document.getElementById('selectAllBtn');
   if (selectAllBtn) selectAllBtn.addEventListener('click', selectAllAttributesYes);
   // Bind single datepicker change to fill hidden From/To
@@ -1005,7 +994,7 @@ function bindCalendarAndSelectAll() {
         toggleGetCaseEnabled();
         // Sync inline calendar selection
         applyInlineSelectionFromInputs();
-      } else {
+ } else {
         // Second pick: set To; ensure chronological order
         const fromD = new Date(from.value);
         const toD = new Date(val);
@@ -1018,22 +1007,22 @@ function bindCalendarAndSelectAll() {
           toggleGetCaseEnabled();
           applyInlineSelectionFromInputs();
           return;
-        }
+ }
         if (toD.getTime() < fromD.getTime()) {
           // Swap to keep From <= To
           to.value = from.value;
           from.value = val;
-        } else {
+ } else {
           to.value = val;
-        }
+ }
         // Reset step for a new cycle
         dateRangePickStep = 0;
         updateDateStatus();
         toggleGetCaseEnabled();
         applyInlineSelectionFromInputs();
-      }
-    });
-  }
+ }
+ });
+ }
 
   // Overlay picker bindings
   bindOverlayPicker();
@@ -1057,7 +1046,7 @@ function bindOverlayPicker() {
     const today = new Date();
     rpAnchorYear = today.getFullYear();
     rpAnchorMonth = today.getMonth();
-  }
+ }
   populateMonthYearSelects(monthL, yearL, rpAnchorMonth, rpAnchorYear);
   const rightMonth = (rpAnchorMonth + 1) % 12;
   const rightYear = rpAnchorMonth === 11 ? rpAnchorYear + 1 : rpAnchorYear;
@@ -1094,11 +1083,11 @@ function openRangePicker() {
     const fd = new Date(f);
     rpAnchorYear = fd.getFullYear();
     rpAnchorMonth = fd.getMonth();
-  } else if (rpAnchorYear === null || rpAnchorMonth === null) {
+ } else if (rpAnchorYear === null || rpAnchorMonth === null) {
     const today = new Date();
     rpAnchorYear = today.getFullYear();
     rpAnchorMonth = today.getMonth();
-  }
+ }
   renderBoth();
 }
 
@@ -1130,7 +1119,7 @@ function setRightExplicit(y, m) {
   if (rightDate.getTime() <= leftDate.getTime()) {
     const adj = new Date(rpAnchorYear, rpAnchorMonth + 1, 1);
     populateMonthYearSelects(document.getElementById('rpMonthRight'), document.getElementById('rpYearRight'), adj.getMonth(), adj.getFullYear());
-  }
+ }
 }
 
 function renderBoth() {
@@ -1170,19 +1159,19 @@ function renderMonthGrid(containerId, year, month) {
     const dayNum = prevMonthDays - firstDayIdx + 1 + i;
     const d = new Date(year, month - 1, dayNum);
     html += rpDayCell(d, true, fromDate, toDate);
-  }
+ }
   // Current
   for (let d = 1; d <= daysInMonth; d++) {
     const dateObj = new Date(year, month, d);
     html += rpDayCell(dateObj, false, fromDate, toDate);
-  }
+ }
   // Trailing to complete rows
   const totalCells = firstDayIdx + daysInMonth;
   const trailing = ((Math.ceil(totalCells / 7) * 7) - totalCells);
   for (let i = 1; i <= trailing; i++) {
     const d = new Date(year, month + 1, i);
     html += rpDayCell(d, true, fromDate, toDate);
-  }
+ }
   cont.innerHTML = html;
   cont.querySelectorAll('.rp-day').forEach(el => {
     el.addEventListener('click', () => {
@@ -1193,30 +1182,30 @@ function renderMonthGrid(containerId, year, month) {
         from.value = iso;
         to.value = '';
         dateRangePickStep = 1;
-      } else {
+ } else {
         const f = new Date(from.value);
         const t = new Date(iso);
         if (isNaN(f.getTime())) {
           from.value = iso;
           to.value = '';
           dateRangePickStep = 1;
-        } else {
+ } else {
           if (t.getTime() < f.getTime()) {
             to.value = from.value;
             from.value = iso;
-          } else {
+ } else {
             to.value = iso;
-          }
+ }
           dateRangePickStep = 0;
-        }
-      }
+ }
+ }
       updateDateStatus();
       toggleGetCaseEnabled();
       renderBoth();
       updatePickerTitle(document.getElementById('rpTitle'));
       updateCollapsedLabel(document.getElementById('rpCollapsedLabel'));
-    });
-  });
+ });
+ });
 }
 
 function rpDayCell(dateObj, otherMonth, fromDate, toDate) {
@@ -1247,11 +1236,11 @@ function updatePickerTitle(el) {
   if (fromVal && toVal) {
     // Keep concise without extra phrasing in title
     el.textContent = `${fromVal} - ${toVal}`;
-  } else if (fromVal) {
+ } else if (fromVal) {
     el.textContent = `${fromVal} - —`;
-  } else {
+ } else {
     el.textContent = '—';
-  }
+ }
 }
 
 function updateCollapsedLabel(el) {
@@ -1261,11 +1250,11 @@ function updateCollapsedLabel(el) {
   if (fromVal && toVal) {
     // Single clean label without prefix
     el.textContent = `${fromVal} - ${toVal}`;
-  } else if (fromVal) {
+ } else if (fromVal) {
     el.textContent = `${fromVal} - —`;
-  } else {
+ } else {
     el.textContent = '';
-  }
+ }
 }
 
 function updateDateStatus() {
@@ -1304,9 +1293,9 @@ async function getCase() {
   if (currentConv) {
     if (typeof showAlert === 'function') {
       showAlert('Please submit the current Case before asking for a new one !');
-    }
+ }
     return;
-  }
+ }
 
   const emptyWidgets = [];
   const team = (document.getElementById('teamSelect')||{value:''}).value;
@@ -1323,9 +1312,9 @@ async function getCase() {
     agentEmail = (opt && opt.getAttribute('data-email')) || '';
     const emailInput = document.getElementById('agentEmailInput');
     if (emailInput && agentEmail) emailInput.value = agentEmail;
-  } else {
+ } else {
     agentEmail = (document.getElementById('agentEmailInput')||{value:''}).value.trim();
-  }
+ }
 
   if (!team) emptyWidgets.push('Select Team');
   if (!dateFrom || !dateTo) emptyWidgets.push('Date Range');
@@ -1334,9 +1323,9 @@ async function getCase() {
     const emptyWidgetNames = emptyWidgets.join(', ');
     if (typeof showAlert === 'function') {
       showAlert(`Please choose the missing: ${emptyWidgetNames}.`);
-    }
+ }
     return;
-  }
+ }
 
   try {
     const channelFromTeam = resolveChannelFromTeam(team);
@@ -1350,46 +1339,37 @@ async function getCase() {
       `&limit=10`;
     if (t) {
       url += `&Channel=eq.${encodeURIComponent(t)}`;
-    }
+ }
     if (excludedFreshworksIds && excludedFreshworksIds.size > 0) {
       const idsList = Array.from(excludedFreshworksIds).join(',');
       url += `&id=not.in.(${idsList})`;
-    }
-    console.log('GetCase URL:', url);
-    console.log('GetCase filters:', { agentEmail, team: `|${t}|`, dateFrom, dateTo, excludedIds: Array.from(excludedFreshworksIds||[]) });
+ }
 
     let res = await fetch(url, { headers: authHeaders() });
-    console.log('GetCase response status (client):', res.status, res.statusText);
-    console.log('GetCase content-range (client):', res.headers ? res.headers.get('Content-Range') : null);
     if (!res.ok) {
       const errText = await res.text();
-      console.warn('GetCase client error body:', errText);
       res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-      console.log('GetCase response status (service):', res.status, res.statusText);
-      console.log('GetCase content-range (service):', res.headers ? res.headers.get('Content-Range') : null);
       if (!res.ok) {
         const svcErr = await res.text();
         console.error('GetCase service error body:', svcErr);
         if (typeof showAlert === 'function') showAlert('Unable to fetch case. Please check filters or login.');
         return;
-      }
-    }
+ }
+ }
 
     const rowsRaw = await res.json();
-    console.log('GetCase raw rows:', rowsRaw);
     let rows = (rowsRaw || []).map(item => {
       const directCid = item.con_Id || '';
       const interaction = item.interaction_id || '';
       const dashPos = interaction.indexOf('-');
       const cid = dashPos > 0 ? interaction.slice(0, dashPos) : interaction;
       return { Conversation_ID: directCid || cid, id: item.id };
-    });
-    console.log('GetCase mapped rows:', rows);
+ });
 
     if (!rows || rows.length === 0) {
       if (typeof showAlert === 'function') showAlert('No conversations found for the selected criteria.');
       return;
-    }
+ }
 
     const item = rows[0];
     const conversationId = item.Conversation_ID || '';
@@ -1401,8 +1381,7 @@ async function getCase() {
     try {
       const persisted = { id: (item.id || ''), conversation_id: conversationId };
       localStorage.setItem('os_current_case', JSON.stringify(persisted));
-      console.log('OS Persisted current case:', persisted);
-    } catch(e) { console.warn('persist current case failed:', e); }
+ } catch(e) {}
     const ticketIconBtn = document.getElementById('ticketIconBtn');
     if (ticketIconBtn) ticketIconBtn.style.display = (conversationId) ? 'inline-flex' : 'none';
     const emailInput = document.getElementById('agentEmailInput');
@@ -1412,7 +1391,7 @@ async function getCase() {
     if (chSel) {
       const mapped = resolveChannelFromTeam(team);
       if (mapped) chSel.value = mapped;
-    }
+ }
 
     // Assign QA & mark QAED
     const auditorEmail = localStorage.getItem('loggedInUserEmail') || '';
@@ -1421,7 +1400,7 @@ async function getCase() {
     if (!coachNameVal) {
       const cachedName = localStorage.getItem('loggedInUserName') || localStorage.getItem('userName') || '';
       coachNameVal = cachedName || auditorEmail || '';
-    }
+ }
     const assignedVal = coachNameVal || auditorEmail || '';
     const targetId = (rowIdInput && rowIdInput.value) ? rowIdInput.value : (item.id || '');
     if (targetId) {
@@ -1431,18 +1410,16 @@ async function getCase() {
         let patchRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(patchBody) });
         if (!patchRes.ok) {
           const pe = await patchRes.text();
-          console.warn('Failed to mark QAED/assign (client):', pe);
           patchRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders({ useServiceKey: true }), body: JSON.stringify(patchBody) });
-          if (!patchRes.ok) console.warn('Failed to mark QAED/assign (service):', await patchRes.text());
+          if (!patchRes.ok) {}
         }
       } catch(pErr) {
-        console.warn('Patch error (mark QAED/assign):', pErr);
       }
     }
-  } catch (error) {
+ } catch (error) {
     console.error('An error occurred during Get Case:', error);
     if (typeof showAlert === 'function') showAlert('Error while fetching case. Please try again.');
-  }
+ }
 }
 
 // Set the taker name input using cached profile or derived from email
@@ -1461,19 +1438,17 @@ async function loadTakerName() {
             .replace(/[0-9]+/g, '')
             .trim()
             .replace(/\b\w/g, (c) => c.toUpperCase());
-        };
+ };
         const name = cachedName || deriveFromEmail(email);
         if (name) {
           takerInput.value = name;
-          console.log('Taker name set to:', name);
-        }
+ }
         resolve(true);
-      }, 300);
-    });
-  } catch (e) {
-    console.warn('loadTakerName failed:', e);
+ }, 300);
+ });
+ } catch (e) {
     return false;
-  }
+ }
 }
 
 // Robust restoration: if only the Freshworks row id is available, fetch it and derive Conversation ID
@@ -1498,12 +1473,12 @@ async function restorePersistedCase() {
       if (rowIdInput && persistedRid) rowIdInput.value = persistedRid;
       if (icon) icon.style.display = 'inline-flex';
       return;
-    }
+ }
     // Otherwise, fetch by row id to derive conversation id
     if (!persistedRid) return;
     const url = `${config.restUrl}/Freshworks?select=interaction_id,id,con_Id,Channel&id=eq.${encodeURIComponent(persistedRid)}&limit=1`;
     let res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-    if (!res.ok) { console.warn('Restore fetch by id failed:', await res.text()); return; }
+    if (!res.ok) {  return; }
     const arr = await res.json();
     if (!Array.isArray(arr) || arr.length === 0) return;
     const item = arr[0];
@@ -1515,10 +1490,8 @@ async function restorePersistedCase() {
     if (convInput) convInput.value = conversationId;
     if (rowIdInput) rowIdInput.value = item.id || persistedRid || '';
     if (icon) icon.style.display = conversationId ? 'inline-flex' : 'none';
-    console.log('OS Restored by id:', { id: item.id, conversation_id: conversationId });
-  } catch (e) {
-    console.warn('restorePersistedCase error:', e);
-  }
+ } catch (e) {
+ }
 }
 
 function validate() {
@@ -1550,12 +1523,12 @@ function validate() {
     const label = nameEl ? (nameEl.textContent || '').trim() : (row.dataset && row.dataset.subcategory ? row.dataset.subcategory : 'Attribute');
     const chk = row.querySelector('input[type="radio"]:checked');
     if (!chk) empties.push(`The ${label} is empty`);
-  });
+ });
   if (empties.length) {
     const msg = empties.map(e => `- ${e}`).join('\n');
     if (typeof showAlert === 'function') showAlert(msg, { title: 'Missing required fields', type: 'warning' });
     return false;
-  }
+ }
   return true;
 }
 
@@ -1567,14 +1540,13 @@ async function checkDuplicate(conversationId) {
     if (res.status === 401 || res.status === 403) {
       // Retry with service key if available to avoid client token issues
       res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-    }
+ }
     if (!res.ok) return false;
     const data = await res.json();
     return Array.isArray(data) && data.length > 0;
-  } catch (e) {
-    console.warn('Duplicate check failed, proceeding without blocking:', e);
+ } catch (e) {
     return false;
-  }
+ }
 }
 
 async function submit() {
@@ -1662,21 +1634,7 @@ async function submit() {
     customer_retained: getSelectVal('customerRetainedSelect') || '',
     date_created: new Date().toISOString().slice(0, 10),
     coaching_delivered: null,
-  };
-  console.log('DEBUG combined mapping', {
-    vEngLang,
-    engagementLangFallback,
-    vEffFcr,
-    effFcrFallback,
-    cEngLang,
-    commentEngLangFallback,
-    cEffFcr,
-    commentEffFcrFallback,
-    payloadEngagement: (vEngLang || engagementLangFallback || ''),
-    payloadEffectiveness: (vEffFcr || effFcrFallback || ''),
-    payloadCommentEngagement: (cEngLang || commentEngLangFallback || ''),
-    payloadCommentEffectiveness: (cEffFcr || commentEffFcrFallback || '')
-  });
+ };
   try {
     const targetTable = isCalibration ? 'calibration_T2_OS_NEW' : 'T2_OS_NEW_2025';
     const url = `${config.restUrl}/${targetTable}`;
@@ -1687,13 +1645,11 @@ async function submit() {
     let res;
     try {
       res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) });
-    } catch (netErr) {
-      console.warn('Primary submit failed (network/aborted), attempting fallback...', netErr);
-    }
+ } catch (netErr) {
+ }
 
     if (!res || !res.ok) {
       const bodyText = res ? await res.text().catch(() => '') : 'Network Error';
-      console.warn('Submit error (client token):', res ? res.status : 'N/A', bodyText);
       
       // Fallback to Service Key for 401/403 or Network Errors (likely CORS/Permissions)
       if (!res || res.status === 401 || res.status === 403) {
@@ -1703,25 +1659,25 @@ async function submit() {
         const resSvc = await fetch(url, { method: 'POST', headers: svcHeaders, body: JSON.stringify(payload) });
         if (!resSvc.ok) throw new Error(await resSvc.text());
         res = resSvc;
-      } else {
+ } else {
         throw new Error(bodyText || 'Unknown submission error');
-      }
-    }
+ }
+ }
 
     // Add logged in email for CC
     payload.loggedInEmail = localStorage.getItem('loggedInUserEmail');
     const emailHtml = buildEmailHTML(payload, { logoDataUri: null, logoUrl: getLogoUrl() });
     const scoreNum = parseFloat(String(payload.Final_Score).replace(/%/g,'')) || 0;
     const status = scoreNum >= 90 ? 'PASS' : 'FAIL';
-    try { await sendEmailSMTP({ html: emailHtml, to: payload.agent_email, cc: payload.loggedInEmail ? [payload.loggedInEmail] : [], subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}` }); } catch (mailErr) { console.warn('Email send failed or not configured:', mailErr); if (typeof showAlert === 'function') showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); }
+    try { await sendEmailSMTP({ html: emailHtml, to: payload.agent_email, cc: payload.loggedInEmail ? [payload.loggedInEmail] : [], subject: `QA Summary: ${payload.Conversation_ID} • ${payload.Final_Score} • ${status}` }); } catch (mailErr) {  if (typeof showAlert === 'function') showAlert('Summary email could not be sent. Your scorecard was saved.', { title: 'Email delivery issue', type: 'warning' }); }
     if (typeof showAlert === 'function') showAlert('Scorecard submitted successfully', { title: 'Submission successful', type: 'success' });
     reset();
     await fetchRecent();
-  } catch (e) {
+ } catch (e) {
     console.error('Failed to submit scorecard', e);
     const msg = (e && (e.message || (typeof e === 'string' ? e : ''))) || 'Unexpected error';
     if (typeof showAlert === 'function') showAlert(`Failed to submit scorecard: ${msg}`, { title: 'Submission failed', type: 'error' });
-  }
+ }
 }
 
 function bindEvents() {
@@ -1740,11 +1696,10 @@ function bindEvents() {
       const agentNameSelect = document.getElementById('agentNameSelect');
       
       if (!agentNameSelect || !agentNameSelect.value) {
-         console.warn('SBS Slack aborted: No agent selected');
          showAlert('Please select an agent first', { type: 'warning' });
          updateConversationIdState();
          return;
-      }
+ }
       
       const agentName = agentNameSelect.selectedOptions[0].textContent.trim();
 
@@ -1763,38 +1718,35 @@ function bindEvents() {
             scorecardType: 'MX T2 OS Scorecard',
             monitoringType: monSelect.value,
             title: (monSelect.value === 'Selected') ? 'Membership Cancellation Started' : 'SBS Started'
-          })
-        });
+ })
+ });
         const raw = await res.text();
         if (!res.ok) {
-          console.warn('SBS Slack failed:', res.status, raw);
           const looksLikeHtml = /^\s*</.test(raw || '');
           const lower = String(raw || '').toLowerCase();
           const isPythonHttpServer501 = res.status === 501 && (lower.includes("unsupported method ('post')") || lower.includes('unsupported method'));
           if (isPythonHttpServer501) {
             showAlert('SBS Slack failed (501). You are running the site using python http.server which cannot handle POST requests. Run the local backend (smtp_server.py on port 8025) and open the site via http://localhost:8020, or use the deployed Vercel app.', { type: 'warning' });
-          } else if (looksLikeHtml) {
+ } else if (looksLikeHtml) {
             showAlert(`SBS Slack failed (${res.status}). Server returned HTML instead of JSON.`, { type: 'warning' });
-          } else {
+ } else {
             showAlert(`SBS Slack failed (${res.status}). ${raw || ''}`.trim(), { type: 'warning' });
-          }
+ }
           return;
-        }
+ }
         let json = null;
         try { json = raw ? JSON.parse(raw) : null; } catch (_) {}
-        console.log('SBS Slack Notification:', json || raw);
 
         // Disable Monitoring Type after successful Slack notification
         if (monSelect) {
            monSelect.disabled = true;
            monSelect.setAttribute('data-sbs-locked', 'true');
            monSelect.title = "Monitoring Type is locked after sending Slack notification. Refresh page to reset.";
-        }
-      } catch (e) {
-        console.warn('Failed to send SBS Slack notification:', e);
+ }
+ } catch (e) {
         showAlert('Failed to send SBS Slack notification. Ensure backend is running.', { type: 'warning' });
-      }
-    };
+ }
+ };
 
     // Listener for Monitoring Type change
     const monSelect = document.getElementById('monitoringType');
@@ -1804,26 +1756,26 @@ function bindEvents() {
            const agent = document.getElementById('agentNameSelect');
            if (!agent || !agent.value) {
                showAlert('Please select an agent first', { type: 'warning' });
-           }
+ }
 
           // conv.disabled = false; // Handled by updateConversationIdState
           // conv.readOnly = false;
           if (conv.value.trim()) {
               clearTimeout(sbsDebounceTimer);
               sbsDebounceTimer = setTimeout(triggerSbsSlack, 1000);
-          }
-        }
+ }
+ }
         updateConversationIdState();
-      });
-    }
+ });
+ }
 
     conv.addEventListener('input', () => {
       const ms = document.getElementById('monitoringType');
       if (ms && (ms.value === 'SBS' || ms.value === 'Selected')) {
         clearTimeout(sbsDebounceTimer);
         sbsDebounceTimer = setTimeout(triggerSbsSlack, 1500);
-      }
-    });
+ }
+ });
 
     // Add paste listener for Monitoring Type lock
     conv.addEventListener('paste', () => {
@@ -1832,16 +1784,16 @@ function bindEvents() {
       if (agentSel && !agentSel.value) {
           showAlert('Please select an agent first', { type: 'warning' });
           return;
-      }
+ }
 
       const monSelect = document.getElementById('monitoringType');
       if (monSelect) {
         if (!monSelect.value) {
           monSelect.value = 'SBS';
           monSelect.dataset.pasteLocked = 'true';
-        }
-      }
-    });
+ }
+ }
+ });
 
     // Unlock paste lock on manual change - Merged into main listener above
     // const msLock = document.getElementById('monitoringType');
@@ -1850,7 +1802,7 @@ function bindEvents() {
     const agentLock = document.getElementById('agentNameSelect');
     if (agentLock) {
       agentLock.addEventListener('change', updateConversationIdState);
-    }
+ }
 
     conv.addEventListener('blur', async () => {
       const dup = await checkDuplicate(conv.value.trim());
@@ -1858,8 +1810,8 @@ function bindEvents() {
       if (notice) notice.style.display = dup ? 'block' : 'none';
     const ticketIconBtnBlur = document.getElementById('ticketIconBtn');
     if (ticketIconBtnBlur) ticketIconBtnBlur.style.display = (conv.value.trim()) ? 'inline-flex' : 'none';
-    });
-  }
+ });
+ }
   const previewBtn = document.getElementById('previewEmailBtn');
   if (previewBtn) previewBtn.addEventListener('click', previewEmail);
   const closePreviewBtn = document.getElementById('emailPreviewCloseBtn');
@@ -1881,11 +1833,11 @@ function bindEvents() {
     const isEmpty = !teamSelect.value;
     teamSelect.classList.toggle('select-empty', isEmpty);
     teamSelect.classList.toggle('select-filled', !isEmpty);
-  };
+ };
   if (teamSelect) {
     applyTeamSelectState();
     teamSelect.addEventListener('change', applyTeamSelectState);
-  }
+ }
 
   // Sync Queue select with Team select
   const queueSelect = document.getElementById('queueSelect');
@@ -1896,29 +1848,29 @@ function bindEvents() {
     const lower = val.toLowerCase();
     if (lower.includes('order support')) {
       queueSelect.value = 'Order Support';
-    } else if (lower.includes('sales')) {
+ } else if (lower.includes('sales')) {
       queueSelect.value = 'Sales';
-    }
-  };
+ }
+ };
   const syncTeamFromQueue = () => {
     if (!teamSelect || !queueSelect) return;
     const q = queueSelect.value || '';
     if (!q) return;
     if (q === 'Order Support') {
       teamSelect.value = 'T2 Order Support';
-    } else if (q === 'Sales') {
+ } else if (q === 'Sales') {
       teamSelect.value = 'Sales';
-    }
+ }
     applyTeamSelectState();
-  };
+ };
   if (queueSelect) {
     queueSelect.addEventListener('change', syncTeamFromQueue);
     // initialize queue from current team
     syncQueueFromTeam();
-  }
+ }
   if (teamSelect && queueSelect) {
     teamSelect.addEventListener('change', syncQueueFromTeam);
-  }
+ }
 
   const ticketIconBtnClick = document.getElementById('ticketIconBtn');
   if (ticketIconBtnClick) ticketIconBtnClick.addEventListener('click', () => {
@@ -1927,19 +1879,18 @@ function bindEvents() {
     const base = 'https://tempo-support.myfreshworks.com/crm/messaging/a/770177527280330/inbox/27/0/conversation/';
     const url = `${base}${encodeURIComponent(convId)}`;
     window.open(url, '_blank');
-  });
+ });
 
   const getCaseBtn = document.getElementById('getCaseBtn');
   if (getCaseBtn) {
     const handler = (typeof getCase === 'function') ? getCase : () => {
       if (typeof showAlert === 'function') {
         showAlert('Get Case is currently unavailable.', { title: 'Action unavailable', type: 'warning' });
-      } else {
-        console.warn('Get Case is currently unavailable.');
-      }
-    };
+ } else {
+ }
+ };
     getCaseBtn.addEventListener('click', handler);
-  }
+ }
   const skipBtn = document.getElementById('skipBtn');
   const skipModal = document.getElementById('skipModalOverlay');
   const skipCancel = document.getElementById('skipModalCancelBtn');
@@ -1954,9 +1905,9 @@ function bindEvents() {
     const remain = remainingSkipNext(userKey);
     if (skipNextCounterBadge) {
       skipNextCounterBadge.textContent = allowed ? `Remaining: ${remain}/5` : `Available 17:00–06:00`;
-    }
+ }
     if (skipActionNext) skipActionNext.disabled = !allowed;
-  };
+ };
   const updateSkipReasonVisibility = () => {
     const sel = document.querySelector('input[name="skipAction"]:checked');
     const isQAED = sel ? sel.value === 'qaed' : true;
@@ -1964,8 +1915,8 @@ function bindEvents() {
       const wrapper = skipReason.closest('.field');
       if (wrapper) wrapper.style.display = isQAED ? '' : 'none';
       skipReason.disabled = !isQAED;
-    }
-  };
+ }
+ };
   if (skipActionQAED) skipActionQAED.addEventListener('change', updateSkipReasonVisibility);
   if (skipActionNext) skipActionNext.addEventListener('change', updateSkipReasonVisibility);
   const openSkipModal = () => { if (skipModal) skipModal.style.display = 'flex'; };
@@ -1979,7 +1930,7 @@ function bindEvents() {
     updateSkipReasonVisibility();
     updateSkipNextBadge();
     openSkipModal();
-  });
+ });
   if (skipCancel) skipCancel.addEventListener('click', () => { closeSkipModal(); });
   if (skipConfirm) skipConfirm.addEventListener('click', async () => {
     try {
@@ -1997,43 +1948,39 @@ function bindEvents() {
         const patchBody = { HAPPIO_Status: 'QAED', Skipped_by: auditorName, Skip_reason: reason };
         let pRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(patchBody) });
         if (!pRes.ok) {
-          console.warn('Skip patch failed (client):', await pRes.text());
           pRes = await fetch(patchUrl, { method: 'PATCH', headers: authHeaders({ useServiceKey: true }), body: JSON.stringify(patchBody) });
           if (!pRes.ok) {
-            console.warn('Skip patch failed (service):', await pRes.text());
             showAlert('Failed to skip conversation.');
             return;
-          }
-        }
-      } else {
+ }
+ }
+ } else {
         // Move to next case with time-window and usage limit; no Freshworks updates
         const userKey = localStorage.getItem('loggedInUserEmail') || localStorage.getItem('userEmail') || localStorage.getItem('loggedInUserName') || '';
         const { allowed } = computeSkipWindow();
         if (!allowed) {
           showAlert('This skip option is available daily from 17:00 to 06:00. Please try again starting 17:00.');
           return;
-        }
+ }
         const { used } = getSkipNextUsed(userKey);
         if (used >= SKIP_NEXT_LIMIT) {
           showAlert('You have used all 5 skips. Please try again tomorrow starting 17:00.');
           return;
-        }
+ }
         // Clear HAPPIO_Status (and assigned_qa) so the case re-enters the queue for others
         const clearUrl = `${config.restUrl}/Freshworks?id=eq.${encodeURIComponent(storedId)}`;
         const clearBody = { HAPPIO_Status: null, assigned_qa: null };
         let cRes = await fetch(clearUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(clearBody) });
         if (!cRes.ok) {
-          console.warn('Clear status failed (client):', await cRes.text());
           cRes = await fetch(clearUrl, { method: 'PATCH', headers: authHeaders({ useServiceKey: true }), body: JSON.stringify(clearBody) });
           if (!cRes.ok) {
-            console.warn('Clear status failed (service):', await cRes.text());
             showAlert('Failed to clear conversation status for skip.');
             return;
-          }
-        }
+ }
+ }
         incSkipNextUsed(userKey);
-        try { excludedFreshworksIds.add(storedId); } catch(e) { console.warn('Failed to track excluded id', e); }
-      }
+        try { excludedFreshworksIds.add(storedId); } catch(e) {}
+ }
       // Clear current conversation and fetch the next one
       document.getElementById('conversationIdInput').value = '';
       document.getElementById('freshworksRowId').value = '';
@@ -2042,15 +1989,14 @@ function bindEvents() {
       updateSkipNextBadge();
       closeSkipModal();
       await getCase();
-    } catch(e) {
-      console.warn('Skip confirm error:', e);
+ } catch(e) {
       showAlert('Unexpected error during skip.');
-    }
-  });
+ }
+ });
   const calibrationBtn = document.getElementById('calibrationBtn');
   if (calibrationBtn) calibrationBtn.addEventListener('click', () => {
     loadOsCalibrationCase();
-  });
+ });
 
   // Custom inline agent dropdown interactions
   const ddRoot = document.querySelector('.agent-dropdown');
@@ -2067,18 +2013,18 @@ function bindEvents() {
       const evt = new Event('input');
       ddFilter.dispatchEvent(evt);
       ddFilter.focus();
-    }
-  };
+ }
+ };
   const closePanel = () => { if (ddPanel) ddPanel.hidden = true; };
   if (ddInput) ddInput.addEventListener('click', openPanel);
   if (ddToggle) ddToggle.addEventListener('click', () => {
     if (!ddPanel) return;
     ddPanel.hidden ? openPanel() : closePanel();
-  });
+ });
   document.addEventListener('click', (e) => {
     if (!ddRoot) return;
     if (!ddRoot.contains(e.target)) closePanel();
-  });
+ });
 }
 
 async function loadOsCalibrationCase() {
@@ -2089,64 +2035,60 @@ async function loadOsCalibrationCase() {
     if (!queueValue) {
       if (typeof showAlert === 'function') {
         showAlert('Please select a Queue first.');
-      } else {
+ } else {
         alert('Please select a Queue first.');
-      }
+ }
       return;
-    }
+ }
 
     calibrationOsMode = false;
     const base = `${config.restUrl}/Assigning_Calibration`;
     const select = 'select=Conversation_Id,day,Score_card,id,type';
     const scorecard = 'MX-T2_OS Scorecard';
     const url = `${base}?${select}&Score_card=eq.${encodeURIComponent(scorecard)}&type=eq.${encodeURIComponent(queueValue)}&order=day.desc&limit=1`;
-    console.log('OS Calibration API request', url);
     let res = await fetch(url, { headers: authHeaders() });
     let data = [];
     if (res.ok) {
       data = await res.json();
-    } else {
+ } else {
       const errText = await res.text();
-      console.warn('OS Calibration fetch error (client)', errText);
-    }
+ }
     if ((!Array.isArray(data) || data.length === 0) && config.serviceKey) {
-      console.log('OS Calibration retrying with service key');
       res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (!res.ok) {
         const svcErr = await res.text();
         console.error('OS Calibration fetch error (service)', svcErr);
         if (typeof showAlert === 'function') showAlert('Unable to fetch calibration case. Please try again.');
         return;
-      }
+ }
       data = await res.json();
-    }
-    console.log('OS Calibration API rows', data);
+ }
     if (!Array.isArray(data) || data.length === 0) {
       if (typeof showAlert === 'function') showAlert('No calibration cases found for MX-T2_OS Scorecard.');
       calibrationOsMode = false;
       return;
-    }
+ }
     const row = data[0] || {};
     const convId = (row.Conversation_Id || row.conversation_id || '').toString().trim();
     if (!convId) {
       if (typeof showAlert === 'function') showAlert('Calibration case found but Conversation ID is empty.');
       calibrationOsMode = false;
       return;
-    }
+ }
     const convInput = document.getElementById('conversationIdInput');
     if (convInput) {
       convInput.value = convId;
       convInput.setAttribute('value', convId);
       convInput.dispatchEvent(new Event('input'));
       convInput.dispatchEvent(new Event('change'));
-    }
+ }
     const icon = document.getElementById('ticketIconBtn');
     if (icon && convId) icon.style.display = 'inline-flex';
     const calibYes = document.querySelector('input[name="calibration"][value="Yes"]');
     if (calibYes) {
       calibYes.checked = true;
       calibYes.dispatchEvent(new Event('change', { bubbles: true }));
-    }
+ }
     const agentSel = document.getElementById('agentNameSelect');
     const agentDdInput = document.getElementById('agentDropdownInput');
     if (agentSel) {
@@ -2157,8 +2099,8 @@ async function loadOsCalibrationCase() {
         if (label === 'Heba El Sobky') {
           targetOption = opt;
           break;
-        }
-      }
+ }
+ }
       if (targetOption) {
         agentSel.value = targetOption.value;
         const email = targetOption.getAttribute('data-email') || '';
@@ -2166,14 +2108,14 @@ async function loadOsCalibrationCase() {
         if (emailInput) emailInput.value = email;
         if (agentDdInput) agentDdInput.value = 'Heba El Sobky';
         agentSel.dispatchEvent(new Event('change'));
-      }
-    }
+ }
+ }
     calibrationOsMode = true;
     if (typeof showAlert === 'function') showAlert(`Calibration conversation loaded: ${convId}`, { type: 'success' });
-  } catch (err) {
+ } catch (err) {
     console.error('Failed to load OS calibration case', err);
     if (typeof showAlert === 'function') showAlert('Failed to load calibration case. Please try again.');
-  }
+ }
 }
 
 // Initialize searchable dropdown for Interaction Related To
@@ -2191,7 +2133,7 @@ async function initInteractionDropdown() {
           try {
             const response = await fetch(`${config.restUrl}/intRltdTo?select=interactionRelateTo`, {
               headers: authHeaders({ useServiceKey: true })
-            });
+ });
             
             if (response.ok) {
       const data = await response.json();
@@ -2212,28 +2154,26 @@ async function initInteractionDropdown() {
           el.value = opt;
           el.textContent = opt;
           sel.appendChild(el);
-      });
+ });
 
       // Restore value if it exists in new options
       if (options.includes(currentValue)) {
           sel.value = currentValue;
-      }
+ }
 
       sel._allTopics = options;
-    } else {
-      console.warn('Failed to fetch interaction related to values, using static options');
+ } else {
       const options = Array.from(sel.querySelectorAll('option'))
         .map(o => (o.textContent||'').trim())
         .filter(t => t && t !== 'Select option');
       sel._allTopics = options;
-    }
-  } catch (error) {
-    console.warn('Error in initInteractionDropdown, using static options:', error);
+ }
+ } catch (error) {
     const options = Array.from(sel.querySelectorAll('option'))
       .map(o => (o.textContent||'').trim())
       .filter(t => t && t !== 'Select option');
     sel._allTopics = options;
-  }
+ }
 
   function renderList(list) {
     ddList.innerHTML = '';
@@ -2245,17 +2185,17 @@ async function initInteractionDropdown() {
         ddInput.value = label;
         sel.value = label;
         ddPanel.hidden = true;
-      });
+ });
       ddList.appendChild(li);
-    });
-  }
+ });
+ }
   renderList(sel._allTopics || []);
 
   // Keep input in sync when select changes programmatically
   sel.addEventListener('change', () => {
     const o = sel.selectedOptions[0];
     ddInput.value = o ? (o.textContent||'') : '';
-  });
+ });
 
   // Filter behavior
   if (ddFilter) {
@@ -2264,11 +2204,11 @@ async function initInteractionDropdown() {
       const all = sel._allTopics || [];
       const filtered = q ? all.filter(t => t.toLowerCase().includes(q)) : all;
       renderList(filtered);
-    };
+ };
     ddFilter.removeEventListener('input', ddFilter.__applyFilter);
     ddFilter.addEventListener('input', applyFilter);
     ddFilter.__applyFilter = applyFilter;
-  }
+ }
 
   // Open/close interactions panel
   const openPanel = () => {
@@ -2278,8 +2218,8 @@ async function initInteractionDropdown() {
       const evt = new Event('input');
       ddFilter.dispatchEvent(evt);
       ddFilter.focus();
-    }
-  };
+ }
+ };
   const closePanel = () => { ddPanel.hidden = true; };
   ddInput.addEventListener('focus', openPanel);
   ddInput.addEventListener('click', openPanel);
@@ -2287,7 +2227,7 @@ async function initInteractionDropdown() {
   document.addEventListener('click', (e) => {
     if (!ddRoot) return;
     if (!ddRoot.contains(e.target)) closePanel();
-  });
+ });
 }
 
 // Size SME fields to match their label width (except interaction and comment textareas)
@@ -2314,11 +2254,10 @@ function initSmeFieldWidths() {
         field.style.width = width + 'px';
         const control = field.querySelector('select, input');
         if (control) control.style.width = '100%';
-      }
-    });
-  } catch(e) {
-    console.warn('initSmeFieldWidths error:', e);
-  }
+ }
+ });
+ } catch(e) {
+ }
 }
 
 // Highlight selected SME radio labels consistently (fallback for browsers without :has)
@@ -2331,18 +2270,17 @@ function initSmeRadioHighlight() {
         const selected = group.querySelector('input[type="radio"]:checked');
         const lbl = selected ? selected.closest('label') : null;
         if (lbl) lbl.classList.add('checked');
-      };
+ };
       // Initialize current state
       update();
       // Bind update on interactions
       group.querySelectorAll('input[type="radio"]').forEach(input => {
         input.addEventListener('change', update);
         input.addEventListener('click', update);
-      });
-    });
-  } catch(e) {
-    console.warn('initSmeRadioHighlight error:', e);
-  }
+ });
+ });
+ } catch(e) {
+ }
 }
 
 function mapSubcategoryToGroup(subcat) {
@@ -2356,18 +2294,18 @@ function orderAttributes(list) {
   (list || []).forEach(item => {
     const g = mapSubcategoryToGroup(item.Subcategory);
     groups[g].push(item);
-  });
+ });
   const sortByOrder = (arr, order) => arr.sort((a,b) => {
     const ia = order.indexOf(a.Subcategory);
     const ib = order.indexOf(b.Subcategory);
     const sa = ia === -1 ? 999 : ia;
     const sb = ib === -1 ? 999 : ib;
     return sa - sb;
-  });
+ });
   return {
     Customer: sortByOrder(groups.Customer, ATTR_ORDER.Customer),
     Process: sortByOrder(groups.Process, ATTR_ORDER.Process)
-  };
+ };
 }
 
 function buildAttrRow(item, idx) {
@@ -2437,7 +2375,7 @@ function buildAttrRow(item, idx) {
   const { container: rteContainer, editor: rteEditor } = createRTEComponent('Add context for this attribute...');
   rteEditor.addEventListener('input', () => {
     commentArea.value = extractTextFromRTE(rteEditor);
-  });
+ });
   
   commentWrap.appendChild(commentLabel);
   commentWrap.appendChild(rteContainer);
@@ -2469,15 +2407,14 @@ async function fetchAttributes() {
     let res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) {
       const errText = await res.text();
-      console.warn('Failed to fetch New_SC_Attributes via client, retrying with service key...', errText);
       res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
-    }
+ }
     if (!res.ok) throw new Error(await res.text());
     attributes = await res.json();
-  } catch (err) {
+ } catch (err) {
     console.error('Failed to fetch New_SC_Attributes', err);
     attributes = [];
-  }
+ }
 }
 
 function renderAttributes() {
@@ -2491,7 +2428,7 @@ function renderAttributes() {
     msg.textContent = 'No attributes found or failed to load';
     if (customerEl) customerEl.appendChild(msg);
     return;
-  }
+ }
 
   const grouped = orderAttributes(attributes);
   grouped.Customer.forEach((item, idx) => { if (customerEl) customerEl.appendChild(buildAttrRow(item, idx)); });
@@ -2512,7 +2449,7 @@ function updateAttrSubtotal() {
     const no = document.querySelector(`input[name="${name}"][value="No"]:checked`);
     if (yes) total += score;
     if (no && score === 0) anyZeroNo = true;
-  });
+ });
   const finalScore = anyZeroNo ? 0 : total;
   subtotalEl.textContent = `Final Score: ${finalScore}%`;
   // Ensure styling remains correct as radios change
@@ -2526,10 +2463,9 @@ function applyZeroStyles() {
       const n = Number(txt);
       if (Number.isFinite(n) && n === 0) el.classList.add('zero');
       else el.classList.remove('zero');
-    });
-  } catch (e) {
-    console.warn('applyZeroStyles error:', e);
-  }
+ });
+ } catch (e) {
+ }
 }
 
 function selectAllAttributesYes() {
@@ -2540,8 +2476,8 @@ function selectAllAttributesYes() {
       yes.checked = true;
       const comment = document.getElementById(`attr_comment_${item.ID || idx}`);
       if (comment && comment.parentElement) comment.parentElement.style.display = 'block';
-    }
-  });
+ }
+ });
   updateAttrSubtotal();
 }
 
@@ -2556,27 +2492,24 @@ function resetAttributesUI() {
     
     const cw = row.querySelector('.attr-comment');
     if (cw) cw.style.display = 'none';
-  });
+ });
   updateAttrSubtotal();
 }
 
 return {
   init: async function() {
-    console.log('DEBUG init - Function called');
     // Load database configuration first
     try {
       await loadDatabaseConfig();
-      console.log('DEBUG init - Database config loaded, config:', config);
-    } catch (e) {
+ } catch (e) {
       console.error('Database config load failed:', e);
       return;
-    }
+ }
     // Ensure event bindings run even if config fails to load
     try {
       await loadConfig();
-    } catch (e) {
-      console.warn('Config load failed; continuing with limited functionality.', e);
-    }
+ } catch (e) {
+ }
     bindEvents();
     bindCalendarAndSelectAll();
     // Restore current case early removed
@@ -2605,9 +2538,8 @@ return {
     // Set taker name from logged-in user
     try { 
       await loadTakerName(); 
-    } catch(e) { 
-      console.warn('loadTakerName failed:', e); 
-    }
+ } catch(e) { 
+ }
     // Load agents for dropdown and wire auto-fill
     await loadAgents();
     // Initialize searchable Interaction Related To dropdown
@@ -2628,11 +2560,10 @@ return {
       if (icon && input) {
         const hasValue = (input.value || '').trim().length > 0;
         icon.style.display = hasValue ? 'inline-flex' : 'none';
-        console.log('OS Icon sync after init; hasValue=', hasValue, 'value=', input.value);
-      }
-    } catch(e) { console.warn('OS icon sync failed:', e); }
+ }
+ } catch(e) {}
     await fetchRecent();
-  }
+ }
 };
 
 async function fetchRecent() {
@@ -2641,15 +2572,14 @@ async function fetchRecent() {
     let res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) {
       const errText = await res.text();
-      console.warn('Recent submissions fetch error (client):', errText);
       // Fallback: try with service key in case RLS blocks anon/client
       res = await fetch(url, { headers: authHeaders({ useServiceKey: true }) });
       if (!res.ok) {
         const svcErr = await res.text();
         console.error('Recent submissions fetch error (service):', svcErr);
         throw new Error(svcErr);
-      }
-    }
+ }
+ }
     const rows = await res.json();
     const tbody = document.querySelector('#recentTable tbody');
     tbody.innerHTML = '';
@@ -2663,10 +2593,10 @@ async function fetchRecent() {
         <td>${(r.created_at ?? r.Created_At ?? '').toString().replace('T',' ').replace('Z','')}</td>
       `;
       tbody.appendChild(tr);
-    });
-  } catch (err) {
+ });
+ } catch (err) {
     console.error('Failed to load recent submissions', err);
-  }
+ }
 }
 })();
 

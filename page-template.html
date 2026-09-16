@@ -10,7 +10,7 @@
         /* Page-specific styles can go here */
         .page-content {
             padding: 20px;
-        }
+ }
         
         .page-title {
             font-size: 24px;
@@ -18,7 +18,7 @@
             color: var(--text-primary);
             margin-bottom: 20px;
             text-align: center;
-        }
+ }
     </style>
 </head>
 <body>
@@ -50,16 +50,14 @@
     <script>
         // Page-specific JavaScript
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded with global theme system');
             
             // Check authentication
             const token = localStorage.getItem('login_token');
             if (!token) {
-                console.log('No authentication token found, redirecting to login');
                 window.location.href = '/login.html';
                 return;
-            }
-        });
+ }
+ });
     </script>
 </body>
 </html>
