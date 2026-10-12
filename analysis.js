@@ -75,6 +75,7 @@
     datasetView: 'combined',
     activeTab: 'tickets',
     quickFilter: 'all',
+      teamTableSearch: '',
     filters: {
       search: '',
       datePreset: 'all',
@@ -518,12 +519,20 @@
     }
   }
 
-  function getDatasetScopedRows(includeDatasetView = true) {
+    function isAgentMode() {
+      return state.teamFilter === 'all';
+    }
+
+    function isTeamMode() {
+      return state.teamFilter === 'team';
+    }
+
+    function getDatasetScopedRows(includeDatasetView = true) {
     let rows = state.rows.filter((row) => !state.deletedRowIds.has(row.rowId));
 
-    if (state.teamFilter !== 'all') {
+      if (state.teamFilter === 't1' || state.teamFilter === 't2os') {
       rows = rows.filter((row) => row.datasetKey === state.teamFilter);
-    } else if (state.activeAgent) {
+      } else if (isAgentMode() && state.activeAgent) {
       rows = rows.filter((row) => row.agent.toLowerCase() === state.activeAgent.toLowerCase());
     }
 
@@ -803,6 +812,57 @@
     }));
   }
 
+    function buildTeamScoreRows(rows) {
+      const grouped = new Map();
+
+      rows.forEach((row) => {
+        const key = row.agent.toLowerCase();
+        const entry = grouped.get(key) || {
+          agent: row.agent,
+          t1Scores: [],
+          t2osScores: [],
+          allScores: []
+        };
+
+        entry.allScores.push(row.score);
+        if (row.datasetKey === 't1') entry.t1Scores.push(row.score);
+        if (row.datasetKey === 't2os') entry.t2osScores.push(row.score);
+        grouped.set(key, entry);
+      });
+
+      const average = (scores) => {
+        if (!scores.length) return null;
+        return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+      };
+
+      return Array.from(grouped.values())
+        .map((entry) => ({
+          agent: entry.agent,
+          t1Score: average(entry.t1Scores),
+          t2osScore: average(entry.t2osScores),
+          overallScore: average(entry.allScores)
+        }))
+        .sort((a, b) => {
+          const diff = (b.overallScore || 0) - (a.overallScore || 0);
+          if (diff !== 0) return diff;
+          return a.agent.localeCompare(b.agent);
+        });
+    }
+
+    function filterTeamScoreRows(rows) {
+      const needle = String(state.teamTableSearch || '').trim().toLowerCase();
+      if (!needle) return rows;
+      return rows.filter((row) => {
+        const haystack = [
+          row.agent,
+          Number.isFinite(row.t1Score) ? formatPercent(row.t1Score) : '',
+          Number.isFinite(row.t2osScore) ? formatPercent(row.t2osScore) : '',
+          Number.isFinite(row.overallScore) ? formatPercent(row.overallScore) : ''
+        ].join(' ').toLowerCase();
+        return haystack.includes(needle);
+      });
+    }
+
   function buildCopySummary(rows) {
     const lines = [];
     rows.forEach((row) => {
@@ -884,28 +944,30 @@
     const breakdown = computeBreakdown(comparisonRows);
     const frequency = buildErrorFrequency(filteredRows);
     const coaching = buildCoachingGroups(filteredRows);
-    const filterOptions = getFilterOptionSets();
-    const currentAgentRow = state.rows.find((row) => row.agent.toLowerCase() === state.activeAgent.toLowerCase()) || null;
-    const displayTitle = state.teamFilter === 'all'
-      ? (state.activeAgent || 'Select an agent')
-      : (state.teamFilter === 't1' ? 'MX T1 Team Performance' : 'MX T2 OS Team Performance');
-    const displaySubtitle = state.teamFilter === 'all'
-      ? 'QA Error Tracking & Attribute Feedback Dashboard'
-      : 'Team-level QA Error Tracking & Attribute Feedback Dashboard';
+      const filterOptions = getFilterOptionSets();
+      const currentAgentRow = state.rows.find((row) => row.agent.toLowerCase() === state.activeAgent.toLowerCase()) || null;
+      const teamScoreRows = isTeamMode() ? buildTeamScoreRows(comparisonRows) : [];
+      const visibleTeamScoreCount = isTeamMode() ? filterTeamScoreRows(teamScoreRows).length : 0;
+      const displayTitle = isAgentMode()
+        ? (state.activeAgent || 'Select an agent')
+        : (isTeamMode() ? 'Team Performance Overview' : (state.teamFilter === 't1' ? 'MX T1 Team Performance' : 'MX T2 OS Team Performance'));
+      const displaySubtitle = isAgentMode()
+        ? 'QA Error Tracking & Attribute Feedback Dashboard'
+        : 'Team-level QA Error Tracking & Attribute Feedback Dashboard';
 
     root.innerHTML = `
       <section class="analysis-card p-6 sm:p-8">
         <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div class="flex min-w-0 items-start gap-4">
             <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-xl font-extrabold text-white shadow-lg shadow-indigo-500/25">
-              ${escapeHtml(state.teamFilter === 'all' ? initialsFor(state.activeAgent) : 'TM')}
+                ${escapeHtml(isAgentMode() ? initialsFor(state.activeAgent) : 'TM')}
             </div>
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
                 <h1 class="truncate text-2xl font-extrabold text-[var(--text-primary)]">${escapeHtml(displayTitle)}</h1>
-                <span class="analysis-chip analysis-chip-active">${state.teamFilter === 'all' ? 'Target Agent' : 'Team View'}</span>
+                  <span class="analysis-chip analysis-chip-active">${escapeHtml(isAgentMode() ? 'Target Agent' : 'Team View')}</span>
               </div>
-              <div class="mt-1 text-sm text-indigo-300">${escapeHtml(state.teamFilter === 'all' ? (currentAgentRow?.agentEmail || 'No direct email found in the current filtered data') : 'Showing all evaluations for the selected team')}</div>
+                <div class="mt-1 text-sm text-indigo-300">${escapeHtml(isAgentMode() ? (currentAgentRow?.agentEmail || 'No direct email found in the current filtered data') : 'Showing all evaluations for the selected team')}</div>
               <p class="analysis-muted mt-2 text-sm">${escapeHtml(displaySubtitle)}</p>
             </div>
           </div>
@@ -913,7 +975,7 @@
             <div class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,220px)_auto_auto]">
               <label class="block">
                 <span class="mb-2 block text-xs font-bold uppercase tracking-[0.18em] analysis-muted">Agent Spotlight</span>
-                <select id="agentSelect" class="analysis-select">
+                  <select id="agentSelect" class="analysis-select" ${isTeamMode() ? 'disabled' : ''}>
                   ${state.availableAgents.map((agent) => `<option value="${escapeHtml(agent)}" ${agent === state.activeAgent ? 'selected' : ''}>${escapeHtml(agent)}</option>`).join('')}
                 </select>
               </label>
@@ -921,6 +983,7 @@
                 <span class="mb-2 block text-xs font-bold uppercase tracking-[0.18em] analysis-muted">Team Performance</span>
                 <select id="teamFilterSelect" class="analysis-select">
                   <option value="all" ${state.teamFilter === 'all' ? 'selected' : ''}>Agent</option>
+                    <option value="team" ${state.teamFilter === 'team' ? 'selected' : ''}>Team</option>
                   <option value="t1" ${state.teamFilter === 't1' ? 'selected' : ''}>MX T1</option>
                   <option value="t2os" ${state.teamFilter === 't2os' ? 'selected' : ''}>MX T2 OS</option>
                 </select>
@@ -942,7 +1005,7 @@
         <div class="xl:h-full">
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:h-full">
             <div class="md:col-span-2">
-              ${renderTotalEvaluatedCard(kpis.totalEvaluated, kpis.channelBreakdown, state.teamFilter)}
+                ${renderTotalEvaluatedCard(kpis.totalEvaluated, kpis.channelBreakdown, isTeamMode() ? 'all' : state.teamFilter)}
             </div>
             <div class="md:col-span-2">
               ${renderCompactFailedAttributesCard(kpis.failedAttributes)}
@@ -978,8 +1041,9 @@
         <div class="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
           ${renderBreakdownCard('combined', 'Combined Score', breakdown.combined, state.datasetView === 'combined')}
           ${renderBreakdownCard('t1', 'T1 Score', breakdown.t1, state.datasetView === 't1')}
-          ${renderBreakdownCard('t2os', 'T2 OS Score', breakdown.t2os, state.datasetView === 't2os')}
+            ${renderBreakdownCard('t2os', 'T2 OS Score', breakdown.t2os, state.datasetView === 't2os')}
         </div>
+          ${isTeamMode() ? renderTeamScoreTable(teamScoreRows, visibleTeamScoreCount) : ''}
       </section>
 
       <section class="analysis-card p-6">
@@ -1065,7 +1129,7 @@
       </section>
     `;
 
-    bindRenderedEvents(filteredRows);
+      bindRenderedEvents(filteredRows);
     renderIcons();
   }
 
@@ -1223,6 +1287,149 @@
     return `<option value="${value}" ${current === value ? 'selected' : ''}>${escapeHtml(label)}</option>`;
   }
 
+    function renderScoreCell(value) {
+      if (!Number.isFinite(value)) {
+        return '<span class="analysis-muted">-</span>';
+      }
+      return escapeHtml(formatPercent(value));
+    }
+
+    function renderTeamScoreTable(rows, visibleRows = rows.length) {
+      return `
+        <div class="mt-5 team-score-shell">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-[var(--text-primary)]">Agent Score Table</h3>
+              <p class="analysis-muted mt-1 text-sm">Average score per agent across the current team-level filter set.</p>
+            </div>
+            <div class="team-score-toolbar">
+              <label class="team-score-search">
+                <span class="sr-only">Search team score table</span>
+                <input id="teamScoreSearchInput" class="analysis-input" placeholder="Search agent or score..." value="${escapeHtml(state.teamTableSearch)}" />
+              </label>
+              <label class="team-score-export">
+                <span class="sr-only">Export team score table</span>
+                <select id="teamScoreExportSelect" class="analysis-select">
+                  <option value="">Export</option>
+                  <option value="csv">CSV</option>
+                  <option value="xlsx">XLSX</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <span id="teamScoreVisibleCount" class="analysis-chip">${visibleRows} visible</span>
+            <span id="teamScoreTotalCount" class="analysis-chip">${rows.length} total</span>
+          </div>
+          <div class="team-score-table-wrap">
+            <table class="team-score-table">
+              <thead>
+                <tr>
+                  <th>Name of the agent</th>
+                  <th>T1 Score</th>
+                  <th>T2 OS Score</th>
+                  <th>Overall Score</th>
+                </tr>
+              </thead>
+              <tbody id="teamScoreTableBody">
+                ${rows.length ? rows.map((row) => `
+                  <tr data-team-score-row data-search-text="${escapeHtml([
+                    row.agent,
+                    Number.isFinite(row.t1Score) ? formatPercent(row.t1Score) : '',
+                    Number.isFinite(row.t2osScore) ? formatPercent(row.t2osScore) : '',
+                    Number.isFinite(row.overallScore) ? formatPercent(row.overallScore) : ''
+                  ].join(' ').toLowerCase())}">
+                    <td class="team-score-agent-cell">${escapeHtml(row.agent)}</td>
+                    <td>${renderScoreCell(row.t1Score)}</td>
+                    <td>${renderScoreCell(row.t2osScore)}</td>
+                    <td><span class="team-score-overall">${renderScoreCell(row.overallScore)}</span></td>
+                  </tr>
+                `).join('') : `
+                  <tr id="teamScoreEmptyRow">
+                    <td colspan="4" class="team-score-empty">No team score rows match the current table search.</td>
+                  </tr>
+                `}
+                ${rows.length ? `
+                  <tr id="teamScoreEmptyRow" hidden>
+                    <td colspan="4" class="team-score-empty">No team score rows match the current table search.</td>
+                  </tr>
+                ` : ''}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function getCurrentVisibleTeamScoreRows() {
+      return filterTeamScoreRows(buildTeamScoreRows(getComparisonRows()));
+    }
+
+    function applyTeamScoreTableSearch() {
+      const tableBody = document.getElementById('teamScoreTableBody');
+      if (!tableBody) return;
+
+      const needle = String(state.teamTableSearch || '').trim().toLowerCase();
+      const rows = Array.from(tableBody.querySelectorAll('[data-team-score-row]'));
+      let visibleCount = 0;
+
+      rows.forEach((row) => {
+        const haystack = String(row.getAttribute('data-search-text') || '').toLowerCase();
+        const matches = !needle || haystack.includes(needle);
+        row.hidden = !matches;
+        if (matches) visibleCount += 1;
+      });
+
+      const visibleChip = document.getElementById('teamScoreVisibleCount');
+      if (visibleChip) visibleChip.textContent = `${visibleCount} visible`;
+
+      const emptyRow = document.getElementById('teamScoreEmptyRow');
+      if (emptyRow) emptyRow.hidden = visibleCount > 0;
+    }
+
+    function buildTeamScoreExportRows(rows) {
+      return rows.map((row) => ({
+        'Name of the agent': row.agent,
+        'T1 Score': Number.isFinite(row.t1Score) ? formatPercent(row.t1Score) : '',
+        'T2 OS Score': Number.isFinite(row.t2osScore) ? formatPercent(row.t2osScore) : '',
+        'Overall Score': Number.isFinite(row.overallScore) ? formatPercent(row.overallScore) : ''
+      }));
+    }
+
+    function downloadBlob(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportTeamScoreCsv(rows) {
+      const exportRows = buildTeamScoreExportRows(rows);
+      const headers = ['Name of the agent', 'T1 Score', 'T2 OS Score', 'Overall Score'];
+      const lines = [
+        headers.join(','),
+        ...exportRows.map((row) => headers.map((key) => `"${String(row[key] || '').replace(/"/g, '""')}"`).join(','))
+      ];
+      downloadBlob('analysis-team-score-table.csv', lines.join('\n'), 'text/csv;charset=utf-8;');
+    }
+
+    function exportTeamScoreXlsx(rows) {
+      if (!window.XLSX) {
+        showToast('XLSX export library is not available.', 'error');
+        return;
+      }
+      const exportRows = buildTeamScoreExportRows(rows);
+      const worksheet = window.XLSX.utils.json_to_sheet(exportRows);
+      const workbook = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(workbook, worksheet, 'Team Scores');
+      window.XLSX.writeFile(workbook, 'analysis-team-score-table.xlsx');
+    }
+
   function renderDateDetailControl() {
     if (state.filters.datePreset === 'month') {
       return `
@@ -1359,7 +1566,7 @@
       <div class="analysis-card p-6">
         <div class="mb-6">
           <h3 class="text-2xl font-extrabold text-[var(--text-primary)]">Failed Attribute Frequency</h3>
-          <p class="analysis-muted mt-2 text-sm">Distribution of QA attribute errors for ${escapeHtml(state.activeAgent)} across the filtered evaluation set.</p>
+            <p class="analysis-muted mt-2 text-sm">${escapeHtml(isAgentMode() ? `Distribution of QA attribute errors for ${state.activeAgent} across the filtered evaluation set.` : 'Distribution of QA attribute errors across the current filtered team view.')}</p>
         </div>
         <div>
           ${frequency.map((item) => `
@@ -1438,10 +1645,11 @@
     `;
   }
 
-  function bindRenderedEvents(filteredRows) {
+    function bindRenderedEvents(filteredRows, visibleTeamScoreRows = []) {
     const agentSelect = document.getElementById('agentSelect');
     if (agentSelect) {
       agentSelect.addEventListener('change', (event) => {
+          if (isTeamMode()) return;
         state.activeAgent = event.target.value;
         render();
       });
@@ -1539,6 +1747,30 @@
         render();
       });
     }
+
+      const teamScoreSearchInput = document.getElementById('teamScoreSearchInput');
+      if (teamScoreSearchInput) {
+        teamScoreSearchInput.addEventListener('input', (event) => {
+          state.teamTableSearch = event.target.value;
+          applyTeamScoreTableSearch();
+        });
+      }
+
+      const teamScoreExportSelect = document.getElementById('teamScoreExportSelect');
+      if (teamScoreExportSelect) {
+        teamScoreExportSelect.addEventListener('change', (event) => {
+          const format = event.target.value;
+          const exportRows = getCurrentVisibleTeamScoreRows();
+          if (format === 'csv') {
+            exportTeamScoreCsv(exportRows);
+          } else if (format === 'xlsx') {
+            exportTeamScoreXlsx(exportRows);
+          }
+          event.target.value = '';
+        });
+      }
+
+      applyTeamScoreTableSearch();
 
     document.querySelectorAll('[data-follow-link]').forEach((button) => {
       button.addEventListener('click', () => {
