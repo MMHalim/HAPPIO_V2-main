@@ -733,9 +733,13 @@
 
   function summarizeChannelBreakdown(rows, label) {
     const counts = { chat: 0, email: 0, phone: 0 };
+      const scoreTotals = { chat: 0, email: 0, phone: 0 };
     rows.forEach((row) => {
       const category = normalizeChannelCategory(row.channel);
-      if (category) counts[category] += 1;
+        if (category) {
+          counts[category] += 1;
+          scoreTotals[category] += row.score;
+        }
     });
 
     const total = rows.length;
@@ -744,7 +748,8 @@
       label: CHANNEL_META[key].label,
       color: CHANNEL_META[key].color,
       count: counts[key],
-      percent: total ? (counts[key] / total) * 100 : 0
+        percent: total ? (counts[key] / total) * 100 : 0,
+        averageScore: counts[key] ? (scoreTotals[key] / counts[key]) : 0
     }));
 
     return {
@@ -1194,7 +1199,7 @@
                       <span class="channel-dot" style="background:${escapeHtml(segment.color)}"></span>
                       <span>${escapeHtml(segment.label)}</span>
                     </div>
-                    <span class="channel-legend-value">${escapeHtml(String(segment.count))} · ${escapeHtml(formatPercent(segment.percent, '0%'))}</span>
+                      <span class="channel-legend-value">${escapeHtml(String(segment.count))} · Avg ${escapeHtml(formatPercent(segment.averageScore, '0%'))}</span>
                   </div>
                 `).join('')}
               </div>
