@@ -1287,11 +1287,18 @@
     return `<option value="${value}" ${current === value ? 'selected' : ''}>${escapeHtml(label)}</option>`;
   }
 
+    function scoreTone(value) {
+      if (!Number.isFinite(value)) return '';
+      if (value >= 90) return 'score-good';
+      if (value >= 85) return 'score-mid';
+      return 'score-bad';
+    }
+
     function renderScoreCell(value) {
       if (!Number.isFinite(value)) {
         return '<span class="analysis-muted">-</span>';
       }
-      return escapeHtml(formatPercent(value));
+      return `<span class="team-score-value ${scoreTone(value)}">${escapeHtml(formatPercent(value))}</span>`;
     }
 
     function renderTeamScoreTable(rows, visibleRows = rows.length) {
@@ -1342,7 +1349,7 @@
                     <td class="team-score-agent-cell">${escapeHtml(row.agent)}</td>
                     <td>${renderScoreCell(row.t1Score)}</td>
                     <td>${renderScoreCell(row.t2osScore)}</td>
-                    <td><span class="team-score-overall">${renderScoreCell(row.overallScore)}</span></td>
+                    <td>${renderScoreCell(row.overallScore)}</td>
                   </tr>
                 `).join('') : `
                   <tr id="teamScoreEmptyRow">
@@ -1645,7 +1652,7 @@
     `;
   }
 
-    function bindRenderedEvents(filteredRows, visibleTeamScoreRows = []) {
+    function bindRenderedEvents(filteredRows) {
     const agentSelect = document.getElementById('agentSelect');
     if (agentSelect) {
       agentSelect.addEventListener('change', (event) => {

@@ -299,9 +299,52 @@
       .team-score-agent-cell {
         font-weight: 700;
       }
-      .team-score-overall {
+      .team-score-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 78px;
+        padding: 6px 10px;
+        border-radius: 999px;
         font-weight: 800;
-        color: #c4b5fd;
+        border: 1px solid transparent;
+      }
+      .team-score-value.score-good {
+        color: #86efac;
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.22);
+      }
+      .team-score-value.score-mid {
+        color: #fcd34d;
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.22);
+      }
+      .team-score-value.score-bad {
+        color: #fda4af;
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.22);
+      }
+      [data-theme="light"] .team-score-value.score-good {
+        color: #15803d;
+        background: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.18);
+      }
+      [data-theme="light"] .team-score-value.score-mid {
+        color: #b45309;
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.18);
+      }
+      [data-theme="light"] .team-score-value.score-bad {
+        color: #b91c1c;
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.18);
+      }
+      .team-score-overall,
+      .team-score-value.team-score-overall,
+      .team-score-value.score-good.team-score-overall,
+      .team-score-value.score-mid.team-score-overall,
+      .team-score-value.score-bad.team-score-overall {
+        font-weight: 800;
       }
       .team-score-empty {
         text-align: center;
