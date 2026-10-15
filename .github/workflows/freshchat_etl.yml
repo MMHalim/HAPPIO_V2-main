@@ -1,6 +1,8 @@
 name: Freshchat Hourly ETL
 
 on:
+  workflow_dispatch:
+    inputs:
       from_cairo:
         description: "From (Africa/Cairo) - YYYY-MM-DDTHH:MM"
         required: false
