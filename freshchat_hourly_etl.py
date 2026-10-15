@@ -272,6 +272,15 @@ def get_time_window_utc_and_cairo():
     end_utc = end_cairo.astimezone(timezone.utc)
     return start_utc, end_utc, start_cairo, end_cairo
 
+def format_export_wall_clock_cairo(dt):
+    cairo_tz = ZoneInfo("Africa/Cairo")
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=cairo_tz)
+    else:
+        dt = dt.astimezone(cairo_tz)
+    # Freshchat export should receive the Cairo wall-clock slot values with a Z suffix.
+    return dt.replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
 # =========================
 # STEP 1 - CREATE EXPORT
 # =========================
@@ -284,8 +293,8 @@ def create_export(event_name, start_time, end_time):
     }
 
     payload = {
-        "start": start_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "end": end_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "start": format_export_wall_clock_cairo(start_time),
+        "end": format_export_wall_clock_cairo(end_time),
         "event": event_name,
         "format": "csv"
     }
@@ -550,7 +559,7 @@ def run_job():
     log_to_supabase(
         "ETL_RUN",
         "INFO",
-        f"Time window Cairo: {start_cairo.isoformat()} to {end_cairo.isoformat()} | UTC: {start_time.isoformat()} to {end_time.isoformat()}",
+        f"Time window Cairo: {start_cairo.isoformat()} to {end_cairo.isoformat()} | UTC: {start_time.isoformat()} to {end_time.isoformat()} | Export payload: {format_export_wall_clock_cairo(start_cairo)} to {format_export_wall_clock_cairo(end_cairo)}",
     )
 
     # Define tasks: (Event Name, Google Sheet Name)
@@ -568,7 +577,7 @@ def run_job():
         print(f"\nProcessing '{event_name}' -> '{sheet_name}'")
         try:
             log_to_supabase(event_name, "INFO", "Requesting export")
-            zip_content = create_export(event_name, start_time, end_time)
+            zip_content = create_export(event_name, start_cairo, end_cairo)
             log_to_supabase(event_name, "INFO", "Export generated and downloaded")
             df = extract_csv_from_zip(zip_content)
             row_count = len(df)
