@@ -10,7 +10,7 @@ on:
         description: "To (Africa/Cairo) - YYYY-MM-DDTHH:MM"
         required: false
       window_slot:
-        description: "Optional Cairo slot key: 1705,1805,1806,1905,2005,2105,2205,2305,0005,0105,0205"
+        description: "Optional Cairo slot key: 1705,1805,1905,2005,2105,2205,2305,0005,0105,0205"
         required: false
 
 jobs:
@@ -49,7 +49,6 @@ jobs:
           slot_map = {
               "1705": ((0, 2, 0), (0, 17, 0)),
               "1805": ((0, 17, 0), (0, 18, 0)),
-              "1806": ((0, 17, 0), (0, 18, 0)),
               "1905": ((0, 18, 0), (0, 19, 0)),
               "2005": ((0, 19, 0), (0, 20, 0)),
               "2105": ((0, 20, 0), (0, 21, 0)),
