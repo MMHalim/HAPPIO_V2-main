@@ -14,34 +14,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import threading
 
 # =========================
-# CONFIGURATION
-# =========================
-
-FRESHCHAT_DOMAIN = "https://tempo-606018293146678274-869026d6297b73c16908009.freshchat.com"
-CREATE_EXPORT_URL = f"{FRESHCHAT_DOMAIN}/v2/reports/raw"
-
-# 🔒 Token kept HARDCODED as requested
-FRESHCHAT_BEARER_TOKEN = os.getenv(
-    "FRESHCHAT_TOKEN",
-    "eyJraWQiOiJjdXN0b20tb2F1dGgta2V5aWQiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmcmVzaGNoYXQiLCJzdWIiOiJiZGFlNzdlMS01NzM1LTQ0MTgtYmQ1Yi01YjgyMmE0NTc1MDIiLCJjbGllbnRJZCI6ImZjLTEzMzk4NjRhLTgzNzYtNGM3MC1iOGM1LTJlYmUzZjhjNjY1MSIsInNjb3BlIjoiYWdlbnQ6cmVhZCBhZ2VudDpjcmVhdGUgYWdlbnQ6dXBkYXRlIGFnZW50OmRlbGV0ZSBjb252ZXJzYXRpb246Y3JlYXRlIGNvbnZlcnNhdGlvbjpyZWFkIGNvbnZlcnNhdGlvbjp1cGRhdGUgbWVzc2FnZTpjcmVhdGUgbWVzc2FnZTpnZXQgYmlsbGluZzp1cGRhdGUgcmVwb3J0czpmZXRjaCByZXBvcnRzOmV4dHJhY3QgcmVwb3J0czpyZWFkIHJlcG9ydHM6ZXh0cmFjdDpyZWFkIGFjY291bnQ6cmVhZCBkYXNoYm9hcmQ6cmVhZCB1c2VyOnJlYWQgdXNlcjpjcmVhdGUgdXNlcjp1cGRhdGUgdXNlcjpkZWxldGUgb3V0Ym91bmRtZXNzYWdlOnNlbmQgb3V0Ym91bmRtZXNzYWdlOmdldCBtZXNzYWdpbmctY2hhbm5lbHM6bWVzc2FnZTpzZW5kIG1lc3NhZ2luZy1jaGFubmVsczptZXNzYWdlOmdldCBtZXNzYWdpbmctY2hhbm5lbHM6dGVtcGxhdGU6Y3JlYXRlIG1lc3NhZ2luZy1jaGFubmVsczp0ZW1wbGF0ZTpnZXQgZmlsdGVyaW5ib3g6cmVhZCBmaWx0ZXJpbmJveDpjb3VudDpyZWFkIHJvbGU6cmVhZCBpbWFnZTp1cGxvYWQiLCJpc3MiOiJmcmVzaGNoYXQiLCJ0eXAiOiJCZWFyZXIiLCJleHAiOjIwMDc3NDUxMjcsImlhdCI6MTY5MjEyNTkyNywianRpIjoiZDZkODk5OTEtYWU5Zi00MDQyLWJkZWMtYTU1ZmUyZDg3MmRhIn0.wj8lTFHKb_s2Bamk6ftNg60Iba4IPByWC9eVoQHOujI"
-)
-
-SPREADSHEET_ID = "1PAVgZ5A0mn1t1sphlS_1PhRZoHAA0Wzv39eU9K39VG8"
-# Ensure script uses absolute paths for cron execution
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-GOOGLE_CREDS_FILE = os.path.join(BASE_DIR, "service_account.json")
-
-# Supabase Config
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://kupaxfvjfobfdgtbfnnt.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cGF4ZnZqZm9iZmRndGJmbm50Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4NDA2MDA5OCwiZXhwIjoxOTk5NjM2MDk4fQ.zdeD358JXMMrUzRg9mmBnPAjlkgk8jAROkQ64v98vj0")
-SUPABASE_HEADERS = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json",
-    "Prefer": "return=minimal"
-}
-
-# =========================
 # STEP 0 - LOGGING & HELPERS
 # =========================
 
@@ -260,33 +232,12 @@ def get_time_window_utc_and_cairo():
 
     if from_cairo_raw and to_cairo_raw:
         start_cairo = _parse_cairo_dt(from_cairo_raw, is_end=False)
-        end_cairo = _parse_cairo_dt(to_cairo_raw, is_end=True)
-    else:
-        cairo_tz = ZoneInfo("Africa/Cairo")
-        now_cairo = datetime.now(cairo_tz)
-        current_hour_start_cairo = now_cairo.replace(minute=0, second=0, microsecond=0)
-        start_cairo = current_hour_start_cairo - timedelta(hours=1)
-        end_cairo = current_hour_start_cairo - timedelta(seconds=1)
-
     start_utc = start_cairo.astimezone(timezone.utc)
     end_utc = end_cairo.astimezone(timezone.utc)
     return start_utc, end_utc, start_cairo, end_cairo
-
-# =========================
-# STEP 1 - CREATE EXPORT
-# =========================
-
-def create_export(event_name, start_time, end_time):
-    headers = {
         "Authorization": f"Bearer {FRESHCHAT_BEARER_TOKEN}",
         "Accept": "application/json",
         "Content-Type": "application/json"
-    }
-
-    payload = {
-        "start": start_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "end": end_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "event": event_name,
         "format": "csv"
     }
 
@@ -575,18 +526,6 @@ def run_job():
             print(f"Extracted {row_count} rows.")
             log_to_supabase(event_name, "INFO", "CSV extracted", row_count)
 
-            df = fill_missing_timestamps_from_interaction_id(df)
-            
-            # Update GSheet
-            log_to_supabase(event_name, "INFO", f"Updating Google Sheet: {sheet_name}", row_count)
-            upload_to_google_sheets(client, df, sheet_name)
-            log_to_supabase(event_name, "INFO", f"Google Sheet updated: {sheet_name}", row_count)
-            
-            # Log success for this part
-            log_to_supabase(event_name, "SUCCESS", "Export & Sheet Update completed", row_count)
-
-        except Exception as e:
-            error_msg = str(e)
             print(f"ERROR processing '{event_name}': {error_msg}")
             print(traceback.format_exc())
             log_to_supabase(event_name, "FAILED", error_msg)

@@ -245,7 +245,9 @@ function showAlert(msg, opts = {}) {
 }
 // SMTP email sender, mirrors appeal implementation
 async function sendEmailSMTP({ html, to, cc = [], bcc = [], subject }) {
-  const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+  const normalizedHost = host.replace(/^\[|\]$/g, '');
+  const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
   const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
   try {
     const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to, cc, bcc, subject, html }) });
@@ -487,8 +489,10 @@ async function fetchLogoAsDataURI() {
 
 async function sendEmail({ html, to, subject, cc, bcc }) {
   // Use local relay in dev; Vercel Serverless route in production
-  const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-  const endpoint = isLocal ? 'http://localhost:8025/send-email' : '/api/send-email';
+  const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+  const normalizedHost = host.replace(/^\[|\]$/g, '');
+  const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
+  const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -1614,7 +1618,9 @@ function bindEvents() {
       const agentName = agentNameSelect.selectedOptions[0].textContent.trim();
 
       try {
-        const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+        const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+        const normalizedHost = host.replace(/^\[|\]$/g, '');
+        const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
         const endpoint = isLocal ? 'http://127.0.0.1:8025/send-slack-sbs' : '/api/send-slack-sbs';
 
         const res = await fetch(endpoint, {
@@ -1630,7 +1636,16 @@ function bindEvents() {
  });
         const raw = await res.text();
         if (!res.ok) {
-          showAlert(`SBS Slack failed (${res.status}). ${raw || ''}`.trim(), { type: 'warning' });
+          const looksLikeHtml = /^\s*</.test(raw || '');
+          const lower = String(raw || '').toLowerCase();
+          const isPythonHttpServer501 = res.status === 501 && (lower.includes("unsupported method ('post')") || lower.includes('unsupported method'));
+          if (isPythonHttpServer501) {
+            showAlert('SBS Slack failed (501). You are running the site using python http.server which cannot handle POST requests. Run the local backend (smtp_server.py on port 8025) and open the site via http://localhost:8020 or http://[::]:8020, or use the deployed Vercel app.', { type: 'warning' });
+          } else if (looksLikeHtml) {
+            showAlert(`SBS Slack failed (${res.status}). Server returned HTML instead of JSON.`, { type: 'warning' });
+          } else {
+            showAlert(`SBS Slack failed (${res.status}). ${raw || ''}`.trim(), { type: 'warning' });
+          }
           return;
  }
         let json = null;

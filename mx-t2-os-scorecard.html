@@ -292,6 +292,26 @@
         .compact-form .radio-group[data-group="calibration"] { gap: 8px; }
         .compact-form .radio-group[data-group="certification"] .radio-pill,
         .compact-form .radio-group[data-group="calibration"] .radio-pill { padding: 8px 12px; font-size: inherit; border-radius: 14px; }
+        .compact-inline-radios {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .compact-inline-radios .inline-radio-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: max-content;
+        }
+        .compact-inline-radios .inline-radio-field > label {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .compact-inline-radios .sme-radio-group {
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
         /* Agent dropdown embedded list */
         .agent-dropdown { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; max-width: 320px; z-index: 9999; }
         .agent-dropdown input { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-primary); }
@@ -524,19 +544,31 @@
                         <input id="takerNameInput" type="text" placeholder="Auto-filled from your profile" disabled style="margin-bottom:8px;" />
                     </div>
 
-                    <div class="field">
-                        <label>Certification</label>
-                        <div class="sme-radio-group" data-group="certification">
-                            <label><input type="radio" name="certification" value="Yes"> Yes</label>
-                            <label><input type="radio" name="certification" value="No" checked> No</label>
-                        </div>
-                    </div>
+                    <div class="field" style="grid-column: span 2;">
+                        <div class="compact-inline-radios">
+                            <div class="inline-radio-field">
+                                <label>Certification</label>
+                                <div class="sme-radio-group" data-group="certification">
+                                    <label><input type="radio" name="certification" value="Yes"> Yes</label>
+                                    <label><input type="radio" name="certification" value="No" checked> No</label>
+                                </div>
+                            </div>
 
-                    <div class="field">
-                        <label>Calibration</label>
-                        <div class="sme-radio-group" data-group="calibration">
-                            <label><input type="radio" name="calibration" value="Yes"> Yes</label>
-                            <label><input type="radio" name="calibration" value="No" checked> No</label>
+                            <div class="inline-radio-field">
+                                <label>Calibration</label>
+                                <div class="sme-radio-group" data-group="calibration">
+                                    <label><input type="radio" name="calibration" value="Yes"> Yes</label>
+                                    <label><input type="radio" name="calibration" value="No" checked> No</label>
+                                </div>
+                            </div>
+
+                            <div class="inline-radio-field">
+                                <label>OJT</label>
+                                <div class="sme-radio-group" data-group="ojt">
+                                    <label><input type="radio" name="ojt" value="Yes"> Yes</label>
+                                    <label><input type="radio" name="ojt" value="No" checked> No</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -759,6 +791,7 @@
                             <th>id</th>
                             <th>Conversation ID</th>
                             <th>Agent</th>
+                            <th>OJT</th>
                             <th>Total</th>
                             <th>Created</th>
                         </tr>
@@ -770,7 +803,7 @@
     </div>
 
     <script src="global-navigation.js?v=20260421-02"></script>
-    <script src="mx-t2-os-scorecard.js?v=20260424-01"></script>
+    <script src="mx-t2-os-scorecard.js?v=20261015-04"></script>
 <script>
   // Use the exact logo you shared
   window.EMAIL_LOGO_URL = "https://kupaxfvjfobfdgtbfnnt.supabase.co/storage/v1/object/sign/ChatData/tempo_logo-removebg-preview.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJDaGF0RGF0YS90ZW1wb19sb2dvLXJlbW92ZWJnLXByZXZpZXcucG5nIiwiaWF0IjoxNzQyODQ1NTQzLCJleHAiOjE3NzQzODE1NDN9.cTQWItBzs3CK6vfv7A0owkDVhjX-_K1Yfw_XGF-_8Yo";

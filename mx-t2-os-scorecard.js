@@ -114,7 +114,9 @@ function computeSkipWindow() {
 }
 // SMTP email sender, mirrors appeal implementation
 async function sendEmailSMTP({ html, to, cc = [], bcc = [], subject }) {
-  const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+  const normalizedHost = host.replace(/^\[|\]$/g, '');
+  const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
   // Use 127.0.0.1 to avoid localhost IPv6 resolution issues (::1) which cause connection refused logs
   const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
   try {
@@ -498,8 +500,10 @@ async function fetchLogoAsDataURI() {
 
 async function sendEmail({ html, to, subject, cc, bcc }) {
   // Use local SMTP relay in dev; Vercel Serverless route in production
-  const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-  const endpoint = isLocal ? 'http://localhost:8025/send-email' : '/api/send-email';
+  const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+  const normalizedHost = host.replace(/^\[|\]$/g, '');
+  const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
+  const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -673,6 +677,8 @@ function reset() {
   if (certNo) certNo.checked = true;
   const calibNo = document.querySelector('input[name="calibration"][value="No"]');
   if (calibNo) calibNo.checked = true;
+  const ojtNo = document.querySelector('input[name="ojt"][value="No"]');
+  if (ojtNo) ojtNo.checked = true;
 
   const certGroup = document.querySelector('.sme-radio-group[data-group="certification"]');
   if (certGroup) {
@@ -689,6 +695,15 @@ function reset() {
     const calibNoInput = calibGroup.querySelector('input[name="calibration"][value="No"]');
     if (calibNoInput) {
       const lbl = calibNoInput.closest('label');
+      if (lbl) lbl.classList.add('checked');
+ }
+ }
+  const ojtGroup = document.querySelector('.sme-radio-group[data-group="ojt"]');
+  if (ojtGroup) {
+    ojtGroup.querySelectorAll('label').forEach(l => l.classList.remove('checked'));
+    const ojtNoInput = ojtGroup.querySelector('input[name="ojt"][value="No"]');
+    if (ojtNoInput) {
+      const lbl = ojtNoInput.closest('label');
       if (lbl) lbl.classList.add('checked');
  }
  }
@@ -1597,6 +1612,7 @@ async function submit() {
     Final_Score: `${totalFromRadios()}%`,
     agent_email: ((document.getElementById('agentEmailInput') || {}).value || '').trim(),
     Certification: getRadioVal('certification'),
+    OJT: getRadioVal('ojt') || 'No',
     // Attributes mapped to 2025 schema (combined where required)
     interaction_protocols: getAttrValue('Interaction Protocols') || '',
     understanding: getAttrValue('Understanding') || '',
@@ -1705,7 +1721,8 @@ function bindEvents() {
 
       try {
         const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
-        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::' || host === '::1';
+        const normalizedHost = host.replace(/^\[|\]$/g, '');
+        const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
         const endpoint = isLocal ? 'http://127.0.0.1:8025/send-slack-sbs' : '/api/send-slack-sbs';
 
         const res = await fetch(endpoint, {
@@ -1726,7 +1743,7 @@ function bindEvents() {
           const lower = String(raw || '').toLowerCase();
           const isPythonHttpServer501 = res.status === 501 && (lower.includes("unsupported method ('post')") || lower.includes('unsupported method'));
           if (isPythonHttpServer501) {
-            showAlert('SBS Slack failed (501). You are running the site using python http.server which cannot handle POST requests. Run the local backend (smtp_server.py on port 8025) and open the site via http://localhost:8020, or use the deployed Vercel app.', { type: 'warning' });
+            showAlert('SBS Slack failed (501). You are running the site using python http.server which cannot handle POST requests. Run the local backend (smtp_server.py on port 8025) and open the site via http://localhost:8020 or http://[::]:8020, or use the deployed Vercel app.', { type: 'warning' });
  } else if (looksLikeHtml) {
             showAlert(`SBS Slack failed (${res.status}). Server returned HTML instead of JSON.`, { type: 'warning' });
  } else {
@@ -2568,7 +2585,7 @@ return {
 
 async function fetchRecent() {
   try {
-    const url = `${config.restUrl}/T2_OS_NEW_2025?select=id,Conversation_ID,Agent_Name,Final_Score,created_at&order=created_at.desc&limit=10`;
+    const url = `${config.restUrl}/T2_OS_NEW_2025?select=id,Conversation_ID,Agent_Name,OJT,Final_Score,created_at&order=created_at.desc&limit=10`;
     let res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) {
       const errText = await res.text();
@@ -2589,6 +2606,7 @@ async function fetchRecent() {
         <td>${r.id ?? ''}</td>
         <td>${r.Conversation_ID || ''}</td>
         <td>${r.Agent_Name || ''}</td>
+        <td>${r.OJT || 'No'}</td>
         <td>${r.Final_Score ?? ''}</td>
         <td>${(r.created_at ?? r.Created_At ?? '').toString().replace('T',' ').replace('Z','')}</td>
       `;

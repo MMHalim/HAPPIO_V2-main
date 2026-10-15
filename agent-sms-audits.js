@@ -59,7 +59,9 @@
     return null;
  }
   async function sendEmailSMTP({ html, to, cc = [], subject }) {
-    const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+    const normalizedHost = host.replace(/^\[|\]$/g, '');
+    const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
     const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
     const payload = {
       smtp: { host: 'smtp.gmail.com', port: 587, user: 'happio.softs@gmail.com', pass: 'yinyeqhnfihainsi' },

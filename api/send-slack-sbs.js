@@ -14,7 +14,10 @@ module.exports = async (req, res) => {
  }
 
   if (req.method === 'GET' && req.query && req.query.ping === '1') {
-    return res.status(200).json({ ok: true, configured: Boolean(process.env.SLACK_WEBHOOK_URL) });
+    const hasDmConfig = Boolean(
+      process.env.SLACK_BOT_TOKEN && (process.env.SLACK_DM_USER_ID || process.env.SLACK_DM_USER_EMAIL)
+    );
+    return res.status(200).json({ ok: true, configured: hasDmConfig || Boolean(process.env.SLACK_WEBHOOK_URL) });
  }
 
   const readJsonBody = async () => {
@@ -31,17 +34,27 @@ module.exports = async (req, res) => {
  };
 
   const body = await readJsonBody();
-  const { conversationId, takerName, agentName, scorecardType, monitoringType, title } = body || {};
+  const {
+    conversationId,
+    takerName,
+    agentName,
+    scorecardType,
+    monitoringType,
+    title,
+    slackUserId,
+    slackUserEmail
+  } = body || {};
 
   if (!conversationId) {
     return res.status(400).json({ error: 'Missing conversationId' });
  }
 
-  // Check for Slack Webhook URL
-  const webhookUrl = process.env.SLACK_WEBHOOK_URL || 'https://hooks.slack.com/services/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';
-  
-  if (!webhookUrl) {
-    // Return success to frontend so it doesn't break, but log error on server
+  const botToken = process.env.SLACK_BOT_TOKEN || '';
+  const targetSlackUserId = slackUserId || process.env.SLACK_DM_USER_ID || '';
+  const targetSlackUserEmail = slackUserEmail || process.env.SLACK_DM_USER_EMAIL || '';
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL || 'https://hooks.slack.com/services/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';
+
+  if (!botToken && !webhookUrl) {
     return res.status(200).json({ status: 'skipped', message: 'Slack integration not configured' });
  }
 
@@ -85,13 +98,100 @@ module.exports = async (req, res) => {
  });
  };
 
+  const postSlackApi = async (path, payload) => {
+    const url = `https://slack.com/api/${path}`;
+    if (typeof fetch === 'function') {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': `Bearer ${botToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const raw = await r.text().catch(() => '');
+      let json = null;
+      try { json = raw ? JSON.parse(raw) : null; } catch (_) {}
+      return { ok: r.ok && json && json.ok, status: r.status, text: raw, json };
+    }
+    const https = require('https');
+    return await new Promise((resolve, reject) => {
+      const bodyBuffer = Buffer.from(JSON.stringify(payload));
+      const options = {
+        method: 'POST',
+        hostname: 'slack.com',
+        path: `/api/${path}`,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Length': bodyBuffer.length,
+          'Authorization': `Bearer ${botToken}`
+        }
+      };
+      const request = https.request(options, (response) => {
+        const chunks = [];
+        response.on('data', (c) => chunks.push(Buffer.from(c)));
+        response.on('end', () => {
+          const raw = Buffer.concat(chunks).toString('utf8');
+          let json = null;
+          try { json = raw ? JSON.parse(raw) : null; } catch (_) {}
+          const status = response.statusCode || 0;
+          resolve({ ok: status >= 200 && status < 300 && json && json.ok, status, text: raw, json });
+        });
+      });
+      request.on('error', reject);
+      request.write(bodyBuffer);
+      request.end();
+    });
+  };
+
+  const resolveSlackUserId = async () => {
+    if (targetSlackUserId) return targetSlackUserId;
+    if (!targetSlackUserEmail) return '';
+    const lookup = await postSlackApi('users.lookupByEmail', { email: targetSlackUserEmail });
+    if (!lookup.ok || !lookup.json || !lookup.json.user || !lookup.json.user.id) {
+      throw new Error(`Slack user lookup failed: ${lookup.text || `HTTP ${lookup.status}`}`);
+    }
+    return lookup.json.user.id;
+  };
+
   try {
+    if ((targetSlackUserId || targetSlackUserEmail) && !botToken) {
+      return res.status(500).json({
+        error: 'Slack DM is not configured',
+        details: 'Set SLACK_BOT_TOKEN to send direct messages to a Slack user.'
+      });
+    }
+
+    if (botToken && (targetSlackUserId || targetSlackUserEmail)) {
+      const userId = await resolveSlackUserId();
+      const openResult = await postSlackApi('conversations.open', { users: userId });
+      if (!openResult.ok || !openResult.json || !openResult.json.channel || !openResult.json.channel.id) {
+        console.error('Slack conversations.open error:', openResult.text);
+        return res.status(502).json({
+          error: 'Failed to open Slack DM',
+          details: openResult.text || `HTTP ${openResult.status}`
+        });
+      }
+
+      const channelId = openResult.json.channel.id;
+      const messageResult = await postSlackApi('chat.postMessage', { channel: channelId, text });
+      if (!messageResult.ok) {
+        console.error('Slack chat.postMessage error:', messageResult.text);
+        return res.status(502).json({
+          error: 'Failed to send Slack DM',
+          details: messageResult.text || `HTTP ${messageResult.status}`
+        });
+      }
+
+      return res.status(200).json({ status: 'sent', mode: 'dm', channel: channelId, userId });
+    }
+
     const result = await postJson(webhookUrl, { text });
     if (!result.ok) {
       console.error('Slack API error:', result.text);
       return res.status(502).json({ error: 'Failed to send to Slack', details: result.text || `HTTP ${result.status}` });
  }
-    return res.status(200).json({ status: 'sent', slack: result.text || 'ok' });
+    return res.status(200).json({ status: 'sent', mode: 'webhook', slack: result.text || 'ok' });
  } catch (error) {
     console.error('Slack execution error:', error);
     return res.status(500).json({ error: 'Internal Server Error', details: error?.message || String(error) });

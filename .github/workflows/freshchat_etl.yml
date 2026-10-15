@@ -1,8 +1,6 @@
 name: Freshchat Hourly ETL
 
 on:
-  workflow_dispatch:
-    inputs:
       from_cairo:
         description: "From (Africa/Cairo) - YYYY-MM-DDTHH:MM"
         required: false
@@ -86,11 +84,7 @@ jobs:
           else:
               raise SystemExit("Provide either from_cairo/to_cairo or window_slot.")
 
-          github_output = os.environ["GITHUB_OUTPUT"]
-          with open(github_output, "a", encoding="utf-8") as fh:
-              fh.write(f"from_cairo={resolved_from}\n")
-              fh.write(f"to_cairo={resolved_to}\n")
-
+              raise SystemExit("Provide either from_cairo/to_cairo or window_slot.")
           print(f"Resolved Cairo window ({reason}): {resolved_from} -> {resolved_to}")
           PY
 

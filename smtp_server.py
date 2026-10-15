@@ -19,6 +19,54 @@ SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
 SMTP_USER = os.getenv('SMTP_USER', 'happio.softs@gmail.com')
 # Strip spaces in app passwords (Gmail app passwords are often shown grouped)
 SMTP_PASS = os.getenv('SMTP_PASS', 'yiny eqhn fiha insi').replace(' ', '')
+SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/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')
+SLACK_BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN', '')
+SLACK_DM_USER_ID = os.getenv('SLACK_DM_USER_ID', '')
+SLACK_DM_USER_EMAIL = os.getenv('SLACK_DM_USER_EMAIL', '')
+
+
+def build_ssl_context(allow_insecure=False):
+    if _CA_FILE:
+        context = ssl.create_default_context(cafile=_CA_FILE)
+    else:
+        context = ssl.create_default_context()
+    if allow_insecure:
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+    return context
+
+
+def slack_api_post(path, token, payload):
+    body = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(
+        f'https://slack.com/api/{path}',
+        data=body,
+        headers={
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': f'Bearer {token}'
+        }
+    )
+
+    for allow_insecure in (False, True):
+        try:
+            with urllib.request.urlopen(req, context=build_ssl_context(allow_insecure=allow_insecure)) as response:
+                raw = response.read().decode('utf-8')
+                data = json.loads(raw or '{}')
+                return data
+        except ssl.SSLError:
+            if allow_insecure:
+                raise
+
+
+def resolve_slack_user_id(token, user_id='', user_email=''):
+    if user_id:
+        return user_id
+    if not user_email:
+        return ''
+    lookup = slack_api_post('users.lookupByEmail', token, {'email': user_email})
+    if not lookup.get('ok') or not lookup.get('user', {}).get('id'):
+        raise RuntimeError(f"Slack user lookup failed: {lookup.get('error') or lookup}")
+    return lookup['user']['id']
 
 class EmailHandler(BaseHTTPRequestHandler):
     def _set_cors(self):
@@ -42,30 +90,50 @@ class EmailHandler(BaseHTTPRequestHandler):
                 body = self.rfile.read(length) if length > 0 else b''
                 payload = json.loads(body.decode('utf-8') or '{}')
                 
-                # Slack Webhook URL provided by user
-                slack_url = "https://hooks.slack.com/services/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"
-                
                 # Construct Slack payload
                 resolved_title = payload.get('title') or ('Membership Cancellation Started' if payload.get('monitoringType') == 'Selected' else 'SBS Started')
                 text = f"*{resolved_title}*\n*Conversation ID:* {payload.get('conversationId')}\n*Taker:* {payload.get('takerName') or 'Unknown'}\n*Agent:* {payload.get('agentName') or 'Unknown'}\n*Type:* {payload.get('scorecardType') or 'Scorecard'}"
-                
-                slack_data = json.dumps({"text": text}).encode('utf-8')
-                req = urllib.request.Request(slack_url, data=slack_data, headers={'Content-Type': 'application/json'})
-                
-                # Create unverified SSL context for local dev
-                ctx = ssl.create_default_context()
-                ctx.check_hostname = False
-                ctx.verify_mode = ssl.CERT_NONE
 
-                with urllib.request.urlopen(req, context=ctx) as response:
-                    slack_resp = response.read()
-                    print(f"Slack response: {slack_resp}")
+                target_user_id = payload.get('slackUserId') or SLACK_DM_USER_ID
+                target_user_email = payload.get('slackUserEmail') or SLACK_DM_USER_EMAIL
+
+                if (target_user_id or target_user_email) and not SLACK_BOT_TOKEN:
+                    raise RuntimeError('Set SLACK_BOT_TOKEN to send direct messages to a Slack user.')
+
+                if SLACK_BOT_TOKEN and (target_user_id or target_user_email):
+                    resolved_user_id = resolve_slack_user_id(
+                        SLACK_BOT_TOKEN,
+                        user_id=target_user_id,
+                        user_email=target_user_email
+                    )
+                    open_resp = slack_api_post('conversations.open', SLACK_BOT_TOKEN, {'users': resolved_user_id})
+                    if not open_resp.get('ok') or not open_resp.get('channel', {}).get('id'):
+                        raise RuntimeError(f"Slack conversations.open failed: {open_resp.get('error') or open_resp}")
+                    channel_id = open_resp['channel']['id']
+                    post_resp = slack_api_post('chat.postMessage', SLACK_BOT_TOKEN, {'channel': channel_id, 'text': text})
+                    if not post_resp.get('ok'):
+                        raise RuntimeError(f"Slack chat.postMessage failed: {post_resp.get('error') or post_resp}")
+                    print(f"Slack DM sent to user {resolved_user_id} via channel {channel_id}")
+                    response_payload = {'status': 'sent', 'mode': 'dm', 'userId': resolved_user_id, 'channel': channel_id}
+                elif SLACK_WEBHOOK_URL:
+                    slack_data = json.dumps({"text": text}).encode('utf-8')
+                    req = urllib.request.Request(
+                        SLACK_WEBHOOK_URL,
+                        data=slack_data,
+                        headers={'Content-Type': 'application/json'}
+                    )
+                    with urllib.request.urlopen(req, context=build_ssl_context(allow_insecure=True)) as response:
+                        slack_resp = response.read()
+                        print(f"Slack webhook response: {slack_resp}")
+                    response_payload = {'status': 'sent', 'mode': 'webhook'}
+                else:
+                    response_payload = {'status': 'skipped', 'message': 'Slack integration not configured'}
                 
                 self.send_response(200)
                 self._set_cors()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'sent'}).encode('utf-8'))
+                self.wfile.write(json.dumps(response_payload).encode('utf-8'))
             except Exception as e:
                 print(f"Slack error: {e}")
                 err = json.dumps({'ok': False, 'error': str(e)}).encode('utf-8')

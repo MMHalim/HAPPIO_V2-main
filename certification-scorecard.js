@@ -2260,7 +2260,7 @@ const CertificationScorecard = (function() {
   async function sendEmail({ html, to, subject, cc, bcc }) {
     // Use local relay in dev; Vercel Serverless route in production
     const isLocal = isLocalEmailHost();
-    const endpoint = isLocal ? 'http://localhost:8025/send-email' : '/api/send-email';
+    const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
     try {
       const res = await fetch(endpoint, {
         method: 'POST',

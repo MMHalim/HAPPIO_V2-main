@@ -49,19 +49,21 @@
     return null;
  }
   async function sendEmail({ html, to, subject, cc, bcc }) {
+    const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+    const normalizedHost = host.replace(/^\[|\]$/g, '');
+    const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
     const sameOriginEndpoint = '/api/send-email';
     const localFallback = 'http://127.0.0.1:8025/send-email';
     const body = JSON.stringify({ to, subject, html, cc, bcc });
+    const endpoints = isLocal ? [localFallback, sameOriginEndpoint] : [sameOriginEndpoint, localFallback];
     try {
-      // Try Vercel route first (works after deployment)
-      const res = await fetch(sameOriginEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      const res = await fetch(endpoints[0], { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
       if (res.ok) return true;
       const text = await res.text();
  } catch (e) {
  }
     try {
-      // Local dev fallback to smtp_server.py if you run it
-      const res2 = await fetch(localFallback, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      const res2 = await fetch(endpoints[1], { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
       if (!res2.ok) throw new Error(await res2.text());
       return true;
  } catch (e2) {
@@ -70,8 +72,10 @@
  }
  }
   async function sendEmailSMTP({ html, to, cc = [], subject }) {
-    const isLocal = (typeof location !== 'undefined') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-    const endpoint = isLocal ? 'http://localhost:8025/send-email' : '/api/send-email';
+    const host = (typeof location !== 'undefined') ? (location.hostname || '') : '';
+    const normalizedHost = host.replace(/^\[|\]$/g, '');
+    const isLocal = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || normalizedHost === '::' || normalizedHost === '::1';
+    const endpoint = isLocal ? 'http://127.0.0.1:8025/send-email' : '/api/send-email';
     const payload = {
       smtp: {
         host: 'smtp.gmail.com',
