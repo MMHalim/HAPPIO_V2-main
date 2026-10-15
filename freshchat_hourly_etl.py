@@ -10,8 +10,6 @@ from datetime import datetime, timedelta, timezone
 import os
 import traceback
 from zoneinfo import ZoneInfo
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import threading
 
 # =========================
 # CONFIGURATION
@@ -272,15 +270,6 @@ def get_time_window_utc_and_cairo():
     end_utc = end_cairo.astimezone(timezone.utc)
     return start_utc, end_utc, start_cairo, end_cairo
 
-def format_export_wall_clock_cairo(dt):
-    cairo_tz = ZoneInfo("Africa/Cairo")
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=cairo_tz)
-    else:
-        dt = dt.astimezone(cairo_tz)
-    # Freshchat export should receive the Cairo wall-clock slot values with a Z suffix.
-    return dt.replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
 # =========================
 # STEP 1 - CREATE EXPORT
 # =========================
@@ -293,8 +282,8 @@ def create_export(event_name, start_time, end_time):
     }
 
     payload = {
-        "start": format_export_wall_clock_cairo(start_time),
-        "end": format_export_wall_clock_cairo(end_time),
+        "start": start_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "end": end_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "event": event_name,
         "format": "csv"
     }
@@ -559,7 +548,7 @@ def run_job():
     log_to_supabase(
         "ETL_RUN",
         "INFO",
-        f"Time window Cairo: {start_cairo.isoformat()} to {end_cairo.isoformat()} | UTC: {start_time.isoformat()} to {end_time.isoformat()} | Export payload: {format_export_wall_clock_cairo(start_cairo)} to {format_export_wall_clock_cairo(end_cairo)}",
+        f"Time window Cairo: {start_cairo.isoformat()} to {end_cairo.isoformat()} | UTC: {start_time.isoformat()} to {end_time.isoformat()}",
     )
 
     # Define tasks: (Event Name, Google Sheet Name)
@@ -577,7 +566,7 @@ def run_job():
         print(f"\nProcessing '{event_name}' -> '{sheet_name}'")
         try:
             log_to_supabase(event_name, "INFO", "Requesting export")
-            zip_content = create_export(event_name, start_cairo, end_cairo)
+            zip_content = create_export(event_name, start_time, end_time)
             log_to_supabase(event_name, "INFO", "Export generated and downloaded")
             df = extract_csv_from_zip(zip_content)
             row_count = len(df)
@@ -636,115 +625,7 @@ if __name__ == "__main__":
     run_mode = os.getenv("ETL_RUN_MODE", "once").strip().lower()
     cairo_minute = int(os.getenv("ETL_CAIRO_MINUTE", "1"))
 
-    if run_mode in {"webhook", "server"}:
-        webhook_token = (os.getenv("ETL_WEBHOOK_TOKEN") or "").strip()
-        port = int(os.getenv("PORT", os.getenv("ETL_PORT", "8080")))
-        state = {"running": False, "last_started_at": None, "last_finished_at": None, "last_status": None, "last_error": None}
-        state_lock = threading.Lock()
-
-        def _run_with_overrides(from_cairo=None, to_cairo=None):
-            with state_lock:
-                if state["running"]:
-                    return False
-                state["running"] = True
-                state["last_started_at"] = datetime.now(timezone.utc).isoformat()
-                state["last_error"] = None
-                state["last_status"] = "RUNNING"
-
-            prev_from = os.environ.get("FROM_CAIRO")
-            prev_to = os.environ.get("TO_CAIRO")
-            try:
-                if from_cairo and to_cairo:
-                    os.environ["FROM_CAIRO"] = str(from_cairo)
-                    os.environ["TO_CAIRO"] = str(to_cairo)
-                else:
-                    os.environ.pop("FROM_CAIRO", None)
-                    os.environ.pop("TO_CAIRO", None)
-
-                run_job()
-                with state_lock:
-                    state["last_status"] = "SUCCESS"
-            except Exception as e:
-                with state_lock:
-                    state["last_status"] = "FAILED"
-                    state["last_error"] = str(e)
-            finally:
-                if prev_from is not None:
-                    os.environ["FROM_CAIRO"] = prev_from
-                else:
-                    os.environ.pop("FROM_CAIRO", None)
-                if prev_to is not None:
-                    os.environ["TO_CAIRO"] = prev_to
-                else:
-                    os.environ.pop("TO_CAIRO", None)
-
-                with state_lock:
-                    state["running"] = False
-                    state["last_finished_at"] = datetime.now(timezone.utc).isoformat()
-
-            return True
-
-        class Handler(BaseHTTPRequestHandler):
-            def _send_json(self, status, payload):
-                body = json.dumps(payload).encode("utf-8")
-                self.send_response(status)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def _auth_ok(self):
-                if not webhook_token:
-                    return True
-                auth = (self.headers.get("Authorization") or "").strip()
-                if auth.lower().startswith("bearer "):
-                    auth = auth[7:].strip()
-                return auth == webhook_token
-
-            def do_GET(self):
-                if self.path.rstrip("/") in {"", "/health"}:
-                    with state_lock:
-                        payload = {**state}
-                    self._send_json(200, {"ok": True, "state": payload})
-                    return
-                self._send_json(404, {"ok": False, "error": "Not Found"})
-
-            def do_POST(self):
-                if self.path.rstrip("/") != "/run":
-                    self._send_json(404, {"ok": False, "error": "Not Found"})
-                    return
-                if not self._auth_ok():
-                    self._send_json(401, {"ok": False, "error": "Unauthorized"})
-                    return
-
-                length = int(self.headers.get("Content-Length") or "0")
-                raw = self.rfile.read(length) if length > 0 else b""
-                body = {}
-                if raw:
-                    try:
-                        body = json.loads(raw.decode("utf-8"))
-                    except Exception:
-                        body = {}
-
-                from_cairo = body.get("from_cairo") or body.get("FROM_CAIRO")
-                to_cairo = body.get("to_cairo") or body.get("TO_CAIRO")
-
-                with state_lock:
-                    if state["running"]:
-                        self._send_json(409, {"ok": False, "error": "ETL already running", "state": {**state}})
-                        return
-
-                t = threading.Thread(target=_run_with_overrides, args=(from_cairo, to_cairo), daemon=True)
-                t.start()
-                with state_lock:
-                    payload = {**state}
-                self._send_json(202, {"ok": True, "message": "ETL started", "state": payload})
-
-            def log_message(self, format, *args):
-                return
-
-        HTTPServer(("", port), Handler).serve_forever()
-    elif run_mode in {"loop", "forever"}:
+    if run_mode in {"loop", "forever"}:
         while True:
             sleep_until_cairo_minute(cairo_minute)
             run_job()
